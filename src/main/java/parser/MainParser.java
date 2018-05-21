@@ -11,7 +11,7 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
-		String filePath = "C:\\Research\\RecoverNameJS\\RecoverJSName\\resources\\test.js";
+		String filePath = ".\\resources\\test.js";
 		
 		MainParser demo = new MainParser();
 		demo.parseJS(filePath);

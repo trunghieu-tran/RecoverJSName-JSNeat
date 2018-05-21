@@ -1,8 +1,10 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.mozilla.javascript.Token;
 import org.mozilla.javascript.ast.*;
 
 
@@ -20,29 +22,80 @@ public class MyVisitor implements NodeVisitor{
 	
 	@Override
 	public boolean visit(AstNode node) {
-
+		
 		if ( node instanceof PropertyGet )
 		{
 			PropertyGet pg = (PropertyGet)node;
 			AstNode target = pg.getTarget();
-			if ( target instanceof Name )
+			if (pg.getParent() instanceof FunctionCall)
 			{
-				String name = ((Name) target).getIdentifier();
-				String pe = pg.getProperty().getIdentifier(); //Go to P.E
-				addRecord(pe, name, "property");
+				FunctionCall fc = (FunctionCall) pg.getParent();
+				String pe = ((Name)pg.getRight()).getIdentifier()+ "("
+						+ fc.getArguments().size() + ")";
+				if ( target instanceof Name )
+				{
+					String name = ((Name) target).getIdentifier();
+					addRecord(pe, name, "FunctionCall");
+				}
+				else
+				{
+					ArrayList<AstNode> list = new ArrayList<>();
+					
+					//Argument
+					for( AstNode ast : fc.getArguments() )
+					{
+						if ( ast instanceof Name )
+						{
+							list.add(ast);
+							String name = ((Name)ast).getIdentifier();
+							addRecord(pe, name, "Argument");
+						}
+					}
+					
+					//CoArgument
+					for ( int i = 0; i < list.size()-1; i++ )
+					{
+						for ( int j = i+1; j < list.size(); j++ )
+						{
+							String name1 = ((Name) list.get(i)).getIdentifier();
+							String name2 = ((Name) list.get(j)).getIdentifier();
+							addRecord(name1, name2, "CoArgument");
+							addRecord(name2, name1, "CoArgument");
+						}
+					}
+				}
+			}
+			else
+			{
+				if ( target instanceof Name )
+				{
+					String name = ((Name) target).getIdentifier();
+					String pe = pg.getProperty().getIdentifier(); 
+					addRecord(pe, name, "FieldAccess");
+				}
 			}
 		}
 		
-		if ( node instanceof Assignment )
+		if ( node instanceof InfixExpression )
 		{
-			Assignment assignment = (Assignment) node;
-			if ( assignment.getLeft() instanceof Name )
+			InfixExpression ie = (InfixExpression)node;
+			int i = ie.getOperator();
+			int j = Token.ASSIGN;
+			if ( i == j )
 			{
-				String name = ((Name) assignment.getLeft()).getIdentifier();
-				String pe = getProgramEntity(assignment.getRight());
-				addRecord(pe, name, "assignment");
+				System.out.println("Here");
 			}
+			//Assignment assignment = (Assignment) node;
+
+//			if ( assignment.getLeft() instanceof Name )
+//			{
+//
+//				String name = ((Name) assignment.getLeft()).getIdentifier();
+//				String pe = getProgramEntity(assignment.getRight());
+//				addRecord(pe, name, "Assignment");
+//			}
 		}
+		
 		if ( node instanceof FunctionCall )
 		{
 			FunctionCall fc = (FunctionCall)node;
@@ -51,6 +104,11 @@ public class MyVisitor implements NodeVisitor{
 	}
 
 	private String getProgramEntity(AstNode right) {
+		if ( right instanceof FunctionCall )
+		{
+			System.out.println("FunctionCall");
+			return "";
+		}
 		if ( right instanceof Name )
 		{
 			return ((Name)right).getIdentifier();

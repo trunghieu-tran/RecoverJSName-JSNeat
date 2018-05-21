@@ -2,9 +2,10 @@ var person = {
 	firstName: "John",
 	lastName : "Doe",
 	id       : 5566,
-	fullName : function() {
-		return this.firstName + " " + this.lastName;
+	fullName : function(fn, ln) {
+		return fn + " " + ln;
 	}
 };
-person.firstName;
-person.fullName();
+var x = person.firstName;
+var y = person.lastName;
+person.fullName(x, y);
