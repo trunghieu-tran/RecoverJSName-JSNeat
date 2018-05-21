@@ -11,7 +11,7 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
-		String filePath = "Change This : specify full path of some JS file";
+		String filePath = "C:\\Research\\RecoverNameJS\\RecoverJSName\\resources\\test.js";
 		
 		MainParser demo = new MainParser();
 		demo.parseJS(filePath);
@@ -27,11 +27,13 @@ public class MainParser {
 		IRFactory factory = new IRFactory(env, new JSErrorReporter());
 		AstRoot rootNode = factory.parse(strReader, null, 0);
 		
-		JSNodeVisitor nodeVisitor = new JSNodeVisitor();
+//		JSNodeVisitor nodeVisitor = new JSNodeVisitor();
+//		rootNode.visit(nodeVisitor);
+//		nodeVisitor.getRoot().visit(new JSSymbolVisitor());
 		
-		rootNode.visit(nodeVisitor);
+		MyVisitor myVisitor = new MyVisitor();
+		rootNode.visit(myVisitor);
 		
-		nodeVisitor.getRoot().visit(new JSSymbolVisitor());
 	}	
 
 }
