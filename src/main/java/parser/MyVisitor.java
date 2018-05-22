@@ -19,7 +19,7 @@ public class MyVisitor implements NodeVisitor{
 		//relationships.add("property");
 		//relationships.put("AssignVar", 1);
 	}
-	
+
 	@Override
 	public boolean visit(AstNode node) {
 		
@@ -76,25 +76,34 @@ public class MyVisitor implements NodeVisitor{
 			}
 		}
 		
-		if ( node instanceof InfixExpression )
+		if ( node instanceof Assignment )
 		{
-			InfixExpression ie = (InfixExpression)node;
-			int i = ie.getOperator();
-			int j = Token.ASSIGN;
-			if ( i == j )
+			Assignment asn = (Assignment) node;
+			if ( asn.getLeft() instanceof Name )
 			{
-				System.out.println("Here");
+				String name = ((Name) asn.getLeft()).getIdentifier();
+				String pe = getProgramEntity(asn.getRight());
+				addRecord(pe, name, "Assignment");
 			}
-			//Assignment assignment = (Assignment) node;
-
-//			if ( assignment.getLeft() instanceof Name )
-//			{
-//
-//				String name = ((Name) assignment.getLeft()).getIdentifier();
-//				String pe = getProgramEntity(assignment.getRight());
-//				addRecord(pe, name, "Assignment");
-//			}
+			else if ( asn.getRight() instanceof Name )
+			{
+				String name = ((Name) asn.getRight()).getIdentifier();
+				String pe = getProgramEntity(asn.getLeft());
+				addRecord(pe, name, "Assignment");
+			}
 		}
+		
+		if ( node instanceof VariableInitializer )
+		{
+			VariableInitializer vi = (VariableInitializer) node;
+			String pe = getProgramEntity(vi.getInitializer());
+			
+		}
+		
+//		if ( node instanceof InfixExpression ) 
+//		{
+//
+//		}
 		
 		if ( node instanceof FunctionCall )
 		{

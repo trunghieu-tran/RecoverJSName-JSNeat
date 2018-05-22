@@ -6,6 +6,7 @@ var person = {
 		return fn + " " + ln;
 	}
 };
-var x = person.firstName;
+var x;
+x = person.firstName;
 var y = person.lastName;
 person.fullName(x, y);
