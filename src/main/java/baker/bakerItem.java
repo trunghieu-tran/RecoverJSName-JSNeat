@@ -27,6 +27,11 @@ public class bakerItem {
 		 this.nameCandidateIndex = new ArrayList<Integer>();
 	}
 
+	public void cloneItem(bakerItem bakerItem) {
+		setRelationIndex(bakerItem.getRelationIndex());
+		setProgramEntityIndex(bakerItem.getProgramEntityIndex());
+		setNameCandidateIndex(bakerItem.getNameCandidateIndex());
+	}
 	public bakerItem getIntersection(bakerItem bakerItem) {
 		bakerItem res = new bakerItem();
 		if (getRelationIndex() == bakerItem.getRelationIndex()) {
@@ -89,6 +94,6 @@ public class bakerItem {
 	}
 
 	public void setNameCandidateIndex(ArrayList<Integer> nameCandidateIndex) {
-		this.nameCandidateIndex = nameCandidateIndex;
+		this.nameCandidateIndex = new ArrayList<>(nameCandidateIndex);
 	}
 }

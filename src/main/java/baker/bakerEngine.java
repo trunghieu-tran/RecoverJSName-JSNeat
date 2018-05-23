@@ -9,9 +9,24 @@ import java.util.ArrayList;
  * @organization UTDallas
  */
 public class bakerEngine {
-	private ArrayList<bakerItem> bakerItemList = new ArrayList<bakerItem>();
+	private ArrayList<bakerItem> bakerItemList;
 
-	public void runIntersect() {
+	public ArrayList<bakerItem> getBakerItemList() {
+		return bakerItemList;
+	}
 
+	public void setBakerItemList(ArrayList<bakerItem> bakerItemList) {
+		this.bakerItemList = new ArrayList<>(bakerItemList);
+	}
+
+	public bakerItem runIntersect() {
+		bakerItem curr = new bakerItem();
+		if (getBakerItemList().size() > 0) {
+			curr.cloneItem(getBakerItemList().get(0));
+			for (int i = 1; i < getBakerItemList().size(); ++i) {
+				curr.cloneItem(curr.getIntersection(getBakerItemList().get(i)));
+			}
+		}
+		return curr;
 	}
 }
