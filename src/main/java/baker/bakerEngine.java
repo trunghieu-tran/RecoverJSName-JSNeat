@@ -9,7 +9,13 @@ import java.util.ArrayList;
  * @organization UTDallas
  */
 public class bakerEngine {
+	private int idVarName;
 	private ArrayList<bakerItem> bakerItemList;
+
+	public bakerEngine(int idVarName, ArrayList<bakerItem> bakerItemList) {
+		this.idVarName = idVarName;
+		this.bakerItemList = bakerItemList;
+	}
 
 	public ArrayList<bakerItem> getBakerItemList() {
 		return bakerItemList;
@@ -22,9 +28,9 @@ public class bakerEngine {
 	public bakerItem runIntersect() {
 		bakerItem curr = new bakerItem();
 		if (getBakerItemList().size() > 0) {
-			curr.cloneItem(getBakerItemList().get(0));
+			curr = getBakerItemList().get(0);
 			for (int i = 1; i < getBakerItemList().size(); ++i) {
-				curr.cloneItem(curr.getIntersection(getBakerItemList().get(i)));
+				curr = curr.getIntersection(getBakerItemList().get(i));
 			}
 		}
 		return curr;
