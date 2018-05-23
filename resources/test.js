@@ -2,11 +2,12 @@ var person = {
 	firstName: "John",
 	lastName : "Doe",
 	id       : 5566,
-	fullName : function(fn, ln) {
+	wholeName : function(fn, ln) {
 		return fn + " " + ln;
 	}
 };
 var x;
 x = person.firstName;
 var y = person.lastName;
-person.fullName(x, y);
+y = x;
+person.wholeName(x, y);

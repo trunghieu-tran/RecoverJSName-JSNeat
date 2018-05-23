@@ -33,7 +33,7 @@ public class MainParser {
 		
 		MyVisitor myVisitor = new MyVisitor();
 		rootNode.visit(myVisitor);
-		
+		myVisitor.print();
 	}	
 
 }
