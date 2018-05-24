@@ -1,5 +1,9 @@
 package parser;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +30,53 @@ public class MyVisitor implements NodeVisitor{
 		{
 			System.out.println(r.pe+ " "+  r.name + " " + r.relationship + " " + recordList.get(r));
 		}
+	}
+	
+	public void printToFile() throws IOException
+	{
+		HashMap<String,Integer> pe = new HashMap<>(); //Program Entity
+		HashMap<String,Integer> vn = new HashMap<>(); //Variable Names
+		HashMap<String,Integer> re = new HashMap<>(); //Relationship
+		int peIndex = 0, vnIndex = 0, reIndex = 0;
+		
+		File file1 = new File("../Data/_Baker/file1.txt");
+		FileWriter fileWriter1 = new FileWriter(file1);
+	    PrintWriter printWriter1 = new PrintWriter(fileWriter1);
+		File file2 = new File("../Data/_Baker/file2.txt");
+		FileWriter fileWriter2 = new FileWriter(file2);
+	    PrintWriter printWriter2 = new PrintWriter(fileWriter2);
+		File file3 = new File("../Data/_Baker/file3.txt");
+		FileWriter fileWriter3 = new FileWriter(file3);
+	    PrintWriter printWriter3 = new PrintWriter(fileWriter3);
+		File file4 = new File("../Data/_Baker/file4.txt");
+		FileWriter fileWriter4 = new FileWriter(file4);
+	    PrintWriter printWriter4 = new PrintWriter(fileWriter4);
+	    
+		for ( Record record: recordList.keySet() )
+		{
+			if (! pe.containsKey(record.pe) ) {
+				pe.put(record.pe, peIndex);
+				printWriter1.println(peIndex + " " + record.pe);
+				peIndex++;
+			}
+			if (! vn.containsKey(record.name) ) {
+				vn.put(record.name, vnIndex);
+				printWriter2.println(vnIndex + " " + record.name);
+				vnIndex++;
+			}
+			if (! re.containsKey(record.relationship) ) {
+				re.put(record.relationship, reIndex);
+				printWriter3.println(reIndex + " " + record.relationship);
+				reIndex++;
+			}
+			
+			printWriter4.println(pe.get(record.pe) + " "+  vn.get(record.name) + " " 
+			+ re.get(record.relationship) + " " + recordList.get(record));
+		}
+		printWriter1.close();
+		printWriter2.close();
+		printWriter3.close();
+		printWriter4.close();
 	}
 	
 	@Override

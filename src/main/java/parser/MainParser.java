@@ -1,6 +1,8 @@
 package parser;
 
+import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
@@ -12,7 +14,6 @@ public class MainParser {
 		// TODO Auto-generated method stub
 
 		String filePath = ".\\resources\\test.js";
-		
 		MainParser demo = new MainParser();
 		demo.parseJS(filePath);
 	}
@@ -21,19 +22,34 @@ public class MainParser {
 	{
 		CompilerEnvirons env = new CompilerEnvirons();
 		env.setRecoverFromErrors(true);
-		
-		FileReader strReader = new FileReader(filePath);
-
-		IRFactory factory = new IRFactory(env, new JSErrorReporter());
-		AstRoot rootNode = factory.parse(strReader, null, 0);
-		
-//		JSNodeVisitor nodeVisitor = new JSNodeVisitor();
-//		rootNode.visit(nodeVisitor);
-//		nodeVisitor.getRoot().visit(new JSSymbolVisitor());
-		
 		MyVisitor myVisitor = new MyVisitor();
-		rootNode.visit(myVisitor);
+		File dir = new File("../Data");
+		ArrayList<File> files = new ArrayList<>();
+		searchDir(dir, files);
+		//File[] files = dir.listFiles();
+		for ( File file : files )
+		{
+			System.out.println(file.getAbsolutePath());
+			FileReader strReader = new FileReader(filePath);
+			IRFactory factory = new IRFactory(env, new JSErrorReporter());
+			AstRoot rootNode = factory.parse(strReader, null, 0);
+			rootNode.visit(myVisitor);
+		}
 		myVisitor.print();
-	}	
+		myVisitor.printToFile();
+	}
 
+	private void searchDir(File dir, ArrayList<File> files) {
+		for ( File file : dir.listFiles() )
+		{
+			if ( file.isDirectory() )
+			{
+				searchDir(file,files);
+			}
+			else if ( file.getName().contains(".js") )
+			{
+				files.add(file);
+			}
+		}
+	}	
 }
