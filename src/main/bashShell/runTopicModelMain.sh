@@ -2,5 +2,5 @@
 dir=`pwd`
 echo "$dir"
 cd $dir
-cd ./src/main/python/topicModelling/
+cd ../python/topicModelling/
 python3 main.py 2

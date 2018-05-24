@@ -8,6 +8,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
+import static java.lang.System.exit;
+
 /**
  * @author Harry Tran on 5/23/18.
  * @project RecoverJSName
@@ -15,6 +17,7 @@ import java.util.logging.Logger;
  * @organization UTDallas
  */
 public class commandLineRunner {
+	private final static String bashShellDir = "/Users/tranhieu/Research_Projects/RecoverVarNameJS/program/RecoverJSName/src/main/bashShell/";
 	private final static String pythonMainFile = "/Users/tranhieu/Research_Projects/RecoverVarNameJS/program/RecoverJSName/src/main/bashShell/runTopicModelMain.sh";
 	private final static Logger LOGGER = Logger.getLogger(topicModelling.class.getName());
 
@@ -53,31 +56,33 @@ public class commandLineRunner {
 				.toLowerCase().startsWith("windows");
 	}
 
-	public static void runTopicModelPrediction() {
-		commandLineRunner.pythonTopicModelRunning(2);
-	}
 
-	public static void db() throws Exception{
+	public static void runTopicModelPrediction() throws Exception{
 		ProcessBuilder builder = new ProcessBuilder();
 		if (commandLineRunner.isWindows()) {
-			builder.command("cmd.exe", "/c", "dir");
+			builder.command("cmd.exe", "/c", "dir"); // I'm not sure to run this command in Windows =))
 		} else {
-			builder.command("sh", "-c", "ls");
+			builder.command("bash", pythonMainFile);
 		}
-		builder.directory(new File(System.getProperty("user.home")));
+		builder.directory(new File(bashShellDir));
+
+		LOGGER.info(builder.directory().getAbsolutePath());
+
 		Process process = builder.start();
 		StreamGobbler streamGobbler =
 				new StreamGobbler(process.getInputStream(), System.out::println);
 		Executors.newSingleThreadExecutor().submit(streamGobbler);
 		int exitCode = process.waitFor();
 		assert exitCode == 0;
+		Thread.sleep(3000);
 	}
 
 	public static void main(String[] args) {
 		try {
-			db();
+			runTopicModelPrediction();
 		} catch (Exception e) {
 			LOGGER.info(e.getMessage());
 		}
+		exit(0);
 	}
 }
