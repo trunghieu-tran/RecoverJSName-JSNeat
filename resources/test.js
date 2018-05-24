@@ -10,4 +10,5 @@ var x;
 x = person.firstName;
 var y = person.lastName;
 y = x;
-person.wholeName(x, y);
+var z = person.wholeName(x, y);
+z = x + y;
