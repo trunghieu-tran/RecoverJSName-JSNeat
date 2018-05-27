@@ -1,4 +1,9 @@
-import pandas as pd
+# Collaborative Filtering
+#
+# Copyright (C) 2018
+# Author: Trung Hieu Tran <trunghieu.tran@utdallas.edu>
+# For more information, see README.MD <to be updated>
+
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy import sparse

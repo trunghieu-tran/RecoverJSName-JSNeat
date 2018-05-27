@@ -1,7 +1,11 @@
+# Collaborative Filtering
+#
+# Copyright (C) 2018
+# Author: Trung Hieu Tran <trunghieu.tran@utdallas.edu>
+# For more information, see README.MD <to be updated>
+
 import pandas as pd
-
 from collaborativeFiltering.CF import CF
-
 
 dataDir = "./data/"
 matrixFile = dataDir + "matrixData"
