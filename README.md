@@ -5,3 +5,4 @@ Technique:
 - JS parser using Rhino
 - Topic modelling (LDA) using gensim
 - Baker method
+- Collaborative Filtering
