@@ -1,3 +1,9 @@
+# Topic modelling for JS code
+#
+# Copyright (C) 2018
+# Author: Trung Hieu Tran <trunghieu.tran@utdallas.edu>
+# For more information, see README.MD <to be updated>
+
 import gensim
 from gensim import corpora
 import os
