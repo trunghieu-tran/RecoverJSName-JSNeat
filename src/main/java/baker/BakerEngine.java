@@ -8,25 +8,25 @@ import java.util.ArrayList;
  * @email trunghieu.tran@utdallas.edu
  * @organization UTDallas
  */
-public class bakerEngine {
+public class BakerEngine {
 	private int idVarName;
-	private ArrayList<bakerItem> bakerItemList;
+	private ArrayList<BakerItem> bakerItemList;
 
-	public bakerEngine(int idVarName, ArrayList<bakerItem> bakerItemList) {
+	public BakerEngine(int idVarName, ArrayList<BakerItem> bakerItemList) {
 		this.idVarName = idVarName;
 		this.bakerItemList = bakerItemList;
 	}
 
-	public ArrayList<bakerItem> getBakerItemList() {
+	public ArrayList<BakerItem> getBakerItemList() {
 		return bakerItemList;
 	}
 
-	public void setBakerItemList(ArrayList<bakerItem> bakerItemList) {
+	public void setBakerItemList(ArrayList<BakerItem> bakerItemList) {
 		this.bakerItemList = new ArrayList<>(bakerItemList);
 	}
 
-	public bakerItem runIntersect() {
-		bakerItem curr = new bakerItem();
+	public BakerItem runIntersect() {
+		BakerItem curr = new BakerItem();
 		if (getBakerItemList().size() > 0) {
 			curr = getBakerItemList().get(0);
 			for (int i = 1; i < getBakerItemList().size(); ++i) {

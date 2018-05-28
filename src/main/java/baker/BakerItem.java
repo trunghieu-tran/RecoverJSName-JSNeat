@@ -9,34 +9,34 @@ import java.util.Collections;
  * @email trunghieu.tran@utdallas.edu
  * @organization UTDallas
  */
-public class bakerItem {
+public class BakerItem {
 	private int programEntityIndex;
 	private int relationIndex;
 	private ArrayList<Integer> nameCandidateIndex;
 
-	public bakerItem(int programEntityIndex, int relationIndex, ArrayList<Integer> nameCandidate) {
+	public BakerItem(int programEntityIndex, int relationIndex, ArrayList<Integer> nameCandidate) {
 		this.programEntityIndex = programEntityIndex;
 		this.relationIndex = relationIndex;
 		this.nameCandidateIndex = nameCandidate;
 
 		Collections.sort(this.nameCandidateIndex);
-		// this guarantees that when bakerItem is created, nameCandidateIndex is in the increasing order
+		// this guarantees that when BakerItem is created, nameCandidateIndex is in the increasing order
 	}
 
-	public bakerItem() {
+	public BakerItem() {
 		 this.nameCandidateIndex = new ArrayList<Integer>();
 	}
 
-	public bakerItem getIntersection(bakerItem bakerItem) {
-		bakerItem res = new bakerItem();
-		if (getRelationIndex() == bakerItem.getRelationIndex()) {
+	public BakerItem getIntersection(BakerItem BakerItem) {
+		BakerItem res = new BakerItem();
+		if (getRelationIndex() == BakerItem.getRelationIndex()) {
 			res.setProgramEntityIndex(getProgramEntityIndex()); // the programEntityIndex intersection set is not necessary
 			res.setRelationIndex(getRelationIndex());
 
 			int i1 = 0, i2 = 0;
-			while (i1 < getNameCandidateIndex().size() && i2 < bakerItem.getNameCandidateIndex().size()) {
+			while (i1 < getNameCandidateIndex().size() && i2 < BakerItem.getNameCandidateIndex().size()) {
 				int id1 = getCandIndexById(i1);
-				int id2 = bakerItem.getCandIndexById(i2);
+				int id2 = BakerItem.getCandIndexById(i2);
 				if (id1 == id2) {
 					res.addOneCandIndex(id1);
 					i1++;
