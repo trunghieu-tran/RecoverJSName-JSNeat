@@ -32,23 +32,23 @@ public class MyVisitor implements NodeVisitor{
 		}
 	}
 	
-	public void printToFile() throws IOException
+	public void printToFile(String dest) throws IOException
 	{
 		HashMap<String,Pair> pe = new HashMap<>(); //Program Entity
 		HashMap<String,Pair> vn = new HashMap<>(); //Variable Names
 		HashMap<String,Integer> re = new HashMap<>(); //Relationship
 		int peIndex = 0, vnIndex = 0, reIndex = 0;
 		
-		File file1 = new File("../Data/_Baker/file1.txt");
+		File file1 = new File(dest + "/peData.txt");
 		FileWriter fileWriter1 = new FileWriter(file1);
 	    PrintWriter printWriter1 = new PrintWriter(fileWriter1);
-		File file2 = new File("../Data/_Baker/file2.txt");
+		File file2 = new File(dest + "/varNameData.txt");
 		FileWriter fileWriter2 = new FileWriter(file2);
 	    PrintWriter printWriter2 = new PrintWriter(fileWriter2);
-		File file3 = new File("../Data/_Baker/file3.txt");
+		File file3 = new File(dest + "/relData.txt");
 		FileWriter fileWriter3 = new FileWriter(file3);
 	    PrintWriter printWriter3 = new PrintWriter(fileWriter3);
-		File file4 = new File("../Data/_Baker/file4.txt");
+		File file4 = new File(dest + "/recordData.txt");
 		FileWriter fileWriter4 = new FileWriter(file4);
 	    PrintWriter printWriter4 = new PrintWriter(fileWriter4);
 	    
