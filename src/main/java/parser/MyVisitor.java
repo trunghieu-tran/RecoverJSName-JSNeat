@@ -34,8 +34,8 @@ public class MyVisitor implements NodeVisitor{
 	
 	public void printToFile() throws IOException
 	{
-		HashMap<String,Integer> pe = new HashMap<>(); //Program Entity
-		HashMap<String,Integer> vn = new HashMap<>(); //Variable Names
+		HashMap<String,Pair> pe = new HashMap<>(); //Program Entity
+		HashMap<String,Pair> vn = new HashMap<>(); //Variable Names
 		HashMap<String,Integer> re = new HashMap<>(); //Relationship
 		int peIndex = 0, vnIndex = 0, reIndex = 0;
 		
@@ -54,25 +54,51 @@ public class MyVisitor implements NodeVisitor{
 	    
 		for ( Record record: recordList.keySet() )
 		{
+			//Collect freq and index for P.E. 
 			if (! pe.containsKey(record.pe) ) {
-				pe.put(record.pe, peIndex);
-				printWriter1.println(peIndex + " " + record.pe);
+				pe.put(record.pe, new Pair(peIndex,1));
 				peIndex++;
 			}
+			else {
+				int freq = pe.get(record.pe).freq;
+				int idx = pe.get(record.pe).index;
+				pe.put(record.pe, new Pair(idx,freq+1));
+			}
+			
+			//Collect freq and index for Variable Name.  
 			if (! vn.containsKey(record.name) ) {
-				vn.put(record.name, vnIndex);
-				printWriter2.println(vnIndex + " " + record.name);
+				vn.put(record.name, new Pair(vnIndex,1));
 				vnIndex++;
 			}
+			else {
+				int freq = vn.get(record.name).freq;
+				int idx = vn.get(record.name).index;
+				vn.put(record.name, new Pair(idx,freq+1));
+			}
+			
+			//Print to file 3
 			if (! re.containsKey(record.relationship) ) {
 				re.put(record.relationship, reIndex);
 				printWriter3.println(reIndex + " " + record.relationship);
 				reIndex++;
 			}
-			
-			printWriter4.println(pe.get(record.pe) + " "+  vn.get(record.name) + " " 
+			//Print to file 4
+			printWriter4.println(pe.get(record.pe).index + " "+  vn.get(record.name).index + " " 
 			+ re.get(record.relationship) + " " + recordList.get(record));
 		}
+		
+		//Print to file 1
+		for ( String key : pe.keySet())
+		{
+			printWriter1.println(pe.get(key).index + " " + key + " " + pe.get(key).freq);
+		}
+		
+		//Print to file 2
+		for ( String key : vn.keySet())
+		{
+			printWriter2.println(vn.get(key).index + " " + key + " " + vn.get(key).freq);
+		}
+		
 		printWriter1.close();
 		printWriter2.close();
 		printWriter3.close();
@@ -81,6 +107,8 @@ public class MyVisitor implements NodeVisitor{
 	
 	@Override
 	public boolean visit(AstNode node) {
+		if ( node.getEnclosingFunction() == null )
+			return true;
 		switch(node.getType())
 		{
 			case (Token.GETPROP): visitProperyGet(node); break;
@@ -269,7 +297,6 @@ public class MyVisitor implements NodeVisitor{
 						addRecord(name2, name1, "CoArgument");
 					}
 				}
-				
 			}
 			else
 			{

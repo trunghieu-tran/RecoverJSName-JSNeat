@@ -36,8 +36,8 @@ public class MainParser {
 			IRFactory factory = new IRFactory(env, new JSErrorReporter());
 			try
 			{
-			AstRoot rootNode = factory.parse(strReader, null, 0);
-			rootNode.visit(myVisitor);
+				AstRoot rootNode = factory.parse(strReader, null, 0);
+				rootNode.visit(myVisitor);
 			}
 			catch (Exception e)
 			{
