@@ -1,6 +1,7 @@
 package dataCenter;
 
 import dataCenter.utils.FileIO;
+import dataCenter.utils.NormalizationTool;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class MainDataCenter {
 	private static final String relationRecordFile = dataDir + "relationRecordData";
 	private static final String peReFile = dataDir + "peReData";
 	private static final String cfInputFile = dataDir + "cfInputData";
+	private static final String cfNormInputFile = dataDir + "cfNormInputData";
 
 	private ArrayList<ProgramEntityItem> programEntityList = new ArrayList<>();
 	private ArrayList<VarNameItem> varNameItemList = new ArrayList<>();
@@ -104,20 +106,20 @@ public class MainDataCenter {
 
 
 	public void generateInputForCF() {
-		String res = "";
+		StringBuilder res = new StringBuilder();
 		for (RelationRecord r: relationRecordList) {
-			res += r.getIdVarName() +  " " + mapPeRevsIndex.get(new Pair<>(r.getIdProgramEntity(), r.getIdRelation())) + " " + r.getFrequency() + "\n";
+			res.append(r.getIdVarName()).append(" ").append(mapPeRevsIndex.get(new Pair<>(r.getIdProgramEntity(), r.getIdRelation()))).append(" ").append(r.getFrequency()).append("\n");
 		}
-		FileIO.writeStringToFile(cfInputFile, res);
+		FileIO.writeStringToFile(cfInputFile, res.toString());
 	}
 
 	private void savePeReItemsToFile(String filename) {
-		String res = "";
+		StringBuilder res = new StringBuilder();
 		Collections.sort(peReItemList, PeReItem.PeReItemCompatator);
 		for (PeReItem p: peReItemList) {
-			res += p.toString() + "\n";
+			res.append(p.toString()).append("\n");
 		}
-		FileIO.writeStringToFile(filename, res);
+		FileIO.writeStringToFile(filename, res.toString());
 	}
 
 	private void loadData() {
@@ -126,11 +128,6 @@ public class MainDataCenter {
 		loadRelationFromFile(relationFile);
 		loadRelationRecordFromFile(relationRecordFile);
 		savePeReItemsToFile(peReFile);
-
-		LOGGER.info(String.valueOf(programEntityList.size()));
-		LOGGER.info(String.valueOf(varNameItemList.size()));
-		LOGGER.info(String.valueOf(relationList.size()));
-		LOGGER.info(String.valueOf(relationRecordList.size()));
 	}
 
 
@@ -139,6 +136,7 @@ public class MainDataCenter {
 		System.out.println("=== Started ...");
 		MainDataCenter dataCenter = new MainDataCenter();
 		dataCenter.generateInputForCF();
+		NormalizationTool.normalizeCFMatrix(cfInputFile, cfNormInputFile);
 		System.out.println("... Finished ===");
 	}
 }
