@@ -1,4 +1,4 @@
-varName
+-varName
 SUM: 3055555k
 191k > 1
 51k > 5
@@ -6,8 +6,15 @@ SUM: 3055555k
 4.3k > 50
 2.2k > 100
 
-PE-VAR-RE-Freq
-relation
+- pe
+SUM: 522k
+253k > 1
+49k > 5
+22k > 10
+4.3k > 50
+2.2k > 100
+
+- record
 SUM: 2.5M
 1.38M > 1
 500k > 5
@@ -15,12 +22,6 @@ SUM: 2.5M
 54k > 50
 25k > 100
 
-PE
-SUM: 522k
-253k > 1
-49k > 5
-22k > 10
-4.3k > 50
-2.2k > 100
+
 
 

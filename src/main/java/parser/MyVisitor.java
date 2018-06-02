@@ -306,11 +306,22 @@ public class MyVisitor implements NodeVisitor{
 		}
 		return null;
 	}
-	
+
+	private String normalizeVarName(String varName) {
+		// TODO
+		// this function is normalizing variable names into a standard var.name
+		// such as: $varname, var_name, varname, varName, VarName... = varname
+		//          element12, element23, $element$23$ ... = element_i
+		// This depends on how we build the rules
+		return varName;
+	}
+
 	private void addRecord(String pe, String name, String relationship) {
-		variableNames.add(name);
+		String newName = this.normalizeVarName(name);
+
+		variableNames.add(newName);
 		programEntities.add(pe);
-		Record r = new Record(pe, name, relationship);
+		Record r = new Record(pe, newName, relationship);
 		if(recordList.containsKey(r)) {
 			recordList.put(r, recordList.get(r)+1);
 		} else {

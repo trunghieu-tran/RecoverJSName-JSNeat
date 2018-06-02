@@ -139,4 +139,17 @@ class CF(object):
             if self.uuCF:
                 print('    Recommend PE(s):', recommended_PEs, 'to var.name', u, 'with frequencies', np.around(recommended_freq,2))
             else:
-                print('    Recommend PE', u, 'to var.name(s) : ', recommended_PEs, 'with frequencies', np.append(recommended_freq,2))
+                print('    Recommend PE', u, 'to var.name(s) : ', recommended_PEs, 'with frequencies', np.around(recommended_freq,2))
+
+    def print_recommendation_to_File(self, filename):
+        """
+        print all PE which should be recommended for each var.name
+        """
+        f = open(filename, 'w')
+        for u in range(self.n_varNames):
+            recommended_PEs, recommended_freq = self.recommend(u)
+            if self.uuCF:
+                f.write('    Recommend PE(s): ' + str(recommended_PEs) + ' to var.name ' + str(u) + ' with frequencies ' + str(np.around(recommended_freq, 2)) + "\n")
+            else:
+                f.write('    Recommend PE ' + str(u) + ' to var.name(s) : ' + str(recommended_PEs) + ' with frequencies '+ str(np.around(recommended_freq, 2)) + "\n")
+        f.close()

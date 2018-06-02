@@ -7,6 +7,7 @@ import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Logger;
 
 /**
@@ -16,11 +17,12 @@ import java.util.logging.Logger;
  * @organization UTDallas
  */
 public class MainDataCenter {
+	private final static int LOWER_BOUND_FREQUENCY = 1000;
 	private final static Logger LOGGER = Logger.getLogger(MainDataCenter.class.getName());
 
 	private static final String dataTrainingDir = "./resources/parsedData/trainingData/";
 	private static final String dataTrainingCFInputDir = "./resources/parsedData/trainingData/CFInput/";
-	private static final String rescourcesDir = "./resources/";
+	private static final String resourcesDir = "./resources/";
 
 	private static final String programEntityFile = dataTrainingDir + "peData.txt";
 	private static final String varNameFile = dataTrainingDir + "varNameData.txt";
@@ -31,16 +33,20 @@ public class MainDataCenter {
 	private static final String cfInputFile = dataTrainingCFInputDir + "cfInputData";
 	private static final String cfNormInputFile = dataTrainingCFInputDir + "cfNormInputData";
 
-	private static final String jsReservedKeywords = rescourcesDir + "JSReservedKeywords";
+	private static final String jsReservedKeywords = resourcesDir + "JSReservedKeywords";
 
 	private ArrayList<ProgramEntityItem> programEntityList = new ArrayList<>();
 	private ArrayList<VarNameItem> varNameItemList = new ArrayList<>();
 	private ArrayList<RelationItem> relationList = new ArrayList<>();
 	private ArrayList<RelationRecord> relationRecordList = new ArrayList<>();
 	private ArrayList<PeReItem> peReItemList = new ArrayList<>();
-	private HashMap<Integer, Pair<Integer, Integer> > mapIndexVsPeRe = new HashMap<>();
+	private HashSet<String> reservedKeywordsSet = new HashSet<>();
+
 	private HashMap<Pair<Integer, Integer>, Integer> mapPeRevsIndex = new HashMap<>();
-	private ArrayList<String> reservedKeywordsList = new ArrayList<>();
+	private HashMap<String, Integer> mapVarNamevsId = new HashMap<>();
+	private HashMap<String, Integer> mapPevsId = new HashMap<>();
+	private HashMap<Integer, VarNameItem> mapIdvsVarNamItem = new HashMap<>();
+	private HashMap<Integer, ProgramEntityItem> mapIdvsPeItem = new HashMap<>();
 
 	public MainDataCenter() {
 		loadData();
@@ -54,7 +60,10 @@ public class MainDataCenter {
 			try {
 				int idx = Integer.parseInt(tmp[0]);
 				int freq = Integer.parseInt(tmp[2]);
-				programEntityList.add(new ProgramEntityItem(idx, tmp[1], freq));
+				ProgramEntityItem pei = new ProgramEntityItem(idx, tmp[1], freq);
+				programEntityList.add(pei);
+				mapPevsId.put(tmp[1], idx);
+				mapIdvsPeItem.put(idx, pei);
 			} catch (Exception e) {
 				LOGGER.info(e.getMessage());
 			}
@@ -70,7 +79,10 @@ public class MainDataCenter {
 			try {
 				int idx = Integer.parseInt(tmp[0]);
 				int freq = Integer.parseInt(tmp[2]);
-				varNameItemList.add(new VarNameItem(idx, tmp[1], freq));
+				VarNameItem vni = new VarNameItem(idx, tmp[1], freq);
+				varNameItemList.add(vni);
+				mapVarNamevsId.put(tmp[1], idx);
+				mapIdvsVarNamItem.put(idx, vni);
 			} catch (Exception e) {
 				LOGGER.info(e.getMessage());
 			}
@@ -119,7 +131,19 @@ public class MainDataCenter {
 	public void generateInputForCF() {
 		StringBuilder res = new StringBuilder();
 		for (RelationRecord r: relationRecordList) {
-			res.append(r.getIdVarName()).append(" ").append(mapPeRevsIndex.get(new Pair<>(r.getIdProgramEntity(), r.getIdRelation()))).append(" ").append(r.getFrequency()).append("\n");
+			int varNameId = r.getIdVarName();
+			int peId = r.getIdProgramEntity();
+			Pair<Integer, Integer> tmp = new Pair<>(r.getIdProgramEntity(), r.getIdRelation());
+			boolean isSatisfied = mapPeRevsIndex.containsKey(tmp);
+			isSatisfied &= getVarNameItemByID(varNameId).getFrequency() >= LOWER_BOUND_FREQUENCY;
+			isSatisfied &= getProgramEntityItemByID(peId).getFrequency() >= LOWER_BOUND_FREQUENCY;
+			isSatisfied &= !isViolatedReservedKeywords(getVarNameItemByID(varNameId).getValue());
+			if (isSatisfied) {
+				int idPeRe = mapPeRevsIndex.get(tmp);
+				res.append(r.getIdVarName()).append(" ")
+						.append(idPeRe).append(" ")
+						.append(r.getFrequency()).append("\n");
+			}
 		}
 		FileIO.writeStringToFile(cfInputFile, res.toString());
 		LOGGER.info("DONE generateInputForCF.");
@@ -138,7 +162,7 @@ public class MainDataCenter {
 	private void loadJSReservedKeywordsFromFile(String filename) {
 		String data = FileIO.readStringFromFile(filename);
 		String[] parts = data.split("\\n");
-		Collections.addAll(reservedKeywordsList, parts);
+		Collections.addAll(reservedKeywordsSet, parts);
 		LOGGER.info("DONE loadJSReservedKeywordsFromFile.");
 	}
 
@@ -152,13 +176,31 @@ public class MainDataCenter {
 		LOGGER.info("DONE loadData");
 	}
 
+	public boolean isViolatedReservedKeywords(String varName) {
+		return reservedKeywordsSet.contains(varName);
+	}
 
+	public int getVarNameID(String varName) {
+		return mapVarNamevsId.getOrDefault(varName, -1);
+	}
+
+	public int getProgramEntityID(String pe) {
+		return mapPevsId.getOrDefault(pe, -1);
+	}
+
+	public ProgramEntityItem getProgramEntityItemByID(int id) {
+		return mapIdvsPeItem.getOrDefault(id, null);
+	}
+
+	public VarNameItem getVarNameItemByID(int id) {
+		return mapIdvsVarNamItem.getOrDefault(id, null);
+	}
 
 	public static void main(String[] args) {
 		System.out.println("=== Started ...");
 		MainDataCenter dataCenter = new MainDataCenter();
 		dataCenter.generateInputForCF();
-		NormalizationTool.normalizeCFMatrix(cfInputFile, cfNormInputFile);
+//		NormalizationTool.normalizeCFMatrix(cfInputFile, cfNormInputFile);
 		System.out.println("... Finished ===");
 	}
 }
