@@ -1,5 +1,0 @@
-0 Assignment
-1 CoArgument
-2 FieldAccess
-3 FunctionCall
-4 Argument

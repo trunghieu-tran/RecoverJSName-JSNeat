@@ -1,0 +1,10 @@
+JSReservedKeywords: [value]
+
+varNameData.txt: [id] [value] [frequency]
+peData.txt: [id] [value] [frequency]
+relData.txt: [id] [value]
+recordData.txt: [id_pe] [id_var] [id_rel] [frequency]
+
+peReData: [id] [id_pe] [id_rel]
+cfInputFile: [id_var] [id_peRe] [frequency]
+cfNormInputFile: [id_var] [id_peRe] [probability]
