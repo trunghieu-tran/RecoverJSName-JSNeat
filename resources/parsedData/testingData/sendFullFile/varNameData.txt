@@ -1,0 +1,10 @@
+7 p 2
+0 path 4
+3 res 2
+8 __dirname 1
+1 hub 4
+9 tempFile 1
+6 fs 1
+2 url 3
+5 exec 1
+4 req 3

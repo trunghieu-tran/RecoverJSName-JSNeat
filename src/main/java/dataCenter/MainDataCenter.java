@@ -1,5 +1,6 @@
 package dataCenter;
 
+import baker.BakerItem;
 import dataCenter.utils.FileIO;
 import dataCenter.utils.NormalizationTool;
 import javafx.util.Pair;
@@ -40,11 +41,17 @@ public class MainDataCenter {
 	private ArrayList<RelationItem> relationList = new ArrayList<>();
 	private ArrayList<RelationRecord> relationRecordList = new ArrayList<>();
 	private ArrayList<PeReItem> peReItemList = new ArrayList<>();
+	private ArrayList<BakerItem> bakerItemsList = new ArrayList<>();
 	private HashSet<String> reservedKeywordsSet = new HashSet<>();
 
 	private HashMap<Pair<Integer, Integer>, Integer> mapPeRevsIndex = new HashMap<>();
+	private HashMap<Pair<Integer, Integer>, ArrayList<Integer> > mapPeRevsListVarName = new HashMap<>();
+	private HashMap<Pair<Integer, Integer>, BakerItem > mapPeRevsBakerItem = new HashMap<>();
+
 	private HashMap<String, Integer> mapVarNamevsId = new HashMap<>();
 	private HashMap<String, Integer> mapPevsId = new HashMap<>();
+	private HashMap<String, Integer> mapRevsId = new HashMap<>();
+
 	private HashMap<Integer, VarNameItem> mapIdvsVarNamItem = new HashMap<>();
 	private HashMap<Integer, ProgramEntityItem> mapIdvsPeItem = new HashMap<>();
 
@@ -99,6 +106,7 @@ public class MainDataCenter {
 				int idx = Integer.parseInt(tmp[0]);
 				int freq = -1;
 				relationList.add(new RelationItem(idx, tmp[1], freq));
+				mapRevsId.put(tmp[1], idx);
 			} catch (Exception e) {
 				LOGGER.info(e.getMessage());
 			}
@@ -116,17 +124,40 @@ public class MainDataCenter {
 				int idVN = Integer.parseInt(tmp[1]);
 				int idRE = Integer.parseInt(tmp[2]);
 				int freq = Integer.parseInt(tmp[3]);
-				int idPeRe = peReItemList.size();
+				Pair<Integer, Integer> currPair = new Pair<> (idPE, idRE);
 				relationRecordList.add(new RelationRecord(idVN, idPE, idRE, freq));
-				peReItemList.add(new PeReItem(idPeRe, idPE, idRE));
-				mapPeRevsIndex.put(new Pair<> (idPE, idRE), idPeRe);
+
+
+				if (!mapPeRevsIndex.containsKey(currPair)) {
+					int idPeRe = peReItemList.size();
+					peReItemList.add(new PeReItem(idPeRe, idPE, idRE));
+					mapPeRevsIndex.put(currPair, idPeRe);
+				}
+
+				if (!mapPeRevsListVarName.containsKey(currPair)) {
+					ArrayList<Integer> listVarName = new ArrayList<>();
+					listVarName.add(idVN);
+					mapPeRevsListVarName.put(currPair, listVarName);
+				} else {
+					mapPeRevsListVarName.get(currPair).add(idVN);
+				}
 			} catch (Exception e) {
 				LOGGER.info(e.getMessage());
 			}
 		}
+
+		for (Pair<Integer, Integer> key : mapPeRevsListVarName.keySet()) {
+			BakerItem bi = new BakerItem(key.getKey(), key.getValue(), mapPeRevsListVarName.get(key));
+			mapPeRevsBakerItem.put(key, bi);
+			bakerItemsList.add(bi);
+		}
 		LOGGER.info("DONE loadRelationRecordFromFile.");
 	}
 
+
+	public BakerItem getBakerItemFromPeRe(int pe, int re) {
+		return mapPeRevsBakerItem.get(new Pair<>(pe, re));
+	}
 
 	public void generateInputForCF() {
 		StringBuilder res = new StringBuilder();
@@ -176,6 +207,10 @@ public class MainDataCenter {
 		LOGGER.info("DONE loadData");
 	}
 
+	public int getVarNameFreqencyByID(int id) {
+		return getVarNameItemByID(id).getFrequency();
+	}
+
 	public boolean isViolatedReservedKeywords(String varName) {
 		return reservedKeywordsSet.contains(varName);
 	}
@@ -186,6 +221,10 @@ public class MainDataCenter {
 
 	public int getProgramEntityID(String pe) {
 		return mapPevsId.getOrDefault(pe, -1);
+	}
+
+	public int getRelationID(String re) {
+		return mapRevsId.getOrDefault(re, -1);
 	}
 
 	public ProgramEntityItem getProgramEntityItemByID(int id) {
@@ -199,7 +238,7 @@ public class MainDataCenter {
 	public static void main(String[] args) {
 		System.out.println("=== Started ...");
 		MainDataCenter dataCenter = new MainDataCenter();
-		dataCenter.generateInputForCF();
+//		dataCenter.generateInputForCF();
 //		NormalizationTool.normalizeCFMatrix(cfInputFile, cfNormInputFile);
 		System.out.println("... Finished ===");
 	}

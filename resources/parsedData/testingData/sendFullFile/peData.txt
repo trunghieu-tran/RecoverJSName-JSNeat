@@ -1,0 +1,14 @@
+6 headers 1
+5 statSync(1) 2
+3 query 1
+0 replace(2) 4
+10 join(2) 3
+11 url 2
+13 INFO(3) 1
+8 end(1) 1
+9 LOG(3) 1
+7 basename(1) 2
+2 writeHeader(1) 1
+1 emit(3) 1
+12 config 1
+4 exec 1

@@ -25,14 +25,23 @@ public class BakerEngine {
 		this.bakerItemList = new ArrayList<>(bakerItemList);
 	}
 
-	public BakerItem runIntersect() {
+	private BakerItem runIntersect() {
 		BakerItem curr = new BakerItem();
 		if (getBakerItemList().size() > 0) {
 			curr = getBakerItemList().get(0);
 			for (int i = 1; i < getBakerItemList().size(); ++i) {
+				BakerItem last = curr;
 				curr = curr.getIntersection(getBakerItemList().get(i));
+				if (curr.hasAnEmptyCandidateList()) {
+					curr = last;
+				}
 			}
 		}
 		return curr;
+	}
+
+	public ArrayList<Integer> getFinalCandidateList() {
+		BakerItem bi = this.runIntersect();
+		return bi.getNameCandidateIndex();
 	}
 }

@@ -14,7 +14,8 @@ class CF(object):
         Y_data: maxtrix of data which is in form of 3 columns, (var.name - PE - frequency)
         k: k- nearest neighbors
         dist_funct: similarity between 2 vector
-        uuCF: = 1, for name-name, = 0 for PE-PE
+        uuCF: = 1, for name-name,
+              = 0, for PE-PE
     """
     def __init__(self, Y_data, k, dist_func = cosine_similarity, uuCF = 1):
         self.uuCF = uuCF # = 1, for name-name, = 0 for PE-PE
@@ -148,8 +149,11 @@ class CF(object):
         f = open(filename, 'w')
         for u in range(self.n_varNames):
             recommended_PEs, recommended_freq = self.recommend(u)
-            if self.uuCF:
-                f.write('    Recommend PE(s): ' + str(recommended_PEs) + ' to var.name ' + str(u) + ' with frequencies ' + str(np.around(recommended_freq, 2)) + "\n")
+            name = np.where(self.Y_data[:, 0] == u)[0]
+            if self.uuCF: # name-name
+                for i in range(len(recommended_PEs)):
+                    f.write(str(name) + " " + str(recommended_PEs[i]) + " " + str(np.around(recommended_freq[i], 2)) + "\n")
             else:
-                f.write('    Recommend PE ' + str(u) + ' to var.name(s) : ' + str(recommended_PEs) + ' with frequencies '+ str(np.around(recommended_freq, 2)) + "\n")
+                for i in range(len(recommended_PEs)):
+                    f.write(str(recommended_PEs[i]) + " " + str(name) + " " + str(np.around(recommended_freq[i], 2)) + "\n")
         f.close()

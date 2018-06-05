@@ -37,7 +37,7 @@ public class BakerItem {
 			while (i1 < getNameCandidateIndex().size() && i2 < BakerItem.getNameCandidateIndex().size()) {
 				int id1 = getCandIndexById(i1);
 				int id2 = BakerItem.getCandIndexById(i2);
-				if (id1 == id2) {
+				if (id1 == id2 && id1 != -1) {
 					res.addOneCandIndex(id1);
 					i1++;
 					i2++;

@@ -1,0 +1,4 @@
+0 FunctionCall
+1 Assignment
+2 FieldAccess
+3 Argument
