@@ -25,7 +25,7 @@ public class MainParser {
 	
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
-	
+	static String trainTMDir = "../TrainTM";
 //	ArrayList<File> testSet = new ArrayList<>();
 //	ArrayList<File> trainSet = new ArrayList<>();
 	
@@ -33,8 +33,8 @@ public class MainParser {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
 //		demo.parseTrainSet();
-		demo.parseTestSet();
-//		demo.parseTrainSetTM();
+//		demo.parseTestSet();
+		demo.parseTrainSetTM();
 	}
 	
 	public void generateFileList (String filePath) throws Exception
@@ -122,7 +122,7 @@ public class MainParser {
 					String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					path = testSetDir + path;
 					System.out.println(path);
-					TestVisitor myVisitor = new TestVisitor(path);
+					TestSetVisitor myVisitor = new TestSetVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
 				}
@@ -138,23 +138,27 @@ public class MainParser {
 	//For Topic Model training module
 	public void parseTrainSetTM() throws Exception
 	{
-		File trainFileList = new File(trainSetDir + "/test.txt");
+//		File trainFileList = new File(trainSetDir + "/test.txt");
+		File trainFileList = new File(trainSetDir + "/fileList.txt");
 		if ( trainFileList.exists() )
 		{
 			CompilerEnvirons env = new CompilerEnvirons();
 			env.setRecoverFromErrors(true);
-			TopicModelVisitor myVisitor = new TopicModelVisitor();
+
 			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
 			for ( String str: lines)
 			{
 				System.out.println(str);
 				try
 				{
+					TopicModelVisitor myVisitor = new TopicModelVisitor();
 					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					//Should separate into visitor for each function
 					rootNode.visit(myVisitor);
+//					myVisitor.print();
+					myVisitor.printToFile(trainTMDir);
 				}
 				catch (Exception e)
 				{
@@ -162,7 +166,7 @@ public class MainParser {
 					continue;
 				}
 			}
-			myVisitor.printToFile(trainSetDir);
+			//myVisitor.printToFile(trainSetDir);
 		}
 	}
 	public void searchDir(File dir, ArrayList<File> files) {

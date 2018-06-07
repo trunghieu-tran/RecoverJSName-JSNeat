@@ -4,10 +4,10 @@ import java.io.IOException;
 import org.mozilla.javascript.ast.*;
 
 
-public class TestVisitor implements NodeVisitor{
+public class TestSetVisitor implements NodeVisitor{
 	String path;
 	
-	public TestVisitor(String path) {
+	public TestSetVisitor(String path) {
 		this.path = path;
 	}
 
