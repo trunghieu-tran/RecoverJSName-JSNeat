@@ -16,7 +16,8 @@ import java.util.logging.Logger;
  */
 public class InputReader {
 	private final static Logger LOGGER = Logger.getLogger(InputReader.class.getName());
-	private static String inputDir = "./resources/parsedData/testingData/sendFullFile/"; // Set by default
+	private static final String dataDir = "./resources/parsedData/testingData/";
+	private static String inputDir = dataDir ; // Set by default
 
 	private static final String programEntityFile =  "peData.txt";
 	private static final String varNameFile = "varNameData.txt";
@@ -145,8 +146,10 @@ public class InputReader {
 	public static void main(String[] args) {
 		System.out.println("InputReader started");
 
-		InputReader ir = new InputReader("./resources/parsedData/testingData/sendFullFile/");
-
+		ArrayList<String> dirList = FileIO.getAllSubdirectoryFromDirectory(dataDir);
+		for (String str : dirList) {
+			InputReader ir = new InputReader(dataDir + str + "/");
+		}
 		System.out.println("InputReader finished");
 	}
 }

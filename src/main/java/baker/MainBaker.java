@@ -7,7 +7,6 @@ import dataCenter.utils.FileIO;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -33,9 +32,8 @@ public class MainBaker {
 		String result = "";
 		HashSet<Integer> varNameSet = ir.getVarNameIDSet();
 		for (int id: varNameSet) {
-//			System.out.println(Integer.toString(id) + " " + ir.getVarNameByID(id));
 			result += Integer.toString(id) + " " + ir.getVarNameByID(id) + "\n";
-//			result += "Top " + Integer.toString(TOP_RESULT) + " prediction:\n";
+
 			ArrayList<BakerItem> bakerItemList = new ArrayList<>();
 			ArrayList<Pair<Integer, Integer> > peReList = ir.getListPeReByID(id);
 
@@ -50,8 +48,7 @@ public class MainBaker {
 			}
 			BakerEngine be = new BakerEngine(id, bakerItemList);
 			ArrayList<Integer> res = be.getFinalCandidateList();
-//			System.out.println("== Prediction");
-//			System.out.println("nCand = " + Integer.toString(res.size()));
+
 			result += Integer.toString(res.size()) + "\n";
 			if (res.size() > 0) {
 				// Sort
@@ -74,13 +71,10 @@ public class MainBaker {
 				for (int i = 0; i < Math.min(res.size(), TOP_RESULT); ++i) {
 					int idx = res.get(i);
 					VarNameItem vni = dc.getVarNameItemByID(idx);
-//					ttt += "(" + Integer.toString(dc.getVarNameFreqencyByID((idx)))+")";
 					if (vni != null) ttt += vni.getValue() + " ";
 				}
-//				System.out.println(ttt);
 				result += ttt + "\n";
 			}
-//			System.out.println("==");
 			result += "\n";
 		}
 		FileIO.writeStringToFile(outputFile, result);

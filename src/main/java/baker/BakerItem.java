@@ -24,7 +24,7 @@ public class BakerItem {
 	}
 
 	public BakerItem() {
-		 this.nameCandidateIndex = new ArrayList<Integer>();
+		 this.nameCandidateIndex = new ArrayList<>();
 	}
 
 	public BakerItem getIntersection(BakerItem BakerItem) {

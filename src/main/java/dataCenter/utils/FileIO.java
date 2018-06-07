@@ -1,5 +1,6 @@
 package dataCenter.utils;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * @author Harry Tran on 5/23/18.
@@ -45,5 +46,19 @@ public class FileIO {
 				System.out.println("Closing file error!!!");
 			}
 		}
+	}
+	public static ArrayList<String> getAllSubdirectoryFromDirectory(String dir) {
+		ArrayList<String> res = new ArrayList<>();
+		File file = new File(dir);
+		String[] directories = file.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File current, String name) {
+				return new File(current, name).isDirectory();
+			}
+		});
+		for (String str : directories) {
+			res.add(dir + str + "/");
+		}
+		return res;
 	}
 }

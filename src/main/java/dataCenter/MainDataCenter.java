@@ -1,6 +1,7 @@
 package dataCenter;
 
 import baker.BakerItem;
+import bakerFreq.BakerFreqItem;
 import dataCenter.utils.FileIO;
 import dataCenter.utils.NormalizationTool;
 import javafx.util.Pair;
@@ -41,12 +42,13 @@ public class MainDataCenter {
 	private ArrayList<RelationItem> relationList = new ArrayList<>();
 	private ArrayList<RelationRecord> relationRecordList = new ArrayList<>();
 	private ArrayList<PeReItem> peReItemList = new ArrayList<>();
-	private ArrayList<BakerItem> bakerItemsList = new ArrayList<>();
 	private HashSet<String> reservedKeywordsSet = new HashSet<>();
 
 	private HashMap<Pair<Integer, Integer>, Integer> mapPeRevsIndex = new HashMap<>();
 	private HashMap<Pair<Integer, Integer>, ArrayList<Integer> > mapPeRevsListVarName = new HashMap<>();
+	private HashMap<Pair<Integer, Integer>, ArrayList<Pair<Integer, Integer> > > mapPeRevsListVarNameFreq = new HashMap<>();
 	private HashMap<Pair<Integer, Integer>, BakerItem > mapPeRevsBakerItem = new HashMap<>();
+	private HashMap<Pair<Integer, Integer>, BakerFreqItem > mapPeRevsBakerFreqItem = new HashMap<>();
 
 	private HashMap<String, Integer> mapVarNamevsId = new HashMap<>();
 	private HashMap<String, Integer> mapPevsId = new HashMap<>();
@@ -141,6 +143,14 @@ public class MainDataCenter {
 				} else {
 					mapPeRevsListVarName.get(currPair).add(idVN);
 				}
+
+				if (!mapPeRevsListVarNameFreq.containsKey(currPair)) {
+					ArrayList<Pair<Integer, Integer>> listVarNameFreq = new ArrayList<>();
+					listVarNameFreq.add(new Pair<>(idVN, freq));
+					mapPeRevsListVarNameFreq.put(currPair, listVarNameFreq);
+				} else {
+					mapPeRevsListVarNameFreq.get(currPair).add(new Pair<>(idVN, freq));
+				}
 			} catch (Exception e) {
 				LOGGER.info(e.getMessage());
 			}
@@ -149,7 +159,11 @@ public class MainDataCenter {
 		for (Pair<Integer, Integer> key : mapPeRevsListVarName.keySet()) {
 			BakerItem bi = new BakerItem(key.getKey(), key.getValue(), mapPeRevsListVarName.get(key));
 			mapPeRevsBakerItem.put(key, bi);
-			bakerItemsList.add(bi);
+		}
+
+		for (Pair<Integer, Integer> key : mapPeRevsListVarNameFreq.keySet()) {
+			BakerFreqItem bi = new BakerFreqItem(key.getKey(), key.getValue(), mapPeRevsListVarNameFreq.get(key));
+			mapPeRevsBakerFreqItem.put(key, bi);
 		}
 		LOGGER.info("DONE loadRelationRecordFromFile.");
 	}
@@ -157,6 +171,10 @@ public class MainDataCenter {
 
 	public BakerItem getBakerItemFromPeRe(int pe, int re) {
 		return mapPeRevsBakerItem.get(new Pair<>(pe, re));
+	}
+
+	public BakerFreqItem getBakerFreqItemFromPeRe(int pe, int re) {
+		return mapPeRevsBakerFreqItem.get(new Pair<>(pe, re));
 	}
 
 	public void generateInputForCF() {
