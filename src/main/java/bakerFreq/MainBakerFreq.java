@@ -23,8 +23,8 @@ import java.util.logging.Logger;
 public class MainBakerFreq {
 	private final static Logger LOGGER = Logger.getLogger(MainBakerFreq.class.getName());
 	private static String UNRESOLVED = "UNRESOLVED";
-	private static final int TOP_RESULT = 10;
-	private static final String dataDir = "./resources/parsedData/TestSet/";
+	private static final int TOP_RESULT = 30;
+	private static final String dataDir = "./resources/parsedData/testingData/";
 	private static final String resultReportFile = "./resources/parsedData/resultReport";
 
 	private static ArrayList<String> dirList;
@@ -47,13 +47,14 @@ public class MainBakerFreq {
 
 	private static String varNameNormalization(String name) {
 		name = name.toLowerCase();
-		String res = "";
+		StringBuilder res = new StringBuilder();
 		for (int i = 0; i < name.length(); ++i) {
-			if ('a' <= name.charAt(i) && name.charAt(i) <= 'z')
-				res += name.charAt(i);
+			if ('a' <= name.charAt(i) && name.charAt(i) <= 'z') {
+				res.append(name.charAt(i));
+			}
 		}
-		if (res.length() == 0) res = name;
-		return res;
+		if (res.length() == 0) res = new StringBuilder(name);
+		return res.toString();
 	}
 
 	public static boolean isSimilar(String s1, String s2) {
@@ -151,7 +152,7 @@ public class MainBakerFreq {
 
 	public void process() {
 		for (int i = 0; i < irList.size(); ++i) {
-			System.out.println(">>> Processing " + dirList.get(i) + "...");
+			System.out.println(">>> Processing " + dirList.get(i) + "... [" + Integer.toString(i + 1) + "/" + Integer.toString(irList.size()) +"]");
 			processOne(irList.get(i),  outputFileList.get(i));
 		}
 	}
@@ -164,6 +165,8 @@ public class MainBakerFreq {
 		bakerFreq.getAnalysing(1);
 		bakerFreq.getAnalysing(3);
 		bakerFreq.getAnalysing(5);
+		bakerFreq.getAnalysing(10);
+		bakerFreq.getAnalysing(20);
 		bakerFreq.getAnalysing(TOP_RESULT);
 
 		System.out.println("... Finished ===");
