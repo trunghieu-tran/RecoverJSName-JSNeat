@@ -5,6 +5,7 @@ import java.util.Objects;
 public class Record {
 	
 	String pe, name, relationship;
+	int type;
 	
 	public Record(String pe, String name, String relationship) {
 		this.pe = pe;
@@ -12,6 +13,14 @@ public class Record {
 		this.relationship = relationship;
 	}
 	
+	//Type = 1: variables and variables
+	//type = 0: variables and program entities 
+	public Record(String pe, String name, String relationship, int type) {
+		this.pe = pe;
+		this.name = name;
+		this.relationship = relationship;
+		this.type = type;
+	}
     @Override
     public boolean equals(final Object obj) {
         if (this == obj)

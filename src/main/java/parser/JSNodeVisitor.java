@@ -21,9 +21,7 @@ public class JSNodeVisitor implements NodeVisitor
 	public boolean visit(AstNode node) {
 		if (node == null)
 			return false;
-		
 		addToParent(node);
-		
 		return true;
 	}
 	

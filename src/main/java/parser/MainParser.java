@@ -3,6 +3,7 @@ package parser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +33,13 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
+		demo.parseTrainSetForest();
 //		demo.parseTrainSet();
 //		demo.parseTestSet();
-		demo.parseTrainSetTM();
+//		demo.parseTrainSetTM();
+//		demo.parseTestSetTM();
 	}
-	
+
 	public void generateFileList (String filePath) throws Exception
 	{
 		File trainFileList = new File(trainSetDir + "/fileList.txt");
@@ -102,6 +105,40 @@ public class MainParser {
 			myVisitor.printToFile(trainSetDir);
 		}
 	}
+	public void parseTrainSetForest() throws IOException {
+		//File trainFileList = new File(trainSetDir + "/test.txt");
+		File trainFileList = new File(trainSetDir + "/fileList.txt");
+		if ( trainFileList.exists() )
+		{
+			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
+			for ( String str: lines)
+			{
+				try
+				{
+					CompilerEnvirons env = new CompilerEnvirons();
+					env.setRecoverFromErrors(true);
+			    	FileReader strReader = new FileReader(str);
+					IRFactory factory = new IRFactory(env, new JSErrorReporter());
+					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
+					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
+					String projectName = path.substring(0, path.indexOf("\\"));
+					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					path = "/" + projectName + "_" + fileName; 
+					path = trainSetDir + path;
+					System.out.println(path);
+					ForestVisitor myVisitor = new ForestVisitor(path);
+					AstRoot rootNode = factory.parse(strReader, null, 0);
+					rootNode.visit(myVisitor);
+				}
+				catch (Exception e)
+				{
+					System.out.println("Exception at " + e);
+					continue;
+				}
+			}
+		}
+	
+	}
 	
 	public void parseTestSet() throws Exception
 	{
@@ -119,7 +156,11 @@ public class MainParser {
 					env.setRecoverFromErrors(true);
 			    	FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
-					String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
+					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
+					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
+					String projectName = path.substring(0, path.indexOf("\\"));
+					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					path = "/" + projectName + "_" + fileName; 
 					path = testSetDir + path;
 					System.out.println(path);
 					TestSetVisitor myVisitor = new TestSetVisitor(path);
@@ -151,7 +192,7 @@ public class MainParser {
 				System.out.println(str);
 				try
 				{
-					TopicModelVisitor myVisitor = new TopicModelVisitor();
+					TMTrainSetVisitor myVisitor = new TMTrainSetVisitor();
 					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					AstRoot rootNode = factory.parse(strReader, null, 0);
@@ -169,6 +210,46 @@ public class MainParser {
 			//myVisitor.printToFile(trainSetDir);
 		}
 	}
+	
+	public void parseTestSetTM() throws IOException {
+
+		//File to record test set
+		File testFileList = new File(testSetDir + "/fileList.txt");
+//		File testFileList = new File(testSetDir + "/test.txt");
+		if ( testFileList.exists() )
+		{
+			List<String> lines = FileUtils.readLines(testFileList, "UTF-8");
+			for ( String str: lines)
+			{
+				try
+				{
+					CompilerEnvirons env = new CompilerEnvirons();
+					env.setRecoverFromErrors(true);
+			    	FileReader strReader = new FileReader(str);
+					IRFactory factory = new IRFactory(env, new JSErrorReporter());
+					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
+					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
+					String projectName = path.substring(0, path.indexOf("\\"));
+					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					path = "/" + projectName + "_" + fileName; 
+					path = testSetDir + path;
+					System.out.println(path);
+					TMTestSetVisitor myVisitor = new TMTestSetVisitor();
+					AstRoot rootNode = factory.parse(strReader, null, 0);
+					rootNode.visit(myVisitor);
+					myVisitor.printToFile(path);
+				}
+				catch (Exception e)
+				{
+					System.out.println("Exception at " + e);
+					continue;
+				}
+			}
+		}
+	
+		
+	}
+	
 	public void searchDir(File dir, ArrayList<File> files) {
 		if ( dir.isFile() )
 		{

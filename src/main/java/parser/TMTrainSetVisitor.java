@@ -11,13 +11,13 @@ import java.util.HashSet;
 import org.mozilla.javascript.ast.*;
 
 
-public class TopicModelVisitor implements NodeVisitor{
+public class TMTrainSetVisitor implements NodeVisitor{
 	HashSet<String> programEntities = new HashSet<>();
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
 	HashMap<FunctionNode, String> functionSet = new HashMap<>();
-	public TopicModelVisitor()
+	public TMTrainSetVisitor()
 	{
 		//relationships.add("property");
 		//relationships.put("AssignVar", 1);

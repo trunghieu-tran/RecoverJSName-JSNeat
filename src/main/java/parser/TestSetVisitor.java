@@ -17,7 +17,7 @@ public class TestSetVisitor implements NodeVisitor{
 		{
 			FunctionVisitor fv = new FunctionVisitor();
 			node.visit(fv);
-			String dir = path + "/" + ((FunctionNode)node).getName();
+			String dir = path + "_" + ((FunctionNode)node).getName();
 			try {
 				fv.printToFile(dir);
 			} catch (IOException e) {
