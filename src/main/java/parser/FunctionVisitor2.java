@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -20,7 +21,8 @@ public class FunctionVisitor2 implements NodeVisitor{
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
-	
+	String caller = "";
+	ArrayList<String> callers = new ArrayList<>();
 	public FunctionVisitor2(HashSet<String> vn)
 	{
 		variableNames.addAll(vn);
@@ -32,7 +34,7 @@ public class FunctionVisitor2 implements NodeVisitor{
 	{
 		for ( Record r: recordList.keySet() )
 		{
-			System.out.println(r.pe+ " "+  r.name + " " + r.relationship + " " + recordList.get(r));
+			System.out.println(r.pe+ " "+  r.name + " " + r.relationship + " " + r.type);
 		}
 	}
 	
@@ -137,46 +139,95 @@ public class FunctionVisitor2 implements NodeVisitor{
 			{
 				String name = ((Name) asn.getLeft()).getIdentifier();
 				AstNode right = asn.getRight();
-				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) )
-				{
-					visitInfExp(right, name);
+				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) ) {
+					ArrayList<String> operands = visitInfExp(right, name);
+					addFromInfix(operands, name);
 				}
-				String pe = getProgramEntity(right);
-				if ( pe != null)
-				{
-					addRecord(pe, name, "Assignment");
+				else {
+					String pe = getProgramEntity(right);
+					if ( pe != null) {
+						addRecord(pe, name, "Assignment");
+					}
+					if ( ! caller.isEmpty() ) {
+						addRecord(caller, name, "Caller");
+						caller = "";
+					}
 				}
 			}
 			else if ( asn.getRight() instanceof Name )
 			{
 				String name = ((Name) asn.getRight()).getIdentifier();
 				AstNode left = asn.getLeft();
-				if ( left instanceof InfixExpression && !(left instanceof PropertyGet))
-				{
-					visitInfExp(left, name);
+				if ( left instanceof InfixExpression && !(left instanceof PropertyGet)) {
+					ArrayList<String> operands = visitInfExp(left, name);
+					addFromInfix(operands, name);
 				}
-				String pe = getProgramEntity(left);
-				if ( pe != null)
-				{
-					addRecord(pe, name, "Assignment");
+				else {
+					String pe = getProgramEntity(left);
+					if ( pe != null) {
+						addRecord(pe, name, "Assignment");
+					}
+					if ( ! caller.isEmpty() ) {
+						addRecord(caller, name, "Caller");
+						caller = "";
+					}
 				}
 			}
 		}
 	}
 	
-	private void visitInfExp(AstNode node, String name) {
-		//System.out.println("Here");
+	private void addFromInfix(ArrayList<String> operands, String name) {
+//		for ( String operand: operands)
+//		{
+//			System.out.print(operand + " ");
+//		}
+//		System.out.println();
+		for( int i = 0; i < operands.size()-1; i++ ) {
+			for ( int j = i; j < operands.size(); j++ ) {
+				addRecord(operands.get(i), operands.get(j), "Infix");
+				addRecord(operands.get(j), operands.get(i), "Infix");
+			}
+			addRecord(operands.get(i), name, "Assignment");
+		}
+		for ( String caller: callers ) {
+			addRecord(caller, name, "Caller");
+		}
+		callers.clear();
+	}
+
+	private ArrayList<String> visitInfExp(AstNode node, String name) {
+		ArrayList<String> operands = new ArrayList<>();
 		InfixExpression ie = (InfixExpression)node;
-		String left = getProgramEntity(ie.getLeft());
-		String right = getProgramEntity(ie.getRight());
-		if ( left != null )
-		{
-			addRecord(left, name, "Assignment");
+		AstNode astLeft = ie.getLeft();
+		String left = "", right = "", leftCaller = "", rightCaller = "";
+		AstNode astRight = ie.getRight();
+		if ( astLeft instanceof InfixExpression && !(astLeft instanceof PropertyGet)) {
+			operands.addAll(visitInfExp(astLeft, name));
 		}
-		if ( right != null )
-		{
-			addRecord(right, name, "Assignment");
+		else {
+			left = getProgramEntity(astLeft);
+			leftCaller = caller.isEmpty() ? "" : caller;
+			caller = "";
 		}
+		
+		if ( astRight instanceof InfixExpression && !(astRight instanceof PropertyGet)) {
+			operands.addAll(visitInfExp(astLeft, name));
+		}
+		else {
+			right = getProgramEntity(astRight);
+			rightCaller = caller.isEmpty() ? "" : caller; 
+			caller = "";
+		}
+		
+		if ( !left.isEmpty() ) {
+			operands.add(left);
+		}
+		if ( !right.isEmpty() ) {
+			operands.add(right);
+		}
+		if ( ! leftCaller.isEmpty() ) { callers.add(leftCaller); }
+		if ( ! rightCaller.isEmpty() ) { callers.add(rightCaller); }
+		return operands;
 	}
 
 	private void visitProperyGet(AstNode node) {
@@ -184,7 +235,7 @@ public class FunctionVisitor2 implements NodeVisitor{
 		{
 			PropertyGet pg = (PropertyGet)node;
 			AstNode target = pg.getTarget();
-			if (pg.getParent() instanceof FunctionCall)
+			if (pg.getParent() instanceof FunctionCall) //Function Call
 			{
 				FunctionCall fc = (FunctionCall) pg.getParent();
 				String pe = ((Name)pg.getRight()).getIdentifier()+ "("
@@ -195,32 +246,31 @@ public class FunctionVisitor2 implements NodeVisitor{
 					addRecord(pe, name, "FunctionCall");
 				}
 				
-				ArrayList<AstNode> list = new ArrayList<>();
+				ArrayList<AstNode> argumentList = new ArrayList<>();
 				//Argument
 				for( AstNode ast : fc.getArguments() )
 				{
 					if ( ast instanceof Name )
 					{
-						list.add(ast);
+						argumentList.add(ast);
 						String name = ((Name)ast).getIdentifier();
 						addRecord(pe, name, "Argument");
 					}
 				}
 				
 				//CoArgument
-				for ( int i = 0; i < list.size()-1; i++ )
+				for ( int i = 0; i < argumentList.size()-1; i++ )
 				{
-					for ( int j = i+1; j < list.size(); j++ )
+					for ( int j = i+1; j < argumentList.size(); j++ )
 					{
-						String name1 = ((Name) list.get(i)).getIdentifier();
-						String name2 = ((Name) list.get(j)).getIdentifier();
+						String name1 = ((Name) argumentList.get(i)).getIdentifier();
+						String name2 = ((Name) argumentList.get(j)).getIdentifier();
 						addRecord(name1, name2, "CoArgument");
 						addRecord(name2, name1, "CoArgument");
 					}
 				}
-				
 			}
-			else
+			else //Field Access
 			{
 				if ( target instanceof Name )
 				{
@@ -253,7 +303,7 @@ public class FunctionVisitor2 implements NodeVisitor{
 	
 	//This can be become a recursive function in the future
 	private String getProgramEntity(AstNode node) {
-
+		caller = "";
 		if ( node instanceof Name )
 		{
 			return ((Name)node).getIdentifier();
@@ -261,57 +311,65 @@ public class FunctionVisitor2 implements NodeVisitor{
 		if ( node instanceof FunctionCall )
 		{
 			AstNode target = ((FunctionCall)node).getTarget();
+			if ( target instanceof Name )
+			{
+				String name = ((Name) target).getIdentifier();
+				caller = name;
+				//addRecord(pe, name, "FunctionCall");
+			}
 			if ( target instanceof PropertyGet )
 			{
 				PropertyGet pg = (PropertyGet)target;
 				String pe = pg.getProperty().getIdentifier(); 
-				return pe+"("+ ((FunctionCall)node).getArguments().size() + ")";
+				return pe + "(" + ((FunctionCall)node).getArguments().size() + ")";
 			}
 		}
 		if ( node instanceof PropertyGet )
 		{
 			PropertyGet pg = (PropertyGet)node;
 			AstNode target = pg.getTarget();
+			if ( target instanceof Name )
+			{
+				String name = ((Name) target).getIdentifier();
+				caller = name;
+				//addRecord(pe, name, "FunctionCall");
+			}
+			
 			if (pg.getParent() instanceof FunctionCall)
 			{
 				FunctionCall fc = (FunctionCall) pg.getParent();
-				String pe = ((Name)pg.getRight()).getIdentifier()+ "("
+				String methodName = ((Name)pg.getRight()).getIdentifier()+ "("
 						+ fc.getArguments().size() + ")";
-				if ( target instanceof Name )
-				{
-					String name = ((Name) target).getIdentifier();
-					addRecord(pe, name, "FunctionCall");
-				}
-				
-				ArrayList<AstNode> list = new ArrayList<>();
-				//Argument
-				for( AstNode ast : fc.getArguments() )
-				{
-					if ( ast instanceof Name )
-					{
-						list.add(ast);
-						String name = ((Name)ast).getIdentifier();
-						addRecord(pe, name, "Argument");
-					}
-				}
-				
-				//CoArgument
-				for ( int i = 0; i < list.size()-1; i++ )
-				{
-					for ( int j = i+1; j < list.size(); j++ )
-					{
-						String name1 = ((Name) list.get(i)).getIdentifier();
-						String name2 = ((Name) list.get(j)).getIdentifier();
-						addRecord(name1, name2, "CoArgument");
-						addRecord(name2, name1, "CoArgument");
-					}
-				}
+				return methodName;
+//				ArrayList<AstNode> list = new ArrayList<>();
+//				//Argument
+//				for( AstNode ast : fc.getArguments() )
+//				{
+//					if ( ast instanceof Name )
+//					{
+//						list.add(ast);
+//						String name = ((Name)ast).getIdentifier();
+//						addRecord(pe, name, "Argument");
+//					}
+//				}
+//				//CoArgument
+//				for ( int i = 0; i < list.size()-1; i++ )
+//				{
+//					for ( int j = i+1; j < list.size(); j++ )
+//					{
+//						String name1 = ((Name) list.get(i)).getIdentifier();
+//						String name2 = ((Name) list.get(j)).getIdentifier();
+//						addRecord(name1, name2, "CoArgument");
+//						addRecord(name2, name1, "CoArgument");
+//					}
+//				}
 			}
 			else
 			{
-				String pe = pg.getProperty().getIdentifier(); 
-				return pe;
+				String fieldName = pg.getProperty().getIdentifier(); 
+				return fieldName;
 			}
+
 		}
 		return null;
 	}
@@ -327,7 +385,6 @@ public class FunctionVisitor2 implements NodeVisitor{
 
 	private void addRecord(String pe, String name, String relationship) {
 		String newName = this.normalizeVarName(name);
-
 		variableNames.add(newName);
 		programEntities.add(pe);
 		Record r;

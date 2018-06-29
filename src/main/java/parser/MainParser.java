@@ -12,10 +12,13 @@ import org.apache.commons.io.FileUtils;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
 import org.mozilla.javascript.ast.AstRoot;
-import org.mozilla.javascript.ast.FunctionNode;
-import org.mozilla.javascript.ast.ScriptNode;
 
-//Write a parser for test set, a parser for topic modeling
+/**
+ * @author Mike
+ * Main program. 
+ * Generate file lists from data into training and testing.
+ * Parse each file to build corpus.
+ */
 public class MainParser {
 	static String all = "../Data/";
 //	static String all = "F:\\Study\\Research\\RecoverJsName\\Data\\0xsky\\xblog\\xblogroot\\admin\\js\\admin.js";
@@ -34,7 +37,7 @@ public class MainParser {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
 		demo.parseTrainSetForest();
-//		demo.parseTrainSet();
+		//demo.parseTrainSet();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
 //		demo.parseTestSetTM();
@@ -79,7 +82,8 @@ public class MainParser {
 
 	public void parseTrainSet() throws Exception
 	{
-		File trainFileList = new File(trainSetDir + "/fileList.txt");
+		//File trainFileList = new File(trainSetDir + "/fileList.txt");
+		File trainFileList = new File(trainSetDir + "/test.txt");
 		CompilerEnvirons env = new CompilerEnvirons();
 		env.setRecoverFromErrors(true);
 		BakerVisitor myVisitor = new BakerVisitor();
@@ -98,15 +102,16 @@ public class MainParser {
 				}
 				catch (Exception e)
 				{
-					System.out.println("Exception at " + e);
+					System.out.println(e.getMessage());
 					continue;
 				}
 			}
-			myVisitor.printToFile(trainSetDir);
+			myVisitor.print();
+			//myVisitor.printToFile(trainSetDir);
 		}
 	}
 	public void parseTrainSetForest() throws IOException {
-		//File trainFileList = new File(trainSetDir + "/test.txt");
+//		File trainFileList = new File(trainSetDir + "/test.txt");
 		File trainFileList = new File(trainSetDir + "/fileList.txt");
 		if ( trainFileList.exists() )
 		{
@@ -130,6 +135,7 @@ public class MainParser {
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
 				}
+				
 				catch (Exception e)
 				{
 					System.out.println("Exception at " + e);

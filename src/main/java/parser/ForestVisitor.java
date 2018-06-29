@@ -11,6 +11,7 @@ import org.mozilla.javascript.ast.*;
  */
 public class ForestVisitor implements NodeVisitor{
 	String path;
+	int anonymousCount = 0; //Handle Anonymous Function
 	
 	public ForestVisitor(String path) {
 		this.path = path;
@@ -33,12 +34,24 @@ public class ForestVisitor implements NodeVisitor{
 			FindVariableVisitor visitor = new FindVariableVisitor();
 			node.visit(visitor);
 			vn.addAll(visitor.getVN());
+			//Test variable name set
+//			for(String s: vn)
+//			{
+//				System.out.print(s + " ");
+//			}
+//			System.out.println();
 			FunctionVisitor2 fv = new FunctionVisitor2(vn);
 			node.visit(fv);
-			String dir = path + "_" + ((FunctionNode)node).getName();
+			String functionName = ((FunctionNode)node).getName();
+			if ( functionName.isEmpty() ) {
+				functionName = "anonymous" + Integer.toString(anonymousCount++);
+			}
+			String dir = path + "_" + functionName;
 			try {
 				fv.printToFile(dir);
-			} catch (IOException e) {
+//				fv.print();
+			} 
+			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}

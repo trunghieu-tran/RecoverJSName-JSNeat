@@ -19,7 +19,7 @@ public class FindVariableVisitor implements NodeVisitor{
 			{
 				name = ((Name) vi.getTarget()).getIdentifier();
 			}
-			if ( name != null)
+			if ( name != null )
 			{
 				vn.add(name);
 			}
@@ -30,6 +30,4 @@ public class FindVariableVisitor implements NodeVisitor{
 	public HashSet<String> getVN() {
 		return vn;
 	}
-	
-
 }
