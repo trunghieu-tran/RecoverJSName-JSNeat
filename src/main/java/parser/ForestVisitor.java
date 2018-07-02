@@ -49,7 +49,7 @@ public class ForestVisitor implements NodeVisitor{
 			String dir = path + "_" + functionName;
 			try {
 				fv.printToFile(dir);
-//				fv.print();
+				//fv.print();
 			} 
 			catch (IOException e) {
 				e.printStackTrace();

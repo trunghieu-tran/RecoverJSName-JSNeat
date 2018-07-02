@@ -30,6 +30,7 @@ public class MainParser {
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
 	static String trainTMDir = "../TrainTM";
+	static String fileList = "../FileList";
 //	ArrayList<File> testSet = new ArrayList<>();
 //	ArrayList<File> trainSet = new ArrayList<>();
 	
@@ -45,11 +46,11 @@ public class MainParser {
 
 	public void generateFileList (String filePath) throws Exception
 	{
-		File trainFileList = new File(trainSetDir + "/fileList.txt");
+		File trainFileList = new File(fileList + "/trainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
 	    PrintWriter pwTrainList = new PrintWriter(fwTrainList);
 	    
-		File testFileList = new File(testSetDir + "/fileList.txt");
+		File testFileList = new File(fileList + "/testFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
 	    PrintWriter pwTestList = new PrintWriter(fwTestList);
 	    
@@ -82,8 +83,8 @@ public class MainParser {
 
 	public void parseTrainSet() throws Exception
 	{
-		//File trainFileList = new File(trainSetDir + "/fileList.txt");
-		File trainFileList = new File(trainSetDir + "/test.txt");
+		//File trainFileList = new File(fileList + "/trainFileList.txt");
+		File trainFileList = new File(fileList + "/test.txt");
 		CompilerEnvirons env = new CompilerEnvirons();
 		env.setRecoverFromErrors(true);
 		BakerVisitor myVisitor = new BakerVisitor();
@@ -111,8 +112,8 @@ public class MainParser {
 		}
 	}
 	public void parseTrainSetForest() throws IOException {
-//		File trainFileList = new File(trainSetDir + "/test.txt");
-		File trainFileList = new File(trainSetDir + "/fileList.txt");
+//		File trainFileList = new File(fileList + "/test.txt");
+		File trainFileList = new File(fileList + "/trainFileList.txt");
 		if ( trainFileList.exists() )
 		{
 			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
@@ -130,6 +131,7 @@ public class MainParser {
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
 					path = trainSetDir + path;
+					//path = "../TestRun" + path;
 					System.out.println(path);
 					ForestVisitor myVisitor = new ForestVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
@@ -138,7 +140,8 @@ public class MainParser {
 				
 				catch (Exception e)
 				{
-					System.out.println("Exception at " + e);
+					System.out.println("Exception :" + e.getMessage());
+					e.printStackTrace();
 					continue;
 				}
 			}

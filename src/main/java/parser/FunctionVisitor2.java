@@ -21,8 +21,6 @@ public class FunctionVisitor2 implements NodeVisitor{
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
-	String caller = "";
-	ArrayList<String> callers = new ArrayList<>();
 	public FunctionVisitor2(HashSet<String> vn)
 	{
 		variableNames.addAll(vn);
@@ -49,9 +47,9 @@ public class FunctionVisitor2 implements NodeVisitor{
 		{
 			dir.mkdirs();
 		}
-		HashMap<String,Integer> pe = new HashMap<>(); //Program Entity
-		HashMap<String,Integer> vn = new HashMap<>(); //Variable Names
-		HashMap<String,Integer> re = new HashMap<>(); //Relationship
+		HashMap<String,Pair> pe = new HashMap<>(); //Program Entity
+		HashMap<String,Pair> vn = new HashMap<>(); //Variable Names
+		HashMap<String,Integer> rel = new HashMap<>(); //Relationship
 		int peIndex = 0, vnIndex = 0, reIndex = 0;
 		File file1 = new File(dest + "/peData.txt");
 		FileWriter fileWriter1 = new FileWriter(file1);
@@ -65,50 +63,133 @@ public class FunctionVisitor2 implements NodeVisitor{
 		File file4 = new File(dest + "/recordData.txt");
 		FileWriter fileWriter4 = new FileWriter(file4);
 	    PrintWriter printWriter4 = new PrintWriter(fileWriter4);
-	    
-		for ( Record record: recordList.keySet() )
+	    for ( Record record: recordList.keySet() )
 		{
-//			//Collect freq and index for P.E. 
-//			if (! pe.containsKey(record.pe) ) {
-//				pe.put(record.pe, new Pair(peIndex,1));
-//				peIndex++;
-//			}
-//			else {
-//				int freq = pe.get(record.pe).freq;
-//				int idx = pe.get(record.pe).index;
-//				pe.put(record.pe, new Pair(idx,freq+1));
-//			}
-//			
-//			//Collect freq and index for Variable Name.  
-//			if (! vn.containsKey(record.name) ) {
-//				vn.put(record.name, new Pair(vnIndex,1));
-//				vnIndex++;
-//			}
-//			else {
-//				int freq = vn.get(record.name).freq;
-//				int idx = vn.get(record.name).index;
-//				vn.put(record.name, new Pair(idx,freq+1));
-//			}
-			
-			//Print to file 1
-			if (! pe.containsKey(record.pe) ) {
-				pe.put(record.pe, reIndex);
-				printWriter1.println(record.pe);
-			}
-			//Print fo file 2
-			if (! vn.containsKey(record.name) ) {
-				vn.put(record.name, reIndex);
-				printWriter2.println(record.name);
-			}
-			//Print to file 3
-			if (! re.containsKey(record.relationship) ) {
-				re.put(record.relationship, reIndex);
-				printWriter3.println(record.relationship);
-			}
-			//Print to file 4
-			printWriter4.println(record.pe + " "+ record.name + " " 
-			+ record.relationship + " " + record.type);
+	    	//Record about PE and Var
+		    if ( record.type == 0 ) { 
+				//Collect freq and index for P.E. 
+				if (! pe.containsKey(record.pe) ) {
+					pe.put(record.pe, new Pair(peIndex,1));
+					peIndex++;
+				}
+				else {
+					int freq = pe.get(record.pe).freq;
+					int idx = pe.get(record.pe).index;
+					pe.put(record.pe, new Pair(idx,freq+1));
+				}
+				
+				//Collect freq and index for Variable Name.  
+				if (! vn.containsKey(record.name) ) {
+					vn.put(record.name, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.name).freq;
+					int idx = vn.get(record.name).index;
+					vn.put(record.name, new Pair(idx,freq+1));
+				}
+				
+				//Print to file 3
+				if (! rel.containsKey(record.relationship) ) {
+					rel.put(record.relationship, reIndex);
+					printWriter3.println(reIndex + " " + record.relationship);
+					reIndex++;
+				}
+				//Print to file 4
+				printWriter4.println(pe.get(record.pe).index + " "+  vn.get(record.name).index + " " 
+				+ rel.get(record.relationship) + " " + record.type + " " + recordList.get(record));
+		    }
+	    	//Record about Var-Var
+	    	else if ( record.type == 1) {
+				//Collect freq and index for Variable 1. 
+				if (! vn.containsKey(record.pe) ) {
+					vn.put(record.pe, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.pe).freq;
+					int idx = vn.get(record.pe).index;
+					vn.put(record.pe, new Pair(idx,freq+1));
+				}
+				
+				//Collect freq and index for Variable 2.  
+				if (! vn.containsKey(record.name) ) {
+					vn.put(record.name, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.name).freq;
+					int idx = vn.get(record.name).index;
+					vn.put(record.name, new Pair(idx,freq+1));
+				}
+				
+				//Print to file 3
+				if (! rel.containsKey(record.relationship) ) {
+					rel.put(record.relationship, reIndex);
+					printWriter3.println(reIndex + " " + record.relationship);
+					reIndex++;
+				}
+				//Print to file 4
+				printWriter4.println(vn.get(record.pe).index + " "+  vn.get(record.name).index + " " 
+				+ rel.get(record.relationship) + " " + record.type + " " + recordList.get(record));
+		    	
+	    	}
 		}
+		
+		//Print to file 1
+		for ( String key : pe.keySet())
+		{
+			printWriter1.println(pe.get(key).index + " " + key + " " + pe.get(key).freq);
+		}
+		
+		//Print to file 2
+		for ( String key : vn.keySet())
+		{
+			printWriter2.println(vn.get(key).index + " " + key + " " + vn.get(key).freq);
+		}
+//		for ( Record record: recordList.keySet() )
+//		{
+////			//Collect freq and index for P.E. 
+////			if (! pe.containsKey(record.pe) ) {
+////				pe.put(record.pe, new Pair(peIndex,1));
+////				peIndex++;
+////			}
+////			else {
+////				int freq = pe.get(record.pe).freq;
+////				int idx = pe.get(record.pe).index;
+////				pe.put(record.pe, new Pair(idx,freq+1));
+////			}
+////			
+////			//Collect freq and index for Variable Name.  
+////			if (! vn.containsKey(record.name) ) {
+////				vn.put(record.name, new Pair(vnIndex,1));
+////				vnIndex++;
+////			}
+////			else {
+////				int freq = vn.get(record.name).freq;
+////				int idx = vn.get(record.name).index;
+////				vn.put(record.name, new Pair(idx,freq+1));
+////			}
+//			
+//			//Print to file 1
+//			if (! pe.containsKey(record.pe) ) {
+//				pe.put(record.pe, reIndex);
+//				printWriter1.println(record.pe);
+//			}
+//			//Print fo file 2
+//			if (! vn.containsKey(record.name) ) {
+//				vn.put(record.name, reIndex);
+//				printWriter2.println(record.name);
+//			}
+//			//Print to file 3
+//			if (! re.containsKey(record.relationship) ) {
+//				re.put(record.relationship, reIndex);
+//				printWriter3.println(record.relationship);
+//			}
+//			//Print to file 4
+//			printWriter4.println(record.pe + " "+ record.name + " " 
+//			+ record.relationship + " " + record.type);
+//		}
 		
 		printWriter1.close();
 		printWriter2.close();
@@ -127,8 +208,32 @@ public class FunctionVisitor2 implements NodeVisitor{
 			case (Token.VAR):
 			case (Token.LET):
 			case (Token.CONST): visitVarInit(node); break;
+			//case (Token.IF): visitIfStmt(node); break;
 		}
 		return true;
+	}
+
+	private void visitIfStmt(AstNode node) {
+		if ( node instanceof IfStatement )
+		{
+			IfStatement ifNode = (IfStatement) node;
+			AstNode cond = ifNode.getCondition();
+			if ( cond instanceof Name ) {
+				// @TODO : add record variable of type boolean;
+				addRecord("bool", ((Name)cond).getIdentifier(), "Boolean");
+			}
+			if ( cond instanceof InfixExpression ) {
+				// @TODO: if (a > b) : good; if ( a + b ): both a,b are bool;
+				int operator = ((InfixExpression)cond).getOperator();
+				if ( operator == Token.AND || operator == Token.OR )
+				{
+					// @TODO: add record 
+					ArrayList<String> temp = new ArrayList<>(visitInfExp(cond));
+					addFromInfix(temp, "");
+				}
+			}
+
+		}
 	}
 
 	private void visitAssignment(AstNode node) {
@@ -140,17 +245,13 @@ public class FunctionVisitor2 implements NodeVisitor{
 				String name = ((Name) asn.getLeft()).getIdentifier();
 				AstNode right = asn.getRight();
 				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) ) {
-					ArrayList<String> operands = visitInfExp(right, name);
+					ArrayList<String> operands = new ArrayList<>(visitInfExp(right));
 					addFromInfix(operands, name);
 				}
 				else {
 					String pe = getProgramEntity(right);
 					if ( pe != null) {
 						addRecord(pe, name, "Assignment");
-					}
-					if ( ! caller.isEmpty() ) {
-						addRecord(caller, name, "Caller");
-						caller = "";
 					}
 				}
 			}
@@ -159,17 +260,13 @@ public class FunctionVisitor2 implements NodeVisitor{
 				String name = ((Name) asn.getRight()).getIdentifier();
 				AstNode left = asn.getLeft();
 				if ( left instanceof InfixExpression && !(left instanceof PropertyGet)) {
-					ArrayList<String> operands = visitInfExp(left, name);
+					ArrayList<String> operands = new ArrayList<>(visitInfExp(left));
 					addFromInfix(operands, name);
 				}
 				else {
 					String pe = getProgramEntity(left);
 					if ( pe != null) {
 						addRecord(pe, name, "Assignment");
-					}
-					if ( ! caller.isEmpty() ) {
-						addRecord(caller, name, "Caller");
-						caller = "";
 					}
 				}
 			}
@@ -183,40 +280,35 @@ public class FunctionVisitor2 implements NodeVisitor{
 //		}
 //		System.out.println();
 		for( int i = 0; i < operands.size()-1; i++ ) {
-			for ( int j = i; j < operands.size(); j++ ) {
+			for ( int j = i+1; j < operands.size(); j++ ) {
 				addRecord(operands.get(i), operands.get(j), "Infix");
 				addRecord(operands.get(j), operands.get(i), "Infix");
 			}
-			addRecord(operands.get(i), name, "Assignment");
+			if ( ! name.isEmpty() ) {
+				addRecord(operands.get(i), name, "Assignment");
+			}
 		}
-		for ( String caller: callers ) {
-			addRecord(caller, name, "Caller");
-		}
-		callers.clear();
 	}
 
-	private ArrayList<String> visitInfExp(AstNode node, String name) {
-		ArrayList<String> operands = new ArrayList<>();
+	private HashSet<String> visitInfExp(AstNode node) {
+		HashSet<String> operands = new HashSet<>();
+		if ( node != null ) {
 		InfixExpression ie = (InfixExpression)node;
 		AstNode astLeft = ie.getLeft();
-		String left = "", right = "", leftCaller = "", rightCaller = "";
+		String left = "", right = "";
 		AstNode astRight = ie.getRight();
 		if ( astLeft instanceof InfixExpression && !(astLeft instanceof PropertyGet)) {
-			operands.addAll(visitInfExp(astLeft, name));
+			operands.addAll(visitInfExp(astLeft));
 		}
 		else {
 			left = getProgramEntity(astLeft);
-			leftCaller = caller.isEmpty() ? "" : caller;
-			caller = "";
 		}
 		
 		if ( astRight instanceof InfixExpression && !(astRight instanceof PropertyGet)) {
-			operands.addAll(visitInfExp(astLeft, name));
+			operands.addAll(visitInfExp(astRight));
 		}
 		else {
 			right = getProgramEntity(astRight);
-			rightCaller = caller.isEmpty() ? "" : caller; 
-			caller = "";
 		}
 		
 		if ( !left.isEmpty() ) {
@@ -225,9 +317,9 @@ public class FunctionVisitor2 implements NodeVisitor{
 		if ( !right.isEmpty() ) {
 			operands.add(right);
 		}
-		if ( ! leftCaller.isEmpty() ) { callers.add(leftCaller); }
-		if ( ! rightCaller.isEmpty() ) { callers.add(rightCaller); }
 		return operands;
+		}
+		else return operands;
 	}
 
 	private void visitProperyGet(AstNode node) {
@@ -303,7 +395,6 @@ public class FunctionVisitor2 implements NodeVisitor{
 	
 	//This can be become a recursive function in the future
 	private String getProgramEntity(AstNode node) {
-		caller = "";
 		if ( node instanceof Name )
 		{
 			return ((Name)node).getIdentifier();
@@ -314,7 +405,6 @@ public class FunctionVisitor2 implements NodeVisitor{
 			if ( target instanceof Name )
 			{
 				String name = ((Name) target).getIdentifier();
-				caller = name;
 				//addRecord(pe, name, "FunctionCall");
 			}
 			if ( target instanceof PropertyGet )
@@ -331,7 +421,6 @@ public class FunctionVisitor2 implements NodeVisitor{
 			if ( target instanceof Name )
 			{
 				String name = ((Name) target).getIdentifier();
-				caller = name;
 				//addRecord(pe, name, "FunctionCall");
 			}
 			
@@ -371,7 +460,7 @@ public class FunctionVisitor2 implements NodeVisitor{
 			}
 
 		}
-		return null;
+		return "";
 	}
 
 	private String normalizeVarName(String varName) {
@@ -384,20 +473,24 @@ public class FunctionVisitor2 implements NodeVisitor{
 	}
 
 	private void addRecord(String pe, String name, String relationship) {
-		String newName = this.normalizeVarName(name);
-		variableNames.add(newName);
-		programEntities.add(pe);
-		Record r;
+		//String newName = this.normalizeVarName(name);
+		//variableNames.add(newName);
+		//programEntities.add(pe);
+		Record r = null;
 		if ( variableNames.contains(pe) && variableNames.contains(name) ) {
-			r = new Record(pe, newName, relationship, 1);
+			r = new Record(pe, name, relationship, 1);
 		}
-		else {
-			r = new Record(pe, newName, relationship, 0);
+		else if ( variableNames.contains(name)){
+			r = new Record(pe, name, relationship, 0);
+			programEntities.add(pe);
 		}
-		
+		else if ( variableNames.contains(pe)) {
+			r = new Record(name, pe, relationship, 0);
+			programEntities.add(name);
+		}
 		if(recordList.containsKey(r)) {
 			recordList.put(r, recordList.get(r)+1);
-		} else {
+		} else if ( r != null){
 			recordList.put(r, 1);
 		}
 	}

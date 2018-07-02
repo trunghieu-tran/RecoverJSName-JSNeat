@@ -1,35 +1,18 @@
-function test () 
+function test (a,b,c) 
 {
 	var person = {
-	firstName: "John",
-	lastName : "Doe",
-	id       : 5566,
-	wholeName : function(fn, ln) {
-		return fn + " " + ln;
-	}
+		firstName: "John",
+		lastName : "Doe",
+		id       : 5566,
+		wholeName : function(fn, ln) {
+			fn = ln.m();
+			return fn + " " + ln;
+		}
 	};
 	var x;
-	x = person.firstName;
+	x = person.firstName; 
 	var y = person.lastName;
-	y = x;
 	var z = person.wholeName(x, y);
-	z = x + y;
-}
-
-function test2 () 
-{
-	var person = {
-	firstName: "John",
-	lastName : "Doe",
-	id       : 5566,
-	wholeName : function(fn, ln) {
-		return fn + " " + ln;
-	}
-	};
-	var x;
-	x = person.firstName;
-	var y = person.lastName;
-	y = x;
-	var z = person.wholeName(x, y);
-	z = x + y;
+	z = person.firstName + y + a;
+	person.lastName = z;
 }
