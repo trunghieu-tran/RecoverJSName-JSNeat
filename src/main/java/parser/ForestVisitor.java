@@ -40,7 +40,7 @@ public class ForestVisitor implements NodeVisitor{
 //				System.out.print(s + " ");
 //			}
 //			System.out.println();
-			FunctionVisitor2 fv = new FunctionVisitor2(vn);
+			FunctionVisitor fv = new FunctionVisitor(vn);
 			node.visit(fv);
 			String functionName = ((FunctionNode)node).getName();
 			if ( functionName.isEmpty() ) {
@@ -49,6 +49,10 @@ public class ForestVisitor implements NodeVisitor{
 			String dir = path + "_" + functionName;
 			try {
 				fv.printToFile(dir);
+				if (functionName.equals("tokenize"))
+				{
+					fv.print();
+				}
 				//fv.print();
 			} 
 			catch (IOException e) {

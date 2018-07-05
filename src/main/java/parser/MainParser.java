@@ -29,6 +29,7 @@ public class MainParser {
 	
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
+	static String bakerDir = "../BakerData";
 	static String trainTMDir = "../TrainTM";
 	static String fileList = "../FileList";
 //	ArrayList<File> testSet = new ArrayList<>();
@@ -37,8 +38,8 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-		demo.parseTrainSetForest();
-		//demo.parseTrainSet();
+//		demo.parseTrainSetForest();
+		demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
 //		demo.parseTestSetTM();
@@ -75,24 +76,25 @@ public class MainParser {
 		}
 		//myVisitor.print();
 		//myVisitor.printToFile(output);
-		
-
 	    pwTrainList.close();
 	    pwTestList.close();
 	}
 
-	public void parseTrainSet() throws Exception
+	public void parseBaker() throws Exception
 	{
-		//File trainFileList = new File(fileList + "/trainFileList.txt");
-		File trainFileList = new File(fileList + "/test.txt");
+		File trainFileList = new File(fileList + "/trainFileList.txt");
+//		File trainFileList = new File(fileList + "/test.txt");
 		CompilerEnvirons env = new CompilerEnvirons();
 		env.setRecoverFromErrors(true);
 		BakerVisitor myVisitor = new BakerVisitor();
+		int count = 0;
 		if ( trainFileList.exists() )
 		{
 			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
 			for ( String str: lines)
 			{
+				count++;
+				if ( count > 100 ) break;
 				System.out.println(str);
 				try
 				{
@@ -107,13 +109,14 @@ public class MainParser {
 					continue;
 				}
 			}
-			myVisitor.print();
+			myVisitor.printToFile(bakerDir);
 			//myVisitor.printToFile(trainSetDir);
 		}
 	}
+	
 	public void parseTrainSetForest() throws IOException {
-//		File trainFileList = new File(fileList + "/test.txt");
-		File trainFileList = new File(fileList + "/trainFileList.txt");
+		File trainFileList = new File(fileList + "/test.txt");
+//		File trainFileList = new File(fileList + "/trainFileList.txt");
 		if ( trainFileList.exists() )
 		{
 			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
@@ -130,8 +133,8 @@ public class MainParser {
 					String projectName = path.substring(0, path.indexOf("\\"));
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
-					path = trainSetDir + path;
-					//path = "../TestRun" + path;
+//					path = trainSetDir + path;
+					path = "../TestRun" + path;
 					System.out.println(path);
 					ForestVisitor myVisitor = new ForestVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);

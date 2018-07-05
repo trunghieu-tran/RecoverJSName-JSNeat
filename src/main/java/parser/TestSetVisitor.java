@@ -15,14 +15,14 @@ public class TestSetVisitor implements NodeVisitor{
 	public boolean visit(AstNode node) {
 		if ( node instanceof FunctionNode )
 		{
-			FunctionVisitor fv = new FunctionVisitor();
-			node.visit(fv);
-			String dir = path + "_" + ((FunctionNode)node).getName();
-			try {
-				fv.printToFile(dir);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+//			FunctionVisitor fv = new FunctionVisitor();
+//			node.visit(fv);
+//			String dir = path + "_" + ((FunctionNode)node).getName();
+//			try {
+//				fv.printToFile(dir);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		}
 		return true;
 	}

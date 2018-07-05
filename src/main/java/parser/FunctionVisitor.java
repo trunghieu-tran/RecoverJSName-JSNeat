@@ -5,21 +5,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.ast.*;
 
-
+/**
+ * @author Mike
+ * Visit a function to build a graph from it
+ */
 public class FunctionVisitor implements NodeVisitor{
 	HashSet<String> programEntities = new HashSet<>();
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
-	
-	public FunctionVisitor()
+	public FunctionVisitor(HashSet<String> vn)
 	{
+		variableNames.addAll(vn);
 		//relationships.add("property");
 		//relationships.put("AssignVar", 1);
 	}
@@ -28,12 +32,16 @@ public class FunctionVisitor implements NodeVisitor{
 	{
 		for ( Record r: recordList.keySet() )
 		{
-			System.out.println(r.pe+ " "+  r.name + " " + r.relationship + " " + recordList.get(r));
+			System.out.println(r.pe+ " "+  r.name + " " + r.relationship + " " + r.type);
 		}
 	}
 	
 	public void printToFile(String dest) throws IOException
 	{
+		if ( recordList.isEmpty() )
+		{
+			return;
+		}
 		File dir = new File(dest);
 		if ( ! dir.exists() )
 		{
@@ -41,9 +49,8 @@ public class FunctionVisitor implements NodeVisitor{
 		}
 		HashMap<String,Pair> pe = new HashMap<>(); //Program Entity
 		HashMap<String,Pair> vn = new HashMap<>(); //Variable Names
-		HashMap<String,Integer> re = new HashMap<>(); //Relationship
+		HashMap<String,Integer> rel = new HashMap<>(); //Relationship
 		int peIndex = 0, vnIndex = 0, reIndex = 0;
-		
 		File file1 = new File(dest + "/peData.txt");
 		FileWriter fileWriter1 = new FileWriter(file1);
 	    PrintWriter printWriter1 = new PrintWriter(fileWriter1);
@@ -56,40 +63,77 @@ public class FunctionVisitor implements NodeVisitor{
 		File file4 = new File(dest + "/recordData.txt");
 		FileWriter fileWriter4 = new FileWriter(file4);
 	    PrintWriter printWriter4 = new PrintWriter(fileWriter4);
-	    
-		for ( Record record: recordList.keySet() )
+	    for ( Record record: recordList.keySet() )
 		{
-			//Collect freq and index for P.E. 
-			if (! pe.containsKey(record.pe) ) {
-				pe.put(record.pe, new Pair(peIndex,1));
-				peIndex++;
-			}
-			else {
-				int freq = pe.get(record.pe).freq;
-				int idx = pe.get(record.pe).index;
-				pe.put(record.pe, new Pair(idx,freq+1));
-			}
-			
-			//Collect freq and index for Variable Name.  
-			if (! vn.containsKey(record.name) ) {
-				vn.put(record.name, new Pair(vnIndex,1));
-				vnIndex++;
-			}
-			else {
-				int freq = vn.get(record.name).freq;
-				int idx = vn.get(record.name).index;
-				vn.put(record.name, new Pair(idx,freq+1));
-			}
-			
-			//Print to file 3
-			if (! re.containsKey(record.relationship) ) {
-				re.put(record.relationship, reIndex);
-				printWriter3.println(reIndex + " " + record.relationship);
-				reIndex++;
-			}
-			//Print to file 4
-			printWriter4.println(pe.get(record.pe).index + " "+  vn.get(record.name).index + " " 
-			+ re.get(record.relationship) + " " + recordList.get(record));
+	    	//Record about PE and Var
+		    if ( record.type == 0 ) { 
+				//Collect freq and index for P.E. 
+				if (! pe.containsKey(record.pe) ) {
+					pe.put(record.pe, new Pair(peIndex,1));
+					peIndex++;
+				}
+				else {
+					int freq = pe.get(record.pe).freq;
+					int idx = pe.get(record.pe).index;
+					pe.put(record.pe, new Pair(idx,freq+1));
+				}
+				
+				//Collect freq and index for Variable Name.  
+				if (! vn.containsKey(record.name) ) {
+					vn.put(record.name, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.name).freq;
+					int idx = vn.get(record.name).index;
+					vn.put(record.name, new Pair(idx,freq+1));
+				}
+				
+				//Print to file 3
+				if (! rel.containsKey(record.relationship) ) {
+					rel.put(record.relationship, reIndex);
+					printWriter3.println(reIndex + " " + record.relationship);
+					reIndex++;
+				}
+				//Print to file 4
+				printWriter4.println(pe.get(record.pe).index + " "+  vn.get(record.name).index + " " 
+				+ rel.get(record.relationship) + " " + record.type + " " + recordList.get(record));
+		    }
+	    	//Record about Var-Var
+	    	else if ( record.type == 1) {
+				//Collect freq and index for Variable 1. 
+				if (! vn.containsKey(record.pe) ) {
+					vn.put(record.pe, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.pe).freq;
+					int idx = vn.get(record.pe).index;
+					vn.put(record.pe, new Pair(idx,freq+1));
+				}
+				
+				//Collect freq and index for Variable 2.  
+				if (! vn.containsKey(record.name) ) {
+					vn.put(record.name, new Pair(vnIndex,1));
+					vnIndex++;
+				}
+				else {
+					int freq = vn.get(record.name).freq;
+					int idx = vn.get(record.name).index;
+					vn.put(record.name, new Pair(idx,freq+1));
+				}
+				
+				//Print to file 3
+				if (! rel.containsKey(record.relationship) ) {
+					rel.put(record.relationship, reIndex);
+					printWriter3.println(reIndex + " " + record.relationship);
+					reIndex++;
+				}
+				//Print to file 4
+				printWriter4.println(vn.get(record.pe).index + " "+  vn.get(record.name).index + " " 
+				+ rel.get(record.relationship) + " " + record.type + " " + recordList.get(record));
+		    	
+	    	}
 		}
 		
 		//Print to file 1
@@ -103,6 +147,49 @@ public class FunctionVisitor implements NodeVisitor{
 		{
 			printWriter2.println(vn.get(key).index + " " + key + " " + vn.get(key).freq);
 		}
+//		for ( Record record: recordList.keySet() )
+//		{
+////			//Collect freq and index for P.E. 
+////			if (! pe.containsKey(record.pe) ) {
+////				pe.put(record.pe, new Pair(peIndex,1));
+////				peIndex++;
+////			}
+////			else {
+////				int freq = pe.get(record.pe).freq;
+////				int idx = pe.get(record.pe).index;
+////				pe.put(record.pe, new Pair(idx,freq+1));
+////			}
+////			
+////			//Collect freq and index for Variable Name.  
+////			if (! vn.containsKey(record.name) ) {
+////				vn.put(record.name, new Pair(vnIndex,1));
+////				vnIndex++;
+////			}
+////			else {
+////				int freq = vn.get(record.name).freq;
+////				int idx = vn.get(record.name).index;
+////				vn.put(record.name, new Pair(idx,freq+1));
+////			}
+//			
+//			//Print to file 1
+//			if (! pe.containsKey(record.pe) ) {
+//				pe.put(record.pe, reIndex);
+//				printWriter1.println(record.pe);
+//			}
+//			//Print fo file 2
+//			if (! vn.containsKey(record.name) ) {
+//				vn.put(record.name, reIndex);
+//				printWriter2.println(record.name);
+//			}
+//			//Print to file 3
+//			if (! re.containsKey(record.relationship) ) {
+//				re.put(record.relationship, reIndex);
+//				printWriter3.println(record.relationship);
+//			}
+//			//Print to file 4
+//			printWriter4.println(record.pe + " "+ record.name + " " 
+//			+ record.relationship + " " + record.type);
+//		}
 		
 		printWriter1.close();
 		printWriter2.close();
@@ -121,8 +208,32 @@ public class FunctionVisitor implements NodeVisitor{
 			case (Token.VAR):
 			case (Token.LET):
 			case (Token.CONST): visitVarInit(node); break;
+			//case (Token.IF): visitIfStmt(node); break;
 		}
 		return true;
+	}
+
+	private void visitIfStmt(AstNode node) {
+		if ( node instanceof IfStatement )
+		{
+			IfStatement ifNode = (IfStatement) node;
+			AstNode cond = ifNode.getCondition();
+			if ( cond instanceof Name ) {
+				// @TODO : add record variable of type boolean;
+				addRecord("bool", ((Name)cond).getIdentifier(), "Boolean");
+			}
+			if ( cond instanceof InfixExpression ) {
+				// @TODO: if (a > b) : good; if ( a + b ): both a,b are bool;
+				int operator = ((InfixExpression)cond).getOperator();
+				if ( operator == Token.AND || operator == Token.OR )
+				{
+					// @TODO: add record 
+					ArrayList<String> temp = new ArrayList<>(visitInfExp(cond));
+					addFromInfix(temp, "");
+				}
+			}
+
+		}
 	}
 
 	private void visitAssignment(AstNode node) {
@@ -133,46 +244,82 @@ public class FunctionVisitor implements NodeVisitor{
 			{
 				String name = ((Name) asn.getLeft()).getIdentifier();
 				AstNode right = asn.getRight();
-				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) )
-				{
-					visitInfExp(right, name);
+				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) ) {
+					ArrayList<String> operands = new ArrayList<>(visitInfExp(right));
+					addFromInfix(operands, name);
 				}
-				String pe = getProgramEntity(right);
-				if ( pe != null)
-				{
-					addRecord(pe, name, "Assignment");
+				else {
+					String pe = getProgramEntity(right);
+					if ( pe != null) {
+						addRecord(pe, name, "Assignment");
+					}
 				}
 			}
 			else if ( asn.getRight() instanceof Name )
 			{
 				String name = ((Name) asn.getRight()).getIdentifier();
 				AstNode left = asn.getLeft();
-				if ( left instanceof InfixExpression && !(left instanceof PropertyGet))
-				{
-					visitInfExp(left, name);
+				if ( left instanceof InfixExpression && !(left instanceof PropertyGet)) {
+					ArrayList<String> operands = new ArrayList<>(visitInfExp(left));
+					addFromInfix(operands, name);
 				}
-				String pe = getProgramEntity(left);
-				if ( pe != null)
-				{
-					addRecord(pe, name, "Assignment");
+				else {
+					String pe = getProgramEntity(left);
+					if ( pe != null) {
+						addRecord(pe, name, "Assignment");
+					}
 				}
 			}
 		}
 	}
 	
-	private void visitInfExp(AstNode node, String name) {
-		//System.out.println("Here");
+	private void addFromInfix(ArrayList<String> operands, String name) {
+//		for ( String operand: operands)
+//		{
+//			System.out.print(operand + " ");
+//		}
+//		System.out.println();
+		for( int i = 0; i < operands.size()-1; i++ ) {
+			for ( int j = i+1; j < operands.size(); j++ ) {
+				addRecord(operands.get(i), operands.get(j), "Infix");
+				addRecord(operands.get(j), operands.get(i), "Infix");
+			}
+			if ( ! name.isEmpty() ) {
+				addRecord(operands.get(i), name, "Assignment");
+			}
+		}
+	}
+
+	private HashSet<String> visitInfExp(AstNode node) {
+		HashSet<String> operands = new HashSet<>();
+		if ( node != null ) {
 		InfixExpression ie = (InfixExpression)node;
-		String left = getProgramEntity(ie.getLeft());
-		String right = getProgramEntity(ie.getRight());
-		if ( left != null )
-		{
-			addRecord(left, name, "Assignment");
+		AstNode astLeft = ie.getLeft();
+		String left = "", right = "";
+		AstNode astRight = ie.getRight();
+		if ( astLeft instanceof InfixExpression && !(astLeft instanceof PropertyGet)) {
+			operands.addAll(visitInfExp(astLeft));
 		}
-		if ( right != null )
-		{
-			addRecord(right, name, "Assignment");
+		else {
+			left = getProgramEntity(astLeft);
 		}
+		
+		if ( astRight instanceof InfixExpression && !(astRight instanceof PropertyGet)) {
+			operands.addAll(visitInfExp(astRight));
+		}
+		else {
+			right = getProgramEntity(astRight);
+		}
+		
+		if ( !left.isEmpty() ) {
+			operands.add(left);
+		}
+		if ( !right.isEmpty() ) {
+			operands.add(right);
+		}
+		return operands;
+		}
+		else return operands;
 	}
 
 	private void visitProperyGet(AstNode node) {
@@ -180,7 +327,7 @@ public class FunctionVisitor implements NodeVisitor{
 		{
 			PropertyGet pg = (PropertyGet)node;
 			AstNode target = pg.getTarget();
-			if (pg.getParent() instanceof FunctionCall)
+			if (pg.getParent() instanceof FunctionCall) //Function Call
 			{
 				FunctionCall fc = (FunctionCall) pg.getParent();
 				String pe = ((Name)pg.getRight()).getIdentifier()+ "("
@@ -191,32 +338,31 @@ public class FunctionVisitor implements NodeVisitor{
 					addRecord(pe, name, "FunctionCall");
 				}
 				
-				ArrayList<AstNode> list = new ArrayList<>();
+				ArrayList<AstNode> argumentList = new ArrayList<>();
 				//Argument
 				for( AstNode ast : fc.getArguments() )
 				{
 					if ( ast instanceof Name )
 					{
-						list.add(ast);
+						argumentList.add(ast);
 						String name = ((Name)ast).getIdentifier();
 						addRecord(pe, name, "Argument");
 					}
 				}
 				
 				//CoArgument
-				for ( int i = 0; i < list.size()-1; i++ )
+				for ( int i = 0; i < argumentList.size()-1; i++ )
 				{
-					for ( int j = i+1; j < list.size(); j++ )
+					for ( int j = i+1; j < argumentList.size(); j++ )
 					{
-						String name1 = ((Name) list.get(i)).getIdentifier();
-						String name2 = ((Name) list.get(j)).getIdentifier();
+						String name1 = ((Name) argumentList.get(i)).getIdentifier();
+						String name2 = ((Name) argumentList.get(j)).getIdentifier();
 						addRecord(name1, name2, "CoArgument");
 						addRecord(name2, name1, "CoArgument");
 					}
 				}
-				
 			}
-			else
+			else //Field Access
 			{
 				if ( target instanceof Name )
 				{
@@ -249,7 +395,6 @@ public class FunctionVisitor implements NodeVisitor{
 	
 	//This can be become a recursive function in the future
 	private String getProgramEntity(AstNode node) {
-
 		if ( node instanceof Name )
 		{
 			return ((Name)node).getIdentifier();
@@ -257,59 +402,65 @@ public class FunctionVisitor implements NodeVisitor{
 		if ( node instanceof FunctionCall )
 		{
 			AstNode target = ((FunctionCall)node).getTarget();
+			if ( target instanceof Name )
+			{
+				String name = ((Name) target).getIdentifier();
+				//addRecord(pe, name, "FunctionCall");
+			}
 			if ( target instanceof PropertyGet )
 			{
 				PropertyGet pg = (PropertyGet)target;
 				String pe = pg.getProperty().getIdentifier(); 
-				return pe+"("+ ((FunctionCall)node).getArguments().size() + ")";
+				return pe + "(" + ((FunctionCall)node).getArguments().size() + ")";
 			}
 		}
 		if ( node instanceof PropertyGet )
 		{
 			PropertyGet pg = (PropertyGet)node;
 			AstNode target = pg.getTarget();
+			if ( target instanceof Name )
+			{
+				String name = ((Name) target).getIdentifier();
+				//addRecord(pe, name, "FunctionCall");
+			}
+			
 			if (pg.getParent() instanceof FunctionCall)
 			{
 				FunctionCall fc = (FunctionCall) pg.getParent();
-				String pe = ((Name)pg.getRight()).getIdentifier()+ "("
+				String methodName = ((Name)pg.getRight()).getIdentifier()+ "("
 						+ fc.getArguments().size() + ")";
-				if ( target instanceof Name )
-				{
-					String name = ((Name) target).getIdentifier();
-					addRecord(pe, name, "FunctionCall");
-				}
-				
-				ArrayList<AstNode> list = new ArrayList<>();
-				//Argument
-				for( AstNode ast : fc.getArguments() )
-				{
-					if ( ast instanceof Name )
-					{
-						list.add(ast);
-						String name = ((Name)ast).getIdentifier();
-						addRecord(pe, name, "Argument");
-					}
-				}
-				
-				//CoArgument
-				for ( int i = 0; i < list.size()-1; i++ )
-				{
-					for ( int j = i+1; j < list.size(); j++ )
-					{
-						String name1 = ((Name) list.get(i)).getIdentifier();
-						String name2 = ((Name) list.get(j)).getIdentifier();
-						addRecord(name1, name2, "CoArgument");
-						addRecord(name2, name1, "CoArgument");
-					}
-				}
+				return methodName;
+//				ArrayList<AstNode> list = new ArrayList<>();
+//				//Argument
+//				for( AstNode ast : fc.getArguments() )
+//				{
+//					if ( ast instanceof Name )
+//					{
+//						list.add(ast);
+//						String name = ((Name)ast).getIdentifier();
+//						addRecord(pe, name, "Argument");
+//					}
+//				}
+//				//CoArgument
+//				for ( int i = 0; i < list.size()-1; i++ )
+//				{
+//					for ( int j = i+1; j < list.size(); j++ )
+//					{
+//						String name1 = ((Name) list.get(i)).getIdentifier();
+//						String name2 = ((Name) list.get(j)).getIdentifier();
+//						addRecord(name1, name2, "CoArgument");
+//						addRecord(name2, name1, "CoArgument");
+//					}
+//				}
 			}
 			else
 			{
-				String pe = pg.getProperty().getIdentifier(); 
-				return pe;
+				String fieldName = pg.getProperty().getIdentifier(); 
+				return fieldName;
 			}
+
 		}
-		return null;
+		return "";
 	}
 
 	private String normalizeVarName(String varName) {
@@ -322,16 +473,38 @@ public class FunctionVisitor implements NodeVisitor{
 	}
 
 	private void addRecord(String pe, String name, String relationship) {
-		String newName = this.normalizeVarName(name);
-
-		variableNames.add(newName);
-		programEntities.add(pe);
-		Record r = new Record(pe, newName, relationship);
+		//String newName = this.normalizeVarName(name);
+		//variableNames.add(newName);
+		//programEntities.add(pe);
+		if ( pe.isEmpty() || name.isEmpty() )
+		{
+			return;
+		}
+		Record r = null;
+		if ( variableNames.contains(pe) && variableNames.contains(name) ) {
+			r = new Record(pe, name, relationship, 1);
+		}
+		else if ( variableNames.contains(name)){
+			r = new Record(pe, name, relationship, 0);
+			programEntities.add(pe);
+		}
+		else if ( variableNames.contains(pe)) {
+			r = new Record(name, pe, relationship, 0);
+			programEntities.add(name);
+		}
 		if(recordList.containsKey(r)) {
 			recordList.put(r, recordList.get(r)+1);
-		} else {
+		} else if ( r != null){
 			recordList.put(r, 1);
 		}
+	}
+
+	/**
+	 * Merge record to build the Baker record
+	 * 
+	 */
+	public HashMap<Record, Integer> mergeRecord() {
+		return recordList;
 	}
 
 }
