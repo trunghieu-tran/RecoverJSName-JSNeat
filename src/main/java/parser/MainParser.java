@@ -38,8 +38,8 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-//		demo.parseTrainSetForest();
-		demo.parseBaker();
+		demo.parseTrainSetForest();
+		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
 //		demo.parseTestSetTM();
@@ -119,9 +119,12 @@ public class MainParser {
 //		File trainFileList = new File(fileList + "/trainFileList.txt");
 		if ( trainFileList.exists() )
 		{
+			int count = 0;
 			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
 			for ( String str: lines)
 			{
+				count++;
+				if ( count > 10 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();

@@ -31,6 +31,10 @@ public class ForestVisitor implements NodeVisitor{
 					vn.add(((Name)at).getIdentifier());
 				}
 			}
+			/**
+			 * @TODO: add function hierarchy to find more variable
+			 * 
+			 */
 			FindVariableVisitor visitor = new FindVariableVisitor();
 			node.visit(visitor);
 			vn.addAll(visitor.getVN());
@@ -49,11 +53,11 @@ public class ForestVisitor implements NodeVisitor{
 			String dir = path + "_" + functionName;
 			try {
 				fv.printToFile(dir);
-				if (functionName.equals("tokenize"))
-				{
-					fv.print();
-				}
-				//fv.print();
+//				if (functionName.equals("tokenize"))
+//				{
+//					fv.print();
+//				}
+				fv.print();
 			} 
 			catch (IOException e) {
 				e.printStackTrace();

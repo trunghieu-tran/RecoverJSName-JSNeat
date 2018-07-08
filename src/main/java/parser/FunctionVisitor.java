@@ -14,7 +14,8 @@ import org.mozilla.javascript.ast.*;
 
 /**
  * @author Mike
- * Visit a function to build a graph from it
+ * Visit a function to build a variable graph from it
+ * @TODO: Array Access, Unary Expression
  */
 public class FunctionVisitor implements NodeVisitor{
 	HashSet<String> programEntities = new HashSet<>();
@@ -24,8 +25,6 @@ public class FunctionVisitor implements NodeVisitor{
 	public FunctionVisitor(HashSet<String> vn)
 	{
 		variableNames.addAll(vn);
-		//relationships.add("property");
-		//relationships.put("AssignVar", 1);
 	}
 	
 	public void print()
@@ -208,7 +207,7 @@ public class FunctionVisitor implements NodeVisitor{
 			case (Token.VAR):
 			case (Token.LET):
 			case (Token.CONST): visitVarInit(node); break;
-			//case (Token.IF): visitIfStmt(node); break;
+			case (Token.IF): visitIfStmt(node); break;
 		}
 		return true;
 	}
@@ -217,19 +216,22 @@ public class FunctionVisitor implements NodeVisitor{
 		if ( node instanceof IfStatement )
 		{
 			IfStatement ifNode = (IfStatement) node;
-			AstNode cond = ifNode.getCondition();
-			if ( cond instanceof Name ) {
+			AstNode condNode = ifNode.getCondition();
+			if ( condNode instanceof Name ) {
 				// @TODO : add record variable of type boolean;
-				addRecord("bool", ((Name)cond).getIdentifier(), "Boolean");
+				addRecord("#bool", ((Name)condNode).getIdentifier(), "Boolean");
 			}
-			if ( cond instanceof InfixExpression ) {
-				// @TODO: if (a > b) : good; if ( a + b ): both a,b are bool;
-				int operator = ((InfixExpression)cond).getOperator();
+			if ( condNode instanceof InfixExpression ) {
+				// @TODO: if (a > b) : good; if ( a LOGICAL_EXPR b ): both a,b are bool;
+				ArrayList<String> operands = new ArrayList<>(visitInfixExp(condNode));
+				addFromInfix(operands, "");
+				
+				int operator = ((InfixExpression)condNode).getOperator();
 				if ( operator == Token.AND || operator == Token.OR )
 				{
-					// @TODO: add record 
-					ArrayList<String> temp = new ArrayList<>(visitInfExp(cond));
-					addFromInfix(temp, "");
+					for ( String operand: operands) {
+						addRecord("#bool", operand, "Boolean");
+					}
 				}
 			}
 
@@ -245,13 +247,17 @@ public class FunctionVisitor implements NodeVisitor{
 				String name = ((Name) asn.getLeft()).getIdentifier();
 				AstNode right = asn.getRight();
 				if ( right instanceof InfixExpression && !(right instanceof PropertyGet) ) {
-					ArrayList<String> operands = new ArrayList<>(visitInfExp(right));
+					ArrayList<String> operands = new ArrayList<>(visitInfixExp(right));
 					addFromInfix(operands, name);
 				}
 				else {
 					String pe = getProgramEntity(right);
 					if ( pe != null) {
-						addRecord(pe, name, "Assignment");
+						if ( pe.contains("#array") ) {
+							addRecord(pe.substring(0, pe.indexOf("#array")), name, "ArrayAccess");
+							addRecord(pe.substring(pe.indexOf("#array")+6), name, "FieldAccess");
+						}
+						else addRecord(pe, name, "Assignment");
 					}
 				}
 			}
@@ -260,13 +266,17 @@ public class FunctionVisitor implements NodeVisitor{
 				String name = ((Name) asn.getRight()).getIdentifier();
 				AstNode left = asn.getLeft();
 				if ( left instanceof InfixExpression && !(left instanceof PropertyGet)) {
-					ArrayList<String> operands = new ArrayList<>(visitInfExp(left));
+					ArrayList<String> operands = new ArrayList<>(visitInfixExp(left));
 					addFromInfix(operands, name);
 				}
 				else {
 					String pe = getProgramEntity(left);
 					if ( pe != null) {
-						addRecord(pe, name, "Assignment");
+						if ( pe.contains("#array") ) {
+							addRecord(pe.substring(0, pe.indexOf("#array")), name, "ArrayAccess");
+							addRecord(pe.substring(pe.indexOf("#array")+6), name, "FieldAccess");
+						}
+						else addRecord(pe, name, "Assignment");
 					}
 				}
 			}
@@ -281,16 +291,28 @@ public class FunctionVisitor implements NodeVisitor{
 //		System.out.println();
 		for( int i = 0; i < operands.size()-1; i++ ) {
 			for ( int j = i+1; j < operands.size(); j++ ) {
-				addRecord(operands.get(i), operands.get(j), "Infix");
-				addRecord(operands.get(j), operands.get(i), "Infix");
+				String opr1 = operands.get(i), opr2 = operands.get(j);
+				if ( !opr1.contains("#array") && !opr2.contains("#array") ) {
+					return;
+				} else {
+					addRecord(opr1, opr2, "Infix");
+					addRecord(opr2, opr1, "Infix");
+				}
 			}
-			if ( ! name.isEmpty() ) {
-				addRecord(operands.get(i), name, "Assignment");
+		}
+		if ( ! name.isEmpty() ) {
+			for ( int i = 0; i < operands.size(); i++) {
+			String pe = operands.get(i);
+			if ( pe.contains("#array") ) {
+				addRecord(pe.substring(0, pe.indexOf("#array")), name, "ArrayAccess");
+				addRecord(pe.substring(pe.indexOf("#array")+6), name, "FieldAccess");
+			}
+			else addRecord(pe, name, "Assignment");
 			}
 		}
 	}
 
-	private HashSet<String> visitInfExp(AstNode node) {
+	private HashSet<String> visitInfixExp(AstNode node) {
 		HashSet<String> operands = new HashSet<>();
 		if ( node != null ) {
 		InfixExpression ie = (InfixExpression)node;
@@ -298,14 +320,14 @@ public class FunctionVisitor implements NodeVisitor{
 		String left = "", right = "";
 		AstNode astRight = ie.getRight();
 		if ( astLeft instanceof InfixExpression && !(astLeft instanceof PropertyGet)) {
-			operands.addAll(visitInfExp(astLeft));
+			operands.addAll(visitInfixExp(astLeft));
 		}
 		else {
 			left = getProgramEntity(astLeft);
 		}
 		
 		if ( astRight instanceof InfixExpression && !(astRight instanceof PropertyGet)) {
-			operands.addAll(visitInfExp(astRight));
+			operands.addAll(visitInfixExp(astRight));
 		}
 		else {
 			right = getProgramEntity(astRight);
@@ -383,9 +405,12 @@ public class FunctionVisitor implements NodeVisitor{
 			{
 				name = ((Name) vi.getTarget()).getIdentifier();
 				String pe = getProgramEntity(vi.getInitializer());
-				if ( pe != null )
-				{
-					addRecord(pe, name, "Assignment");
+				if ( pe != null) {
+					if ( pe.contains("#array") ) {
+						addRecord(pe.substring(0, pe.indexOf("#array")), name, "ArrayAccess");
+						addRecord(pe.substring(pe.indexOf("#array")+6), name, "FieldAccess");
+					}
+					else addRecord(pe, name, "Assignment");
 				}
 			}
 			else
@@ -417,48 +442,34 @@ public class FunctionVisitor implements NodeVisitor{
 		if ( node instanceof PropertyGet )
 		{
 			PropertyGet pg = (PropertyGet)node;
-			AstNode target = pg.getTarget();
-			if ( target instanceof Name )
-			{
-				String name = ((Name) target).getIdentifier();
-				//addRecord(pe, name, "FunctionCall");
-			}
-			
 			if (pg.getParent() instanceof FunctionCall)
 			{
 				FunctionCall fc = (FunctionCall) pg.getParent();
 				String methodName = ((Name)pg.getRight()).getIdentifier()+ "("
 						+ fc.getArguments().size() + ")";
 				return methodName;
-//				ArrayList<AstNode> list = new ArrayList<>();
-//				//Argument
-//				for( AstNode ast : fc.getArguments() )
-//				{
-//					if ( ast instanceof Name )
-//					{
-//						list.add(ast);
-//						String name = ((Name)ast).getIdentifier();
-//						addRecord(pe, name, "Argument");
-//					}
-//				}
-//				//CoArgument
-//				for ( int i = 0; i < list.size()-1; i++ )
-//				{
-//					for ( int j = i+1; j < list.size(); j++ )
-//					{
-//						String name1 = ((Name) list.get(i)).getIdentifier();
-//						String name2 = ((Name) list.get(j)).getIdentifier();
-//						addRecord(name1, name2, "CoArgument");
-//						addRecord(name2, name1, "CoArgument");
-//					}
-//				}
 			}
 			else
 			{
 				String fieldName = pg.getProperty().getIdentifier(); 
 				return fieldName;
 			}
-
+		}
+		if ( node instanceof ElementGet ) {
+			ElementGet arrayNode = (ElementGet)node;
+			AstNode target = arrayNode.getTarget();
+			AstNode elem = arrayNode.getElement();
+			if ( target instanceof Name ) {
+				String elemName = "";
+				if ( elem instanceof Name) {
+					elemName = ((Name)elem).getIdentifier();
+				}
+				String ret = ((Name) target).getIdentifier() + "#array" + elemName;
+				return ret;
+			}
+		}
+		if ( node instanceof ArrayLiteral ) {
+			return "[]";
 		}
 		return "";
 	}
@@ -472,25 +483,28 @@ public class FunctionVisitor implements NodeVisitor{
 		return varName;
 	}
 
-	private void addRecord(String pe, String name, String relationship) {
+	private void addRecord(String pe1, String pe2, String relationship) {
 		//String newName = this.normalizeVarName(name);
 		//variableNames.add(newName);
 		//programEntities.add(pe);
-		if ( pe.isEmpty() || name.isEmpty() )
+		if ( pe1.isEmpty() || pe2.isEmpty() )
 		{
 			return;
 		}
 		Record r = null;
-		if ( variableNames.contains(pe) && variableNames.contains(name) ) {
-			r = new Record(pe, name, relationship, 1);
+		if ( variableNames.contains(pe1) && variableNames.contains(pe2) ) {
+			if ( pe1.equals(pe2) ) {
+				return;
+			}
+			r = new Record(pe1, pe2, relationship, 1);
 		}
-		else if ( variableNames.contains(name)){
-			r = new Record(pe, name, relationship, 0);
-			programEntities.add(pe);
+		else if ( variableNames.contains(pe2)){
+			r = new Record(pe1, pe2, relationship, 0);
+			programEntities.add(pe1);
 		}
-		else if ( variableNames.contains(pe)) {
-			r = new Record(name, pe, relationship, 0);
-			programEntities.add(name);
+		else if ( variableNames.contains(pe1)) {
+			r = new Record(pe2, pe1, relationship, 0);
+			programEntities.add(pe2);
 		}
 		if(recordList.containsKey(r)) {
 			recordList.put(r, recordList.get(r)+1);
