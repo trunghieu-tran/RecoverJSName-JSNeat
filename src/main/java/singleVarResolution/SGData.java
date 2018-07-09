@@ -12,7 +12,10 @@ import parser.MainParser;
 
 public class SGData {
 	public HashSet<StarGraph> sgSet = new HashSet<>();
-	public void getData(String path) {
+	private int numOfFunction = -1;
+	public void getData(String path, int numOfFunction) {
+		this.numOfFunction = numOfFunction;
+
 		MainParser main = new MainParser();
 		//Get data directly from parser
 		if ( path.isEmpty() ) {
@@ -34,9 +37,10 @@ public class SGData {
 		File dir = new File(sgDir);
 		ArrayList<File> files = new ArrayList<>();
 		searchDir(dir, files);
+		int cnt = 0;
 		for( File f: files )
 		{
-			String path;
+			String path = "";
 			try {
 				//for each file name = variable Name
 				path = f.getCanonicalPath();
@@ -65,7 +69,12 @@ public class SGData {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
+			if (++cnt % 10000 == 0)
+			System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(files.size()) + "] >>> LOADED: " + path);
+
+			if (cnt == numOfFunction)
+				break;
 		}
 
 //		for ( StarGraph sg: sgSet )
@@ -75,6 +84,7 @@ public class SGData {
 //				System.out.println(e.toString());
 //			}
 //		}
+		System.out.println("DONE loading corpus data!!!!");
 		return sgSet;
 	}
 	

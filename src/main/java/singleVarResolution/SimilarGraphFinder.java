@@ -20,6 +20,14 @@ public class SimilarGraphFinder {
 		this.sgSet = sgSet;
 	}
 
+	private double getScoreOfVarName(ArrayList<Double> scList) {
+		double sum = 0;
+		for (Double d : scList) {
+			sum += d;
+		}
+		return sum / scList.size();
+	}
+
 	public ArrayList<Pair<String, Double>> getCandidateListForStarGraph(StarGraph g) {
 		ArrayList<Pair<String, Double>> res = new ArrayList<>();
 		HashSet<Pair<StarGraph, Double>> similarGraphs = getSimilarStarGraphWith(g);
@@ -39,15 +47,7 @@ public class SimilarGraphFinder {
 		for (String varName : mapVarNameVsScore.keySet()) {
 			ArrayList<Double> scList = mapVarNameVsScore.getOrDefault(varName, new ArrayList<>());
 			if (scList.size() == 0) continue;
-
-			double sum = 0;
-			boolean hasOne = false;
-			for (Double d : scList) {
-				sum += d;
-				hasOne = (d == 1.0);
-				if (hasOne) break;
-			}
-			double finalScore = hasOne ? 1.0 : sum / scList.size();
+			double finalScore = getScoreOfVarName(scList);
 			res.add(new Pair<>(varName, finalScore));
 		}
 

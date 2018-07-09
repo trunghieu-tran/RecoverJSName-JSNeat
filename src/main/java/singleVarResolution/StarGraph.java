@@ -18,6 +18,13 @@ public class StarGraph {
 	private String varNameFunction;
 	private String varName;
 
+	public StarGraph(StarGraph sg) {
+		this.edges = sg.edges;
+		this.vectorRepresentation = sg.vectorRepresentation;
+		this.varNameFunction = sg.varNameFunction;
+		this.varName = sg.varName;
+	}
+
 	public StarGraph(HashSet<Edge> edges, String varNameFunction) {
 		this.edges = edges;
 		this.varNameFunction = varNameFunction;
@@ -56,7 +63,7 @@ public class StarGraph {
 		while (i < len && j < lenSg) {
 			long curr = vectorRepresentation.get(i);
 			while (j < lenSg && sg.vectorRepresentation.get(j) < curr) ++j;
-			if (j > lenSg) break;
+			if (j >= lenSg) break;
 			if (sg.vectorRepresentation.get(j) == curr) {
 				cnt++;
 				++i;
@@ -70,4 +77,13 @@ public class StarGraph {
 			return -1.0;
 	}
 
+
+	@Override
+	public String toString() {
+		StringBuilder res = new StringBuilder();
+		res.append("StarGraphInFo : ").append(this.varNameFunction).append(" (").append(getSizeGraph()).append(")\n");
+		for (Edge e : edges)
+			res.append(e.toString()).append("\n");
+		return res.toString();
+	}
 }
