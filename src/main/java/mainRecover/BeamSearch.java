@@ -11,6 +11,7 @@ import java.util.*;
  * @organization UTDallas
  */
 public class BeamSearch {
+	private static final String UNRESOLVED = "UNRESOLVED";
 	private ArrayList< ArrayList<Pair<String, Double>> > candidateLists;
 	private int numOfVar;
 	private HashSet<Integer> marked = new HashSet<>();
@@ -97,17 +98,48 @@ public class BeamSearch {
 	}
 
 	private void initTheFirstRecover() {
+		// TODO
+	}
 
+	private void reverseToOriginalOrder() {
+		for (int i = 0; i < numOfVar; ++i)
+			for (int j = i + 1; j < numOfVar; ++j) {
+				int ii = orderRecovering.get(i);
+				int jj = orderRecovering.get(j);
+				if (ii <= jj) continue;
+				for (int kk = 0; kk < currRecovering.size(); ++kk) {
+					String tmpStr = currRecovering.get(kk).get(i);
+					currRecovering.get(kk).set(i, currRecovering.get(kk).get(j));
+					currRecovering.get(kk).set(j, tmpStr);
+				}
+				orderRecovering.set(i, jj);
+				orderRecovering.set(j, ii);
+			}
 	}
 
 	public ArrayList< ArrayList<String>> getTopKRecoveringResult(int K) {
+		// first recover
 		initTheFirstRecover();
-		int i = getNextResolveID();
-		while (i != -1) {
-			orderRecovering.add(i);
-			recovering(i, K);
+
+		// recover the rest
+		int id = getNextResolveID();
+		while (id != -1) {
+			orderRecovering.add(id);
+			marked.add(id);
+			recovering(id, K);
 		}
-		// TODO - reverse the old order
+
+		// Add UNRESOLVED
+		for (int i = 0; i < numOfVar; ++i) {
+			if (!marked.contains(i)) {
+				for (int j = 0; j < currRecovering.size(); ++j)
+					currRecovering.get(j).add(UNRESOLVED);
+				orderRecovering.add(i);
+			}
+		}
+
+		reverseToOriginalOrder();
+
 		return currRecovering;
 	}
 }
