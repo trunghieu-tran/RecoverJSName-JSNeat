@@ -5,12 +5,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.ast.*;
+
+import singleVarResolution.Edge;
+import singleVarResolution.StarGraph;
 
 /**
  * @author Mike
@@ -22,9 +26,12 @@ public class FunctionVisitor implements NodeVisitor{
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
-	public FunctionVisitor(HashSet<String> vn)
+	HashSet<StarGraph> sgSet = new HashSet<>();
+	String functionName;
+	public FunctionVisitor(HashSet<String> vn, String functionName)
 	{
 		variableNames.addAll(vn);
+		this.functionName = functionName;
 	}
 	
 	public void print()
@@ -37,6 +44,7 @@ public class FunctionVisitor implements NodeVisitor{
 	
 	public void printToFile(String dest) throws IOException
 	{
+		System.out.println(dest);
 		if ( recordList.isEmpty() )
 		{
 			return;
@@ -519,6 +527,53 @@ public class FunctionVisitor implements NodeVisitor{
 	 */
 	public HashMap<Record, Integer> mergeRecord() {
 		return recordList;
+	}
+
+	public void buildStarGraph() {
+		for( String varName : variableNames ) {
+			StarGraph sg;
+			HashSet<Edge> edges = new HashSet<>();
+			for( Record r: recordList.keySet() ) {
+				//Check: right now only pe-var relationship type
+				if ( varName.equals(r.name) && r.type == 0) {
+					edges.add(new Edge(r.pe, r.relationship, recordList.get(r)));
+				}
+			}
+			if ( edges.isEmpty() ) {
+				continue;
+			} else {
+				sg = new StarGraph(edges, varName + "-" + this.functionName);
+				sgSet.add(sg);
+			}
+		}
+	}
+	
+	public void printStarGraph(String dest) throws IOException {
+		System.out.println(dest);
+		this.buildStarGraph();
+		File dir = new File(dest);
+		if ( ! dir.exists() )
+		{
+			dir.mkdirs();
+		}
+		for( StarGraph sg : sgSet ) {
+			File sgFile = new File(dest + "/" + sg.getVarName() + ".txt");
+			FileWriter fw = new FileWriter(sgFile);
+			PrintWriter pw = new PrintWriter(fw);
+			for ( Edge edge: sg.getEdges() )
+			{
+				String content = edge.toString();
+				pw.println(content);
+				//System.out.println(edge.toString());
+			}
+			pw.close();
+		}
+	}
+
+	public HashSet<StarGraph> getStarGraph() {
+		// TODO Auto-generated method stub
+		this.buildStarGraph();
+		return sgSet;
 	}
 
 }

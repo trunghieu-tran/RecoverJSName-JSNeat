@@ -5,18 +5,25 @@ import java.util.List;
 
 import org.mozilla.javascript.ast.*;
 
+import singleVarResolution.StarGraph;
+
 /**
  * @author Mike
  * Build a forest from the training dataset
  */
 public class ForestVisitor implements NodeVisitor{
 	String path;
+	String sgPath;
+	HashSet<StarGraph> sgSet = new HashSet<>();
 	int anonymousCount = 0; //Handle Anonymous Function
 	
 	public ForestVisitor(String path) {
 		this.path = path;
 	}
-
+	
+	public HashSet<StarGraph> getStarForest() {
+		return sgSet;
+	}
 	@Override
 	public boolean visit(AstNode node) {
 		if ( node instanceof FunctionNode )
@@ -44,25 +51,33 @@ public class ForestVisitor implements NodeVisitor{
 //				System.out.print(s + " ");
 //			}
 //			System.out.println();
-			FunctionVisitor fv = new FunctionVisitor(vn);
-			node.visit(fv);
+
 			String functionName = ((FunctionNode)node).getName();
 			if ( functionName.isEmpty() ) {
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
 			}
 			String dir = path + "_" + functionName;
+			
+			FunctionVisitor fv = new FunctionVisitor(vn, dir);
+			node.visit(fv);
 			try {
-				fv.printToFile(dir);
+				//fv.printToFile(dir);
 //				if (functionName.equals("tokenize"))
 //				{
 //					fv.print();
 //				}
-				fv.print();
+				//fv.print();
+				fv.printStarGraph(sgPath);
+				sgSet.addAll(fv.getStarGraph());
 			} 
 			catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		return true;
+	}
+
+	public void getSgPath(String sgPath) {
+		this.sgPath = sgPath;
 	}
 }

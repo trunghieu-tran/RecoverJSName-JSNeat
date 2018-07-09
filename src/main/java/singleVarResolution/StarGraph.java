@@ -39,6 +39,10 @@ public class StarGraph {
 	public int getSizeGraph() {
 		return vectorRepresentation.size();
 	}
+	
+	public HashSet<Edge> getEdges() {
+		return edges;
+	}
 
 	// check whether the testing graph is similar to other graph from corpus
 	public boolean isSimilarTo(StarGraph sg) {

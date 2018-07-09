@@ -156,12 +156,14 @@ public class BakerVisitor implements NodeVisitor{
 //					System.out.print(s + " ");
 //				}
 //				System.out.println();
-				FunctionVisitor fv = new FunctionVisitor(vn);
-				node.visit(fv);
+
 				String functionName = ((FunctionNode)node).getName();
 				if ( functionName.isEmpty() ) {
 					functionName = "anonymous" + Integer.toString(anonymousCount++);
 				}
+				
+				FunctionVisitor fv = new FunctionVisitor(vn, functionName);
+				node.visit(fv);
 //				String dir = path + "_" + functionName;
 				recordList.putAll(fv.mergeRecord());
 //				try {

@@ -22,4 +22,9 @@ public class Edge {
 	public boolean isEquals(Edge e) {
 		return this.hashCode == e.hashCode;
 	}
+	
+	@Override
+	public String toString() {
+		return pe + " " + rel + " " + freq;
+	}
 }

@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -13,8 +14,10 @@ import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
 import org.mozilla.javascript.ast.AstRoot;
 
+import singleVarResolution.StarGraph;
+
 /**
- * @author Mike
+ * @author Mike Tran
  * Main program. 
  * Generate file lists from data into training and testing.
  * Parse each file to build corpus.
@@ -30,10 +33,13 @@ public class MainParser {
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
 	static String bakerDir = "../BakerData";
+	static String starGraphDir = "../StarGraphData";
 	static String trainTMDir = "../TrainTM";
 	static String fileList = "../FileList";
 //	ArrayList<File> testSet = new ArrayList<>();
 //	ArrayList<File> trainSet = new ArrayList<>();
+	
+	public HashSet<StarGraph> sgSet = new HashSet<>();
 	
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
@@ -115,8 +121,8 @@ public class MainParser {
 	}
 	
 	public void parseTrainSetForest() throws IOException {
-		File trainFileList = new File(fileList + "/test.txt");
-//		File trainFileList = new File(fileList + "/trainFileList.txt");
+//		File trainFileList = new File(fileList + "/test.txt");
+		File trainFileList = new File(fileList + "/trainFileList.txt");
 		if ( trainFileList.exists() )
 		{
 			int count = 0;
@@ -124,7 +130,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 10 ) break;
+				if ( count > 200 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
@@ -136,12 +142,17 @@ public class MainParser {
 					String projectName = path.substring(0, path.indexOf("\\"));
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
+
+					String sgPath = starGraphDir + path;
 //					path = trainSetDir + path;
 					path = "../TestRun" + path;
-					System.out.println(path);
+
+
 					ForestVisitor myVisitor = new ForestVisitor(path);
+					myVisitor.getSgPath(sgPath);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
+					sgSet.addAll(myVisitor.getStarForest());
 				}
 				
 				catch (Exception e)
