@@ -1,0 +1,113 @@
+package mainRecover;
+
+import javafx.util.Pair;
+
+import java.util.*;
+
+/**
+ * @author Harry Tran on 7/9/18.
+ * @project RecoverJSName
+ * @email trunghieu.tran@utdallas.edu
+ * @organization UTDallas
+ */
+public class BeamSearch {
+	private ArrayList< ArrayList<Pair<String, Double>> > candidateLists;
+	private int numOfVar;
+	private HashSet<Integer> marked = new HashSet<>();
+	private ArrayList<ArrayList<String>> currRecovering = new ArrayList<>();
+	private ArrayList<Integer> orderRecovering = new ArrayList<>();
+	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
+
+	public BeamSearch(ArrayList<ArrayList<Pair<String, Double>>> candidateLists) {
+		this.candidateLists = candidateLists;
+		this.numOfVar = candidateLists.size();
+		updateMapVarNamevsScore();
+	}
+
+	private void updateMapVarNamevsScore() {
+		for (int i = 0; i < numOfVar; ++i) {
+			for (Pair<String, Double> p : candidateLists.get(i)) {
+				mapVarNamevsScore.put(new Pair<>(i, p.getKey()), p.getValue());
+			}
+		}
+	}
+
+	private double getVarNameScore(int idx, String name) {
+		return mapVarNamevsScore.getOrDefault(new Pair<>(idx, name), 0.0);
+	}
+
+	private int getNextResolveID() {
+		int res = -1;
+		double currBest = 0;
+		for (int i = 0; i < numOfVar; ++i)
+			if (!marked.contains(i) && candidateLists.get(i).size() > 0) {
+				double curr = candidateLists.get(i).get(0).getValue();
+				if (res == -1 || currBest < curr) {
+					res = i;
+					currBest = curr;
+				}
+			}
+		return res;
+	}
+
+	private double getScoreTogether(ArrayList<String> setName) {
+		// TODO
+		return 0.5;
+	}
+
+	private double getConfidentScore(ArrayList<Double> similarScores, double scoreTogether) {
+		// TODO
+		return 0.5;
+	}
+
+	private void recovering(int idx, int K) {
+		ArrayList< Pair<ArrayList<String>, Double>> allPosssibleRecover = new ArrayList<>();
+		ArrayList<Pair<String, Double>> candI = candidateLists.get(idx);
+
+		for (int i = 0; i < currRecovering.size(); ++i) {
+			ArrayList<Double> setScore = new ArrayList<>();
+			ArrayList<String> recovered = currRecovering.get(i);
+
+			for (int j = 0; j < recovered.size(); ++j) {
+				setScore.add(getVarNameScore(orderRecovering.get(j), recovered.get(j)));
+			}
+
+			for (Pair<String, Double> p : candI) {
+				ArrayList<String> setNameTmp = new ArrayList<>(recovered);
+				setNameTmp.add(p.getKey());
+				ArrayList<Double> setScoreTmp = new ArrayList<>(setScore);
+				setScoreTmp.add(p.getValue());
+
+				double pTogether = getScoreTogether(setNameTmp);
+				double sc = getConfidentScore(setScoreTmp, pTogether);
+				allPosssibleRecover.add(new Pair<>(setNameTmp, sc));
+			}
+		}
+		allPosssibleRecover.sort(new Comparator<Pair<ArrayList<String>, Double>>() {
+			@Override
+			public int compare(Pair<ArrayList<String>, Double> o1, Pair<ArrayList<String>, Double> o2) {
+				return o2.getValue().compareTo(o1.getValue());
+			}
+		});
+
+		currRecovering.clear();
+		for (int i = 0; i < Math.min(K, allPosssibleRecover.size()); ++i) {
+			currRecovering.add(allPosssibleRecover.get(i).getKey());
+		}
+	}
+
+	private void initTheFirstRecover() {
+
+	}
+
+	public ArrayList< ArrayList<String>> getTopKRecoveringResult(int K) {
+		initTheFirstRecover();
+		int i = getNextResolveID();
+		while (i != -1) {
+			orderRecovering.add(i);
+			recovering(i, K);
+		}
+		// TODO - reverse the old order
+		return currRecovering;
+	}
+}
