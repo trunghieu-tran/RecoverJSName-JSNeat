@@ -20,7 +20,7 @@ public class MainSingleVarResolution {
 
 		StarGraph testGraph = new StarGraph(edges, "UNKNOWN");
 		SGData sgData = new SGData();
-		sgData.getData(1);
+		sgData.getData("F:\\Study\\Research\\RecoverJsName\\StarGraphData");
 
 		SimilarGraphFinder sf = new SimilarGraphFinder(sgData.sgSet);
 

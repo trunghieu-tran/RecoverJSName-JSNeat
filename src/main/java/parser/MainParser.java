@@ -34,7 +34,7 @@ public class MainParser {
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
 	static String bakerDir = "../BakerData";
-	static String starGraphDir = "../StarGraphData";
+	public static String starGraphDir = "../StarGraphData";
 	static String trainTMDir = "../TrainTM";
 	static String fileList = "../FileList";
 //	ArrayList<File> testSet = new ArrayList<>();
