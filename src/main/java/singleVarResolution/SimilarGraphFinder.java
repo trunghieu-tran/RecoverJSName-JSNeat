@@ -3,6 +3,7 @@ package singleVarResolution;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -43,12 +44,20 @@ public class SimilarGraphFinder {
 			boolean hasOne = false;
 			for (Double d : scList) {
 				sum += d;
-				hasOne |= (d == 1.0);
+				hasOne = (d == 1.0);
 				if (hasOne) break;
 			}
 			double finalScore = hasOne ? 1.0 : sum / scList.size();
 			res.add(new Pair<>(varName, finalScore));
 		}
+
+		res.sort(new Comparator<Pair<String, Double>>() {
+			@Override
+			public int compare(Pair<String, Double> o1, Pair<String, Double> o2) {
+				return o2.getValue().compareTo(o1.getValue());
+			}
+		});
+
 		return res;
 	}
 
