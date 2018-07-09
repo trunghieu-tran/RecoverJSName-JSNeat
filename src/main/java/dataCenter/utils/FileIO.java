@@ -61,4 +61,23 @@ public class FileIO {
 		}
 		return res;
 	}
+
+	public static ArrayList<String> getAllSubdirectoryFromDirectoryWithNumber(String dir, int num) {
+		ArrayList<String> res = new ArrayList<>();
+		File file = new File(dir);
+		String[] directories = file.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File current, String name) {
+				return new File(current, name).isDirectory();
+			}
+		});
+
+		int cc = 0;
+		for (String str : directories) {
+			res.add(dir + str + "/");
+			if (++cc >= num) break;
+
+		}
+		return res;
+	}
 }

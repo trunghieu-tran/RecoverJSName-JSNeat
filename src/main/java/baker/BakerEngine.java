@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class BakerEngine {
 	private int idVarName;
-	private ArrayList<BakerItem> bakerItemList;
+	private ArrayList<BakerItem> bakerItemList = new ArrayList<>();
 
 	public BakerEngine(int idVarName, ArrayList<BakerItem> bakerItemList) {
 		this.idVarName = idVarName;
@@ -31,6 +31,7 @@ public class BakerEngine {
 			curr = getBakerItemList().get(0);
 			for (int i = 1; i < getBakerItemList().size(); ++i) {
 				BakerItem last = curr;
+//				if (curr == null) break;
 				curr = curr.getIntersection(getBakerItemList().get(i));
 				if (curr.hasAnEmptyCandidateList()) {
 					curr = last;

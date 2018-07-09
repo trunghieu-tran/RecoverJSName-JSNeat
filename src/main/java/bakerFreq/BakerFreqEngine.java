@@ -47,13 +47,10 @@ public class BakerFreqEngine {
 			}
 		}
 
-		res.sort(new Comparator<Pair<Integer, Double>>() {
-			@Override
-			public int compare(final Pair<Integer, Double> o1, final Pair<Integer, Double> o2) {
-				if (o1.getValue() < o2.getValue()) return 1;
-				else if (o1.getValue() > o2.getValue()) return -1;
-				else return 0;
-			}
+		res.sort((o1, o2) -> {
+			if (o1.getValue() < o2.getValue()) return 1;
+			else if (o1.getValue() > o2.getValue()) return -1;
+			else return 0;
 		});
 
 		return res;

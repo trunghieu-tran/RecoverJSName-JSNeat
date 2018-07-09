@@ -4,41 +4,46 @@
 # Author: Trung Hieu Tran <trunghieu.tran@utdallas.edu>
 # For more information, see README.MD <to be updated>
 
-from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
+# from nltk.corpus import stopwords
+# from nltk.stem.wordnet import WordNetLemmatizer
 
-import string, numpy
+# import string
+import numpy
+import gensim
+from gensim import corpora
+import os
 import sys
-
-from utils import *
-
 ### constants
 # dir
 corpusDir = "data/corpus/"
+corpusFile = corpusDir + "trainTM.txt"
 inputDir = "data/input/"
 outputDir = "data/output/"
 snapShotDir = "data/snapShot/"
 topicDetailsDir = snapShotDir + "topicDetails/"
+
+topicModelFile = "topicModel.txt"
+topicModelDistribution = "topicDistribution.txt"
 
 #file
 ldaModelSnapShot = snapShotDir + "ldaModel"
 dictionarySnapShot = snapShotDir + "dictionary"
 
 #const
-numOfTopic = 5
+numOfTopic = 100
 LDA = gensim.models.ldamodel.LdaModel
 ###
 
 def clean(doc):
-    stop = set(stopwords.words('english'))
-    exclude = set(string.punctuation)
-    lemma = WordNetLemmatizer()
+    # stop = set(stopwords.words('english'))
+    # exclude = set(string.punctuation)
+    # lemma = WordNetLemmatizer()
+    #
+    # stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
+    # punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
+    # normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
 
-    stop_free = " ".join([i for i in doc.lower().split() if i not in stop])
-    punc_free = ''.join(ch for ch in stop_free if ch not in exclude)
-    normalized = " ".join(lemma.lemmatize(word) for word in punc_free.split())
-
-    return normalized
+    return doc
 
 
 def init_Document_Term_Matrix(doc_clean):
@@ -80,6 +85,10 @@ def runPrediction(inputDir, dictionary, ldaModel, outputDir):
         printOutTopicResult(topicResult, outputDir, filename)
         print("Done predicting : " + filename)
 
+def runPredictionByFile(inputFile, dictionary, ldaModel, outputFile):
+    # print("Predicting : " + inputFile)
+    topicResult = getPredictionsForFileData(filename=inputFile, dictionary=dictionary, ldaModel=ldaModel)
+    printOutTopicResultToFile(topicResult, outputFile=outputFile)
 
 def trainingData(corpusDir):
     fileList = getAllFilenamesInDirectory(dir=corpusDir)
@@ -101,11 +110,47 @@ def trainingData(corpusDir):
     print("DONE training")
     return ldaModel, dictionary
 
+def trainingDataFromFile(corpusFile):
+    doc = getDataFromFile(filename=corpusFile)
+    doc_complete = []
+    doc2 = doc.split("\n")
+    for i in range(len(doc2)):
+        doc_complete.append(doc2[i])
+
+    doc_clean = [clean(doc).split() for doc in doc_complete]
+    doc_term_matrix, dictionary = init_Document_Term_Matrix(doc_clean)
+
+    ldaModel = LDA(doc_term_matrix, num_topics=numOfTopic, id2word=dictionary)
+
+    saveLdaModelToFile(ldaModel=ldaModel, filename=ldaModelSnapShot)
+    saveDictionaryToFile(dictionary=dictionary, filename=dictionarySnapShot)
+    saveTopicDetailsToFile(ldaModel, dictionary, numOfTopic, topicDetailsDir)
+
+    print("DONE training")
+    return ldaModel, dictionary
+
+
+def runPredictionForAllDir(dir, ldaModel, dictionary):
+    cc = 0
+    cerr = 0
+    for x in os.listdir(dir):
+        fi = dir + x + "/" + topicModelFile
+        fo = dir + x + "/" + topicModelDistribution
+        cc += 1
+        print("[" + str(cc) + "] " + x)
+        try:
+            runPredictionByFile(inputFile=fi, ldaModel=ldaModel, dictionary=dictionary, outputFile=fo)
+        except:
+            print("ERROR")
+            cerr +=1
+    print("Number of error: " + str(cerr) + "/" + str(cc))
+
+
 def main(option):
     print("=== START ===")
 
     if option == 1:
-        trainingData(corpusDir=corpusDir)
+        trainingDataFromFile(corpusFile=corpusFile)
 
     if option == 2:
         ldaModel = loadLdaModelFromFile(ldaModelSnapShot)
@@ -114,12 +159,73 @@ def main(option):
         runPrediction(inputDir=inputDir, ldaModel=ldaModel, dictionary=dictionary, outputDir=outputDir)
 
     if option == 3:
-        trainingData(corpusDir=corpusDir)
+        trainingDataFromFile(corpusFile=corpusFile)
         ldaModel = loadLdaModelFromFile(ldaModelSnapShot)
         dictionary = loadDictionaryFromFile(dictionarySnapShot)
         runPrediction(inputDir=inputDir, ldaModel=ldaModel, dictionary=dictionary, outputDir=outputDir)
 
+    if option == 4:
+        ldaModel = loadLdaModelFromFile(ldaModelSnapShot)
+        dictionary = loadDictionaryFromFile(dictionarySnapShot)
+        runPredictionByFile(inputFile=sys.argv[2], ldaModel=ldaModel, dictionary=dictionary, outputFile=sys.argv[3])
+
+    if option == 5:
+        ldaModel = loadLdaModelFromFile(ldaModelSnapShot)
+        dictionary = loadDictionaryFromFile(dictionarySnapShot)
+        dir = "/home/txt171930/RecoverJSName/resources/parsedData/TestSet/"
+        runPredictionForAllDir(dir=dir, ldaModel = ldaModel, dictionary = dictionary)
     print("=== END ===")
+
+
+
+def saveLdaModelToFile(ldaModel, filename):
+    ldaModel.save(filename)
+
+def loadLdaModelFromFile(filename):
+    ldaModel = gensim.models.ldamodel.LdaModel.load(filename)
+    return ldaModel
+
+def saveDictionaryToFile(dictionary, filename):
+    dictionary.save_as_text(filename)
+
+def loadDictionaryFromFile(filename):
+    dictionary = corpora.Dictionary.load_from_text(filename)
+    return dictionary
+
+def saveTopicDetailsToFile(ldaModel, dictionary, numOfTopic,  dir):
+    for i in range(numOfTopic):
+        f = open(dir + str(i), 'w')
+        for e in ldaModel.show_topic(i, topn=len(dictionary)):
+            f.write(str(e[0]) + " " + str(e[1]) + "\n")
+        f.close()
+
+def printOutTopicResult(topicResult, outputDir, filename):
+    f = open(outputDir + filename + "_topicProbability", 'w')
+    for topic in topicResult:
+        f.write(str(topic[0]) + " " + str(topic[1]) + "\n")
+    f.close()
+
+def printOutTopicResultToFile(topicResult, outputFile):
+    f = open(outputFile, 'w')
+    for topic in topicResult:
+        f.write(str(topic[0]) + " " + str(topic[1]) + "\n")
+    f.close()
+
+def printOutTopicModel(ldaModel, numOfTopic, numOfWords=5):
+    for topic in ldaModel.print_topics(num_topics=numOfTopic, num_words=numOfWords):
+        print(topic)
+
+def getAllFilenamesInDirectory(dir):
+    filenames = []
+    for filename in os.listdir(dir):
+        filenames.append(filename)
+    return filenames
+
+def getDataFromFile(filename):
+    with open(filename, encoding='utf-8', errors='ignore') as f:
+        read_data = f.read()
+    f.close()
+    return read_data
 
 
 """
@@ -129,8 +235,10 @@ def main(option):
         option = 1 for training data from data/corpus/ and build LDA model. Model is stored at data/snapShot/
         option = 2 for prediction data from data/input/ without re-training and output is stored at data/output/
         option = 3 for prediction data from data/input/ after re-training and output is stored at data/output/
+        option = 4 for prediction data from input file without re-training and print out to output file
     
 """
 if __name__ == "__main__":
     option = int(sys.argv[1])
+    # option = 1
     main(option)

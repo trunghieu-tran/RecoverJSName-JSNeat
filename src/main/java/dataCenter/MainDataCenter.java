@@ -6,10 +6,7 @@ import dataCenter.utils.FileIO;
 import dataCenter.utils.NormalizationTool;
 import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -33,8 +30,6 @@ public class MainDataCenter {
 
 	private static final String peReFile = dataTrainingDir + "peReData";
 	private static final String cfInputFile = dataTrainingCFInputDir + "cfInputData";
-	private static final String cfNormInputFile = dataTrainingCFInputDir + "cfNormInputData";
-
 	private static final String jsReservedKeywords = resourcesDir + "JSReservedKeywords";
 
 	private ArrayList<ProgramEntityItem> programEntityList = new ArrayList<>();
@@ -116,6 +111,7 @@ public class MainDataCenter {
 		LOGGER.info("DONE loadRelationFromFile.");
 	}
 
+
 	private void loadRelationRecordFromFile(String filename) {
 		String data = FileIO.readStringFromFile(filename);
 		String[] parts = data.split("\\n");
@@ -125,7 +121,11 @@ public class MainDataCenter {
 				int idPE = Integer.parseInt(tmp[0]);
 				int idVN = Integer.parseInt(tmp[1]);
 				int idRE = Integer.parseInt(tmp[2]);
-				int freq = Integer.parseInt(tmp[3]);
+				int type = Integer.parseInt(tmp[3]);
+				int freq = Integer.parseInt(tmp[4]);
+
+				if (type == 1) continue;
+
 				Pair<Integer, Integer> currPair = new Pair<> (idPE, idRE);
 				relationRecordList.add(new RelationRecord(idVN, idPE, idRE, freq));
 
@@ -168,6 +168,16 @@ public class MainDataCenter {
 		LOGGER.info("DONE loadRelationRecordFromFile.");
 	}
 
+
+	public ArrayList<String> getRandomVarName(int num) {
+		ArrayList<String> res = new ArrayList<>();
+		Random random = new Random();
+		for (int i = 0; i < num; ++i) {
+			int idx =random.nextInt(varNameItemList.size());
+			res.add(varNameItemList.get(idx).getValue());
+		}
+		return res;
+	}
 
 	public BakerItem getBakerItemFromPeRe(int pe, int re) {
 		return mapPeRevsBakerItem.get(new Pair<>(pe, re));

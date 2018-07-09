@@ -1,6 +1,4 @@
-package baker.utils;
-
-import dataCenter.utils.FileIO;
+package dataCenter.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +10,7 @@ import java.util.logging.Logger;
  * @organization UTDallas
  */
 public class topicModelling {
-	private static final int numOfTopic = 5;
+	private static final int numOfTopic = 100;
 	private static final String resourceDir = "./src/main/python/topicModelling/data/";
 	private static final String dictionaryFile = resourceDir + "snapShot/dictionary";
 	private static final String topicDetailDir = resourceDir + "snapShot/topicDetails/";
@@ -23,6 +21,10 @@ public class topicModelling {
 	private static HashMap<String, Integer> nameToIdMap = new HashMap<>();
 	private static ArrayList<HashMap<String, Double> > topicDetailMap = new ArrayList<>();
 
+	public topicModelling() {
+		loadDictionaryFromFile(dictionaryFile);
+		loadAllTopicDetailsFromDirectory(topicDetailDir);
+	}
 	public static void loadDictionaryFromFile(String filename) {
 		String data = FileIO.readStringFromFile(filename);
 		String[] parts = data.split("\\n");
@@ -42,7 +44,14 @@ public class topicModelling {
 		LOGGER.info("Successfully imported dictionary");
 	}
 
-	public static HashMap<String, Double> loadTopicDetailsFromFile(String filename) {
+	public double getProbabilityOfNameInTopic(String name, int topicID) {
+		return topicDetailMap.get(topicID).getOrDefault(name, 0.0);
+	}
+
+	public int getNumOfTopic() {
+		return numOfTopic;
+	}
+	private HashMap<String, Double> loadTopicDetailsFromFile(String filename) {
 		HashMap<String, Double> res = new HashMap<>();
 		String data = FileIO.readStringFromFile(filename);
 		String[] parts = data.split("\\n");
@@ -63,17 +72,20 @@ public class topicModelling {
 		return res;
 	}
 
-	public static void loadAllTopicDetailsFromDirectory(String dir) {
+	private void loadAllTopicDetailsFromDirectory(String dir) {
 		for (int i = 0; i < numOfTopic; ++i) {
 			String fname = dir + Integer.toString(i);
-			topicDetailMap.add(loadTopicDetailsFromFile(fname));
+			try {
+				topicDetailMap.add(loadTopicDetailsFromFile(fname));
+			} catch (Exception e) {
+				LOGGER.info(e.getMessage());
+			}
 		}
 	}
 
 	public static void main(String[] args) {
 		System.out.println("=== Started ...");
-		topicModelling.loadDictionaryFromFile(dictionaryFile);
-		topicModelling.loadAllTopicDetailsFromDirectory(topicDetailDir);
+		topicModelling tm = new topicModelling();
 		System.out.println("... Finished ===");
 	}
 
