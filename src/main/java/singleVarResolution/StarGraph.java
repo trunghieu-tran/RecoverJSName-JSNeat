@@ -45,11 +45,11 @@ public class StarGraph {
 	}
 
 	// check whether the testing graph is similar to other graph from corpus
-	public boolean isSimilarTo(StarGraph sg) {
+	public double getSimilarScoreTo(StarGraph sg) {
 		int len = this.getSizeGraph();
 		int lenSg = sg.getSizeGraph();
 
-		if (len < lenSg * THRESHOLD) return false;
+		if (len < lenSg * THRESHOLD) return -1.0;
 
 		int i = 0, j = 0;
 		int cnt = 0;
@@ -63,7 +63,11 @@ public class StarGraph {
 			}
 			++j;
 		}
-		return cnt >= len * THRESHOLD;
+
+		if (cnt >= len * THRESHOLD)
+			return (double) cnt / len;
+		else
+			return -1.0;
 	}
 
 }
