@@ -40,8 +40,15 @@ public class SGData {
 			try {
 				//for each file name = variable Name
 				path = f.getCanonicalPath();
-				String functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
-				String varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
+				String functionName = "", varName = ""; 
+				if ( path.indexOf("\\") != -1) {
+					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
+					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
+				} else {
+					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("/"));
+					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
+				}
+
 				int hashCode = Objects.hash(functionName);
 				//read file content --> edges
 				BufferedReader br = new BufferedReader(new FileReader(f));
