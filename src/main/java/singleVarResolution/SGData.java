@@ -8,6 +8,7 @@ import parser.MainParser;
 public class SGData {
 	public HashSet<StarGraph> sgSet;
 	public void getData(int flag) {
+		//Get data directly from parser
 		if ( flag == 0 ) {
 			MainParser main = new MainParser();
 			try {
@@ -18,6 +19,7 @@ public class SGData {
 			}
 			sgSet = main.sgSet;
 		}
+		//Read data from previous parse
 		else if ( flag == 1 ) { 
 			sgSet = readDataFromFile();
 		}

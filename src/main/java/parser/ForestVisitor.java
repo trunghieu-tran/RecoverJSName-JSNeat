@@ -57,7 +57,7 @@ public class ForestVisitor implements NodeVisitor{
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
 			}
 			String dir = path + "_" + functionName;
-			
+			String temp = sgPath + "_" + functionName;
 			FunctionVisitor fv = new FunctionVisitor(vn, dir);
 			node.visit(fv);
 			try {
@@ -67,7 +67,7 @@ public class ForestVisitor implements NodeVisitor{
 //					fv.print();
 //				}
 				//fv.print();
-				fv.printStarGraph(sgPath);
+				fv.printStarGraph(temp);
 				sgSet.addAll(fv.getStarGraph());
 			} 
 			catch (IOException e) {

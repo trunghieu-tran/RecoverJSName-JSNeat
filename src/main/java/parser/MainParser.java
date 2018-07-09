@@ -14,6 +14,7 @@ import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
 import org.mozilla.javascript.ast.AstRoot;
 
+import singleVarResolution.Edge;
 import singleVarResolution.StarGraph;
 
 /**
@@ -130,7 +131,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 200 ) break;
+				if ( count > 5 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
@@ -163,7 +164,13 @@ public class MainParser {
 				}
 			}
 		}
-	
+//		for ( StarGraph sg: sgSet )
+//		{
+//			System.out.println(sg.getVarName());
+//			for( Edge e: sg.getEdges() ) {
+//				System.out.println(e.toString());
+//			}
+//		}
 	}
 	
 	public void parseTestSet() throws Exception

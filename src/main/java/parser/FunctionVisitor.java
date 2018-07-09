@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
 import org.mozilla.javascript.Token;
 import org.mozilla.javascript.ast.*;
@@ -542,7 +543,10 @@ public class FunctionVisitor implements NodeVisitor{
 			if ( edges.isEmpty() ) {
 				continue;
 			} else {
-				sg = new StarGraph(edges, varName + "-" + this.functionName);
+				functionName = functionName.substring(functionName.lastIndexOf("/")+1);
+				int hashCode = Objects.hash(functionName);
+				//System.out.println(hashCode);
+				sg = new StarGraph(edges, varName + "-" + hashCode);
 				sgSet.add(sg);
 			}
 		}
@@ -551,6 +555,10 @@ public class FunctionVisitor implements NodeVisitor{
 	public void printStarGraph(String dest) throws IOException {
 		System.out.println(dest);
 		this.buildStarGraph();
+		if ( sgSet.isEmpty() )
+		{
+			return;
+		}
 		File dir = new File(dest);
 		if ( ! dir.exists() )
 		{
