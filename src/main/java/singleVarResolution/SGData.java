@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,12 +19,12 @@ public class SGData {
 	private static final int numberOfThread = 20;
 
 	public HashSet<StarGraph> sgSet = new HashSet<>();
+	public HashSet<FunctionInfo> testFunctionSet = new HashSet<>();
 	private int numOfFunction = -1;
 
-	public ArrayList<FunctionInfo> getTestData(String sgDir) throws IOException {
+	public void getTestData(String sgDir) throws IOException {
 		//Structure of root: root --> Dir (Function) --> File (var-name)
 		File root = new File(sgDir);
-		ArrayList<FunctionInfo> funcList = new ArrayList<>();
 		for ( File dir : root.listFiles())
 		{
 			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
@@ -57,10 +58,8 @@ public class SGData {
 				}
 				br.close();
 			}
-			funcList.add(fi);
+			this.testFunctionSet.add(fi);
 		}
-		//System.out.println(funcList.size());
-		return funcList;
 	}
 	
 	public void getData(String path, int numOfFunction) {
