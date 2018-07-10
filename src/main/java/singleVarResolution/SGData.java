@@ -7,12 +7,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import parser.MainParser;
 
 public class SGData {
+	private static final int numberOfThread = 20;
+
 	public HashSet<StarGraph> sgSet = new HashSet<>();
 	private int numOfFunction = -1;
+
 	public void getData(String path, int numOfFunction) {
 		this.numOfFunction = numOfFunction;
 
@@ -29,9 +35,87 @@ public class SGData {
 		}
 		//Read data from previous parse
 		else { 
-			sgSet = readDataFromFile(path);
+//			sgSet = readDataFromFile(path);
+			readDataFromFile_MultiThread(path);
 		}
 	}
+
+	public class ReadingGraph implements Runnable {
+		File f;
+		StarGraph sg;
+		public ReadingGraph(File f) {
+			this.f = f;
+		}
+		public void run() {
+			try {
+				//for each file name = variable Name
+				String path = f.getCanonicalPath();
+				String functionName = "", varName = "";
+				if (path.indexOf("\\") != -1) {
+					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("\\"));
+					varName = path.substring(path.lastIndexOf("\\") + 1, path.indexOf(".txt"));
+				} else {
+					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("/"));
+					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
+				}
+
+				int hashCode = Objects.hash(functionName);
+				//read file content --> edges
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				String st;
+				HashSet<Edge> edges = new HashSet<>();
+				while ((st = br.readLine()) != null) {
+					String[] subs = st.split(" ");
+					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
+					edges.add(e);
+				}
+				// TODO - hashcode can be empty
+				sg = new StarGraph(edges, varName + "-" + hashCode);
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private void readDataFromFile_MultiThread(String sgDir) {
+		File dir = new File(sgDir);
+		ArrayList<File> files = new ArrayList<>();
+		searchDir(dir, files);
+		int cnt = 0;
+		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
+		ArrayList<ReadingGraph> rgs = new ArrayList<>();
+		for( File f: files ) {
+			try {
+				ReadingGraph rg = new ReadingGraph(f);
+				executor.execute(rg);
+				rgs.add(rg);
+
+				if (++cnt % 10000 == 0)
+					System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(files.size()) + "] >>> LOADED: " + f.getCanonicalPath());
+
+				if (cnt == numOfFunction)
+					break;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Wait until all threads are finish
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(7, TimeUnit.DAYS))
+				executor.shutdownNow();
+		} catch (Exception e) {
+			System.out.println("Waiting error");
+			executor.shutdownNow();
+		}
+		System.out.println("FINISHED all threads for corpus loading");
+
+		for (ReadingGraph rg : rgs) {
+			sgSet.add(rg.sg);
+		}
+	}
+
 	private HashSet<StarGraph> readDataFromFile(String sgDir) {
 		//Find all files
 		File dir = new File(sgDir);
@@ -44,7 +128,7 @@ public class SGData {
 			try {
 				//for each file name = variable Name
 				path = f.getCanonicalPath();
-				String functionName = "", varName = ""; 
+				String functionName = "", varName = "";
 				if ( path.indexOf("\\") != -1) {
 					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
 					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
