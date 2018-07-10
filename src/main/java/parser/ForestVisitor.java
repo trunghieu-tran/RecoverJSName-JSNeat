@@ -6,6 +6,7 @@ import java.util.List;
 import org.mozilla.javascript.ast.*;
 
 import singleVarResolution.StarGraph;
+import singleVarResolution.StarGraphToPrint;
 
 /**
  * @author Mike
@@ -14,14 +15,14 @@ import singleVarResolution.StarGraph;
 public class ForestVisitor implements NodeVisitor{
 	String path;
 	String sgPath;
-	HashSet<StarGraph> sgSet = new HashSet<>();
+	HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 	int anonymousCount = 0; //Handle Anonymous Function
 	
 	public ForestVisitor(String path) {
 		this.path = path;
 	}
 	
-	public HashSet<StarGraph> getStarForest() {
+	public HashSet<StarGraphToPrint> getStarForest() {
 		return sgSet;
 	}
 	@Override

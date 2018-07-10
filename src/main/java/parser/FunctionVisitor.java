@@ -15,7 +15,7 @@ import org.mozilla.javascript.Token;
 import org.mozilla.javascript.ast.*;
 
 import singleVarResolution.Edge;
-import singleVarResolution.StarGraph;
+import singleVarResolution.StarGraphToPrint;
 
 /**
  * @author Mike
@@ -27,7 +27,7 @@ public class FunctionVisitor implements NodeVisitor{
 	HashSet<String> variableNames = new HashSet<>();
 	//HashSet<String> relationships = new HashSet<>();
 	HashMap<Record, Integer> recordList = new HashMap<>();
-	HashSet<StarGraph> sgSet = new HashSet<>();
+	HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 	String functionName;
 	public FunctionVisitor(HashSet<String> vn, String functionName)
 	{
@@ -155,49 +155,6 @@ public class FunctionVisitor implements NodeVisitor{
 		{
 			printWriter2.println(vn.get(key).index + " " + key + " " + vn.get(key).freq);
 		}
-//		for ( Record record: recordList.keySet() )
-//		{
-////			//Collect freq and index for P.E. 
-////			if (! pe.containsKey(record.pe) ) {
-////				pe.put(record.pe, new Pair(peIndex,1));
-////				peIndex++;
-////			}
-////			else {
-////				int freq = pe.get(record.pe).freq;
-////				int idx = pe.get(record.pe).index;
-////				pe.put(record.pe, new Pair(idx,freq+1));
-////			}
-////			
-////			//Collect freq and index for Variable Name.  
-////			if (! vn.containsKey(record.name) ) {
-////				vn.put(record.name, new Pair(vnIndex,1));
-////				vnIndex++;
-////			}
-////			else {
-////				int freq = vn.get(record.name).freq;
-////				int idx = vn.get(record.name).index;
-////				vn.put(record.name, new Pair(idx,freq+1));
-////			}
-//			
-//			//Print to file 1
-//			if (! pe.containsKey(record.pe) ) {
-//				pe.put(record.pe, reIndex);
-//				printWriter1.println(record.pe);
-//			}
-//			//Print fo file 2
-//			if (! vn.containsKey(record.name) ) {
-//				vn.put(record.name, reIndex);
-//				printWriter2.println(record.name);
-//			}
-//			//Print to file 3
-//			if (! re.containsKey(record.relationship) ) {
-//				re.put(record.relationship, reIndex);
-//				printWriter3.println(record.relationship);
-//			}
-//			//Print to file 4
-//			printWriter4.println(record.pe + " "+ record.name + " " 
-//			+ record.relationship + " " + record.type);
-//		}
 		
 		printWriter1.close();
 		printWriter2.close();
@@ -532,7 +489,7 @@ public class FunctionVisitor implements NodeVisitor{
 
 	public void buildStarGraph() {
 		for( String varName : variableNames ) {
-			StarGraph sg;
+			StarGraphToPrint sg;
 			HashSet<Edge> edges = new HashSet<>();
 			for( Record r: recordList.keySet() ) {
 				//Check: right now only pe-var relationship type
@@ -546,39 +503,39 @@ public class FunctionVisitor implements NodeVisitor{
 				functionName = functionName.substring(functionName.lastIndexOf("/")+1);
 				int hashCode = Objects.hash(functionName);
 				//System.out.println(hashCode);
-				sg = new StarGraph(edges, varName + "-" + hashCode);
+				sg = new StarGraphToPrint(edges, varName + "-" + hashCode);
 				sgSet.add(sg);
 			}
 		}
 	}
 	
 	public void printStarGraph(String dest) throws IOException {
-//		System.out.println(dest);
-//		this.buildStarGraph();
-//		if ( sgSet.isEmpty() )
-//		{
-//			return;
-//		}
-//		File dir = new File(dest);
-//		if ( ! dir.exists() )
-//		{
-//			dir.mkdirs();
-//		}
-//		for( StarGraph sg : sgSet ) {
-//			File sgFile = new File(dest + "/" + sg.getVarName() + ".txt");
-//			FileWriter fw = new FileWriter(sgFile);
-//			PrintWriter pw = new PrintWriter(fw);
-//			for ( Edge edge: sg.getEdges() )
-//			{
-//				String content = edge.toString();
-//				pw.println(content);
-//				//System.out.println(edge.toString());
-//			}
-//			pw.close();
-//		}
+		System.out.println(dest);
+		this.buildStarGraph();
+		if ( sgSet.isEmpty() )
+		{
+			return;
+		}
+		File dir = new File(dest);
+		if ( ! dir.exists() )
+		{
+			dir.mkdirs();
+		}
+		for( StarGraphToPrint sg : sgSet ) {
+			File sgFile = new File(dest + "/" + sg.getVarName() + ".txt");
+			FileWriter fw = new FileWriter(sgFile);
+			PrintWriter pw = new PrintWriter(fw);
+			for ( Edge edge: sg.getEdges() )
+			{
+				String content = edge.toString();
+				pw.println(content);
+				//System.out.println(edge.toString());
+			}
+			pw.close();
+		}
 	}
 
-	public HashSet<StarGraph> getStarGraph() {
+	public HashSet<StarGraphToPrint> getStarGraph() {
 		// TODO Auto-generated method stub
 		this.buildStarGraph();
 		return sgSet;

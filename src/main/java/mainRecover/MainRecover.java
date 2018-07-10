@@ -1,6 +1,9 @@
 package mainRecover;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import singleVarResolution.SGData;
 
 /**
  * @author Harry Tran on 7/9/18.
@@ -14,7 +17,12 @@ public class MainRecover {
 	private ArrayList<FunctionInfo> functionList;
 
 	public void loadInput() {
-		// TODO - each test is represented as FunctionInfo, load all test into functionList
+		SGData sgData = new SGData();
+		try {
+			functionList = sgData.getTestData("../StarGraphTestData");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void loadTrainingData() {

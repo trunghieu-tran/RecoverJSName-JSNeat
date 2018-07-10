@@ -18,6 +18,10 @@ public class FunctionInfo {
 		this.starGraphsList = starGraphsList;
 		this.dir = dir;
 	}
+	public FunctionInfo(String dir) {
+		this.starGraphsList = new HashSet<>();
+		this.dir = dir;
+	}
 
 	public HashSet<StarGraph> getStarGraphsList() {
 		return starGraphsList;
@@ -25,5 +29,10 @@ public class FunctionInfo {
 
 	public String getDir() {
 		return dir;
+	}
+	public void addSG(StarGraph sg) {
+		this.starGraphsList.add(sg);
+		// TODO Auto-generated method stub
+		
 	}
 }

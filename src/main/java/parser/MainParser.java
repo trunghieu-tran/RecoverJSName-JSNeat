@@ -16,6 +16,7 @@ import org.mozilla.javascript.ast.AstRoot;
 
 import singleVarResolution.Edge;
 import singleVarResolution.StarGraph;
+import singleVarResolution.StarGraphToPrint;
 
 /**
  * @author Mike Tran
@@ -30,26 +31,72 @@ public class MainParser {
 //	static String output = "../Data/_Output";
 //	static String output = ".\\resources/parsedData";
 //	static String testSetDir = ".\\resources/parsedData/testSet";
-	
+	static String associateDir = "../AssocData";
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
 	static String bakerDir = "../BakerData";
-	public static String starGraphDir = "../StarGraphData";
+	public static String sgTrainDir = "../StarGraphData";
+	public static String sgTestDir = "../StarGraphTestData";
 	static String trainTMDir = "../TrainTM";
 	static String fileList = "../FileList";
 //	ArrayList<File> testSet = new ArrayList<>();
 //	ArrayList<File> trainSet = new ArrayList<>();
 	
-	public HashSet<StarGraph> sgSet = new HashSet<>();
+	public HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 	
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-		demo.parseTrainSetForest();
+		demo.parseForest("test");
+		//demo.parseAssociation("train");
 		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
 //		demo.parseTestSetTM();
+	}
+
+	public void parseAssociation(String flag) throws IOException {
+		String fileType = "";
+		if ( flag.equals("train")) {
+			fileType = "trainFileList.txt";
+		} else if ( flag.equals("test")) {
+			fileType = "testFileList.txt";
+		}
+		File fileListing = new File(fileList + "/" + fileType);
+		if ( fileListing.exists() )
+		{
+			int count = 0;
+			List<String> lines = FileUtils.readLines(fileListing, "UTF-8");
+			for ( String str: lines)
+			{
+				count++;
+				if ( count > 1000 ) break;
+				try
+				{
+					CompilerEnvirons env = new CompilerEnvirons();
+					env.setRecoverFromErrors(true);
+			    	FileReader strReader = new FileReader(str);
+					IRFactory factory = new IRFactory(env, new JSErrorReporter());
+					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
+					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
+					String projectName = path.substring(0, path.indexOf("\\"));
+					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					path = "/" + projectName + "_" + fileName; 
+//					path = associateDir + path;
+					path = "../TestRun" + path;
+					AssociateVisitor ascVis = new AssociateVisitor(path);
+					AstRoot rootNode = factory.parse(strReader, null, 0);
+					rootNode.visit(ascVis);
+				}
+				
+				catch (Exception e)
+				{
+					System.out.println("Exception :" + e.getMessage());
+					e.printStackTrace();
+					continue;
+				}
+			}
+		}
 	}
 
 	public void generateFileList (String filePath) throws Exception
@@ -121,36 +168,43 @@ public class MainParser {
 		}
 	}
 	
-	public void parseTrainSetForest() throws IOException {
-//		File trainFileList = new File(fileList + "/test.txt");
-		File trainFileList = new File(fileList + "/trainFileList.txt");
-		if ( trainFileList.exists() )
+	public void parseForest(String flag) throws IOException {		
+		String fileType = "", sgPath = "", outputDir ="";
+		if ( flag.equals("train")) {
+			fileType = "trainFileList.txt";
+			sgPath = sgTrainDir;
+			outputDir = trainSetDir;
+		} else if ( flag.equals("test")) {
+			fileType = "testFileList.txt";
+			sgPath = sgTestDir;
+			outputDir = testSetDir;
+		}
+		File fileListing = new File(fileList + "/" + fileType);
+		if ( fileListing.exists() )
 		{
 			int count = 0;
-			List<String> lines = FileUtils.readLines(trainFileList, "UTF-8");
+			List<String> lines = FileUtils.readLines(fileListing, "UTF-8");
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 5 ) break;
+				if ( count > 100 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
 			    	FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
-					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
 					String projectName = path.substring(0, path.indexOf("\\"));
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
-
-					String sgPath = starGraphDir + path;
-//					path = trainSetDir + path;
-					path = "../TestRun" + path;
+					String sgDir = sgPath + path;
+					path = outputDir + path;
+//					path = "../TestRun" + path;
 
 
 					ForestVisitor myVisitor = new ForestVisitor(path);
-					myVisitor.getSgPath(sgPath);
+					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
 					sgSet.addAll(myVisitor.getStarForest());

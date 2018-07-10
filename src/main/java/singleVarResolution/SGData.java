@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import mainRecover.FunctionInfo;
 import parser.MainParser;
 
 public class SGData {
@@ -19,19 +20,62 @@ public class SGData {
 	public HashSet<StarGraph> sgSet = new HashSet<>();
 	private int numOfFunction = -1;
 
+	public ArrayList<FunctionInfo> getTestData(String sgDir) throws IOException {
+		//Structure of root: root --> Dir (Function) --> File (var-name)
+		File root = new File(sgDir);
+		ArrayList<FunctionInfo> funcList = new ArrayList<>();
+		for ( File dir : root.listFiles())
+		{
+			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
+			for( File f: dir.listFiles() )
+			{
+				//for each file name = variable Name
+				String path = f.getCanonicalPath();
+				//System.out.println(path);
+				String functionName = "", varName = ""; 
+				if ( path.indexOf("\\") != -1) {
+					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
+					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
+				} else {
+					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("/"));
+					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
+				}
+
+				int hashCode = Objects.hash(functionName);
+				//read file content --> edges
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				String st;
+				HashSet<Edge> edges = new HashSet<>();
+				while ((st = br.readLine()) != null) {
+					String[] subs = st.split(" ");
+					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
+					edges.add(e);
+				}
+				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
+				if (! edges.isEmpty() ) {
+					fi.addSG(sg);
+				}
+				br.close();
+			}
+			funcList.add(fi);
+		}
+		//System.out.println(funcList.size());
+		return funcList;
+	}
+	
 	public void getData(String path, int numOfFunction) {
 		this.numOfFunction = numOfFunction;
 
 		MainParser main = new MainParser();
 		//Get data directly from parser
 		if ( path.isEmpty() ) {
-			try {
-				main.parseTrainSetForest();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			sgSet = main.sgSet;
+//			try {
+//				main.parseTrainSetForest();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			sgSet = main.sgSet;
 		}
 		//Read data from previous parse
 		else { 
