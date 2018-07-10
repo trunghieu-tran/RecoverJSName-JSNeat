@@ -30,10 +30,10 @@ public class StarGraph {
 		String[] tmp = varNameFunction.split("-");
 		this.varName = tmp[0];
 
-		if (tmp[1].isEmpty()) {
-			tmp[1] = "0";
-		}
-		this.functionCode = Integer.parseInt(tmp[1]);
+		if (tmp.length == 2) functionCode = Integer.parseInt(tmp[1]);
+		else
+			functionCode = Integer.parseInt(tmp[2]);
+
 		updateVectorRepresentation(edges);
 	}
 

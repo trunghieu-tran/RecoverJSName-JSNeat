@@ -6,6 +6,9 @@ import utils.FileIO;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Harry Tran on 7/9/18.
@@ -14,12 +17,15 @@ import java.util.HashSet;
  * @organization UTDallas
  */
 public class MainSingleVarResolution {
-	private static int TOPK = 30;
+	private static int TOPK = 10;
+	private static final int numberOfThread = 20;
 	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData";
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
 	private static String tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt";
 
 	private SGData sgData;
+	private int countDone = 0;
+	private int numOfTest = 0;
 
 	private  boolean isInTopK(ArrayList<String> list, int k, String oracle) {
 		for (int i = 0; i < Math.min(k, list.size()); ++i)
@@ -36,7 +42,7 @@ public class MainSingleVarResolution {
 		for (StarGraph sg : cache.keySet())
 			if (sg.getSizeGraph() == 1) ++numOfOne;
 
-
+		res.append("Number of training = ").append(sgData.sgSet.size()).append("\n");
 		res.append("Number of testcase = ").append(numOfTest).append("\n");
 		res.append("Number of testcase_1_edge = ").append(numOfOne).append("\n");
 
@@ -63,48 +69,81 @@ public class MainSingleVarResolution {
 	}
 
 	public void loadData() {
-		SGData sgData = new SGData();
-		sgData.getData(data, -1);
+		sgData = new SGData();
+		sgData.getData(data, 1000000);
+	}
 
+	public class ProcessingOneGraph implements Runnable {
+		StarGraph sg;
+		SimilarGraphFinder sf;
+		ArrayList<String> nameResolved = new ArrayList<>();
+		public ProcessingOneGraph(StarGraph sg, SimilarGraphFinder sf) {
+			this.sg = sg;
+			this.sf = sf;
+		}
+		public void run() {
+			ArrayList<Pair<String, Double>> res = sf.getCandidateListForStarGraph(sg);
+			int cnt = 0;
+			for (Pair<String, Double> p : res) {
+				nameResolved.add(p.getKey());
+				if (++cnt == TOPK) break;
+			}
+			if (++countDone % 5000 == 0) {
+				System.out.println("[ DONE testing " + Integer.toString(countDone) + "/" + Integer.toString(numOfTest) + "]");
+			}
+		}
 	}
 
 	public void testing() {
-		ArrayList<StarGraph> testSg = new ArrayList<>();
+		HashSet<StarGraph> testSg = new HashSet<>();
 		int cc = 0;
 		int c = 0;
+		numOfTest = sgData.sgSet.size() / 10;
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
 				testSg.add(new StarGraph(sg));
 				++cc;
-				if (cc == 100000) break;
+				if (cc == numOfTest) break;
 			}
 		}
+
 		sgData.sgSet.removeAll(testSg);
 
 		StringBuilder resStr = new StringBuilder();
 		SimilarGraphFinder sf = new SimilarGraphFinder(sgData.sgSet);
 		HashMap<StarGraph, ArrayList<String>> cache = new HashMap<>();
 
-		int csg = 0;
+		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
+		ArrayList<ProcessingOneGraph> pgs = new ArrayList<>();
+
 		for (StarGraph sg : testSg) {
-			if (++csg % 10000 == 0)
-				System.out.println("[" + Integer.toString(csg) + "/" + Integer.toString(testSg.size()) + "] >>> Processing ..." + sg.getVarName());
+			ProcessingOneGraph pg = new ProcessingOneGraph(sg, sf);
+			executor.execute(pg);
+			pgs.add(pg);
+		}
+
+		// Wait until all threads are finish
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(7, TimeUnit.DAYS))
+				executor.shutdownNow();
+		} catch (Exception e) {
+			System.out.println("Waiting error");
+			executor.shutdownNow();
+		}
+		System.out.println("FINISHED all threads for testing");
+
+		for (ProcessingOneGraph pg : pgs) {
+			cache.put(pg.sg, pg.nameResolved);
+
 			resStr.append("----------\n");
-			resStr.append(sg.toString());
+			resStr.append(pg.sg.toString());
 			resStr.append("---\n");
-			ArrayList<Pair<String, Double>> res = sf.getCandidateListForStarGraph(sg);
-			ArrayList<String> tmpStr = new ArrayList<>();
-
-			resStr.append(">> Original-varName: ").append(sg.getVarName()).append("\n");
-			int cnt = 0;
-			for (Pair<String, Double> p : res) {
-				tmpStr.add(p.getKey());
-
-				resStr.append(p.getKey()).append(" ").append(Double.toString(p.getValue())).append("\n");
-				if (++cnt == TOPK) break;
+			resStr.append(">> Original-varName: ").append(pg.sg.getVarName()).append("\n");
+			for (String str : pg.nameResolved) {
+				resStr.append(str).append(" ");
 			}
-
-			cache.put(sg, tmpStr);
+			resStr.append("\n");
 		}
 
 		FileIO.writeStringToFile(tmpOutput, resStr.toString());
@@ -114,6 +153,6 @@ public class MainSingleVarResolution {
 	public static void main(String[] args) {
 		MainSingleVarResolution mr = new MainSingleVarResolution();
 		mr.loadData();
-//		mr.testing();
+		mr.testing();
 	}
 }

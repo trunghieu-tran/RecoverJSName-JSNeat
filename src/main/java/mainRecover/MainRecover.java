@@ -9,13 +9,17 @@ import java.util.ArrayList;
  * @organization UTDallas
  */
 public class MainRecover {
+	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData";
+
 	private ArrayList<FunctionInfo> functionList;
 
 	public void loadInput() {
 		// TODO - each test is represented as FunctionInfo, load all test into functionList
 	}
 
+	public void loadTrainingData() {
 
+	}
 	private void processOne(FunctionInfo fi) {
 		System.out.println(">>> Processing function " + fi.getDir());
 	}

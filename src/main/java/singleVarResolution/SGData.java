@@ -114,6 +114,13 @@ public class SGData {
 		for (ReadingGraph rg : rgs) {
 			sgSet.add(rg.sg);
 		}
+
+		// Re-check set
+		long sumEdge = 0;
+		System.out.println("SgSET size = " + Integer.toString(sgSet.size()));
+		for (StarGraph sg : sgSet)
+			sumEdge += sg.getSizeGraph();
+		System.out.println("Total edges = " + Long.toString(sumEdge));
 	}
 
 	private HashSet<StarGraph> readDataFromFile(String sgDir) {
