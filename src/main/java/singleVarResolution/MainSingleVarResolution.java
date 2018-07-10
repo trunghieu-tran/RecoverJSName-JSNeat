@@ -70,7 +70,7 @@ public class MainSingleVarResolution {
 
 	public void loadData() {
 		sgData = new SGData();
-		sgData.getData(data, 1000000);
+		sgData.getData(data, -1);
 	}
 
 	public class ProcessingOneGraph implements Runnable {
@@ -88,7 +88,7 @@ public class MainSingleVarResolution {
 				nameResolved.add(p.getKey());
 				if (++cnt == TOPK) break;
 			}
-			if (++countDone % 5000 == 0) {
+			if (++countDone % 10000 == 0) {
 				System.out.println("[ DONE testing " + Integer.toString(countDone) + "/" + Integer.toString(numOfTest) + "]");
 			}
 		}
@@ -139,7 +139,6 @@ public class MainSingleVarResolution {
 			resStr.append("----------\n");
 			resStr.append(pg.sg.toString());
 			resStr.append("---\n");
-			resStr.append(">> Original-varName: ").append(pg.sg.getVarName()).append("\n");
 			for (String str : pg.nameResolved) {
 				resStr.append(str).append(" ");
 			}

@@ -97,8 +97,19 @@ public class BeamSearch {
 		}
 	}
 
-	private void initTheFirstRecover() {
-		// TODO
+	private void initTheFirstRecover(int K) {
+		int id = getNextResolveID();
+		if (id == -1) return;
+
+		orderRecovering.add(id);
+		marked.add(id);
+
+		ArrayList<Pair<String, Double>> candI = candidateLists.get(id);
+		for (int i = 0; i < Math.min(K, candI.size()); ++i) {
+			ArrayList<String> recovered = new ArrayList<>();
+			recovered.add(candI.get(i).getKey());
+			currRecovering.add(recovered);
+		}
 	}
 
 	private void reverseToOriginalOrder() {
@@ -119,7 +130,7 @@ public class BeamSearch {
 
 	public ArrayList< ArrayList<String>> getTopKRecoveringResult(int K) {
 		// first recover
-		initTheFirstRecover();
+		initTheFirstRecover(K);
 
 		// recover the rest
 		int id = getNextResolveID();
