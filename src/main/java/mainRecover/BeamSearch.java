@@ -119,9 +119,10 @@ public class BeamSearch {
 				int jj = orderRecovering.get(j);
 				if (ii <= jj) continue;
 				for (int kk = 0; kk < currRecovering.size(); ++kk) {
-					String tmpStr = currRecovering.get(kk).get(i);
-					currRecovering.get(kk).set(i, currRecovering.get(kk).get(j));
-					currRecovering.get(kk).set(j, tmpStr);
+					ArrayList<String> currRow = currRecovering.get(kk);
+					String tmpStr = currRow.get(i);
+					currRow.set(i, currRow.get(j));
+					currRow.set(j, tmpStr);
 				}
 				orderRecovering.set(i, jj);
 				orderRecovering.set(j, ii);
