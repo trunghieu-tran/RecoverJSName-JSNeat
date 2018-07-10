@@ -138,6 +138,7 @@ public class BeamSearch {
 			orderRecovering.add(id);
 			marked.add(id);
 			recovering(id, K);
+			id = getNextResolveID();
 		}
 
 		// Add UNRESOLVED

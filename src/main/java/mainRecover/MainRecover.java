@@ -2,6 +2,7 @@ package mainRecover;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 import singleVarResolution.SGData;
 
@@ -12,22 +13,22 @@ import singleVarResolution.SGData;
  * @organization UTDallas
  */
 public class MainRecover {
-	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData";
-
-	private ArrayList<FunctionInfo> functionList;
-
+	private static String InputData = "/home/nmt140230/RecoverJSName/StarGraphData/";
+	private static SGData sgData = new SGData();
+	private Set<FunctionInfo> functionList;
 	public void loadInput() {
-		SGData sgData = new SGData();
 		try {
-			functionList = sgData.getTestData("../StarGraphTestData");
+			sgData.getTestData(InputData);
+			functionList = sgData.testFunctionSet;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void loadTrainingData() {
-
+		sgData.getData(InputData, -1);
 	}
+
 	private void processOne(FunctionInfo fi) {
 		System.out.println(">>> Processing function " + fi.getDir());
 	}
@@ -40,6 +41,7 @@ public class MainRecover {
 
 	public static void main(String[] args) {
 		MainRecover mr = new MainRecover();
+		mr.loadTrainingData();
 		mr.loadInput();
 		mr.process();
 	}
