@@ -63,6 +63,7 @@ public class SGData {
 					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
 					edges.add(e);
 				}
+				// TODO - hashcode can be empty
 				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
 				sgSet.add(sg);
 				br.close();

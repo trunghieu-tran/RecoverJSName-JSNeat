@@ -64,7 +64,7 @@ public class MainSingleVarResolution {
 
 	public void loadData() {
 		SGData sgData = new SGData();
-		sgData.getData(data, 100000);
+		sgData.getData(data, -1);
 
 	}
 

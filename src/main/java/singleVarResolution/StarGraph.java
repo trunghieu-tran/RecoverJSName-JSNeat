@@ -12,28 +12,32 @@ import java.util.List;
  */
 public class StarGraph {
 	private static double THRESHOLD = 0.8;
-	private HashSet<Edge> edges;
-	private List<Long> vectorRepresentation;
+//	private HashSet<Edge> edges;
+	private List<Integer> vectorRepresentation;
 
-	private String varNameFunction;
 	private String varName;
+	private int functionCode;
 
 	public StarGraph(StarGraph sg) {
-		this.edges = sg.edges;
+//		this.edges = sg.edges;
 		this.vectorRepresentation = sg.vectorRepresentation;
-		this.varNameFunction = sg.varNameFunction;
+		this.functionCode = sg.functionCode;
 		this.varName = sg.varName;
 	}
 
 	public StarGraph(HashSet<Edge> edges, String varNameFunction) {
-		this.edges = edges;
-		this.varNameFunction = varNameFunction;
+//		this.edges = edges;
+		String[] tmp = varNameFunction.split("-");
+		this.varName = tmp[0];
 
-		this.varName = varNameFunction.split("-")[0];
-		updateVectorRepresentation();
+		if (tmp[1].isEmpty()) {
+			tmp[1] = "0";
+		}
+		this.functionCode = Integer.parseInt(tmp[1]);
+		updateVectorRepresentation(edges);
 	}
 
-	private void updateVectorRepresentation() {
+	private void updateVectorRepresentation(HashSet<Edge> edges) {
 		vectorRepresentation = new ArrayList<>();
 		for (Edge e : edges) vectorRepresentation.add(e.hashCode);
 		Collections.sort(vectorRepresentation);
@@ -47,9 +51,9 @@ public class StarGraph {
 		return vectorRepresentation.size();
 	}
 	
-	public HashSet<Edge> getEdges() {
-		return edges;
-	}
+//	public HashSet<Edge> getEdges() {
+//		return edges;
+//	}
 
 	// check whether the testing graph is similar to other graph from corpus
 	public double getSimilarScoreTo(StarGraph sg) {
@@ -81,9 +85,9 @@ public class StarGraph {
 	@Override
 	public String toString() {
 		StringBuilder res = new StringBuilder();
-		res.append("StarGraphInFo : ").append(this.varNameFunction).append(" (").append(getSizeGraph()).append(")\n");
-		for (Edge e : edges)
-			res.append(e.toString()).append("\n");
+		res.append("StarGraphInFo : ").append(this.varName).append("-").append(this.functionCode).append(" (").append(getSizeGraph()).append(")\n");
+//		for (Edge e : edges)
+//			res.append(e.toString()).append("\n");
 		return res.toString();
 	}
 }

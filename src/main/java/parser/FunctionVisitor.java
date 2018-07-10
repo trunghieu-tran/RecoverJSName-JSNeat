@@ -553,29 +553,29 @@ public class FunctionVisitor implements NodeVisitor{
 	}
 	
 	public void printStarGraph(String dest) throws IOException {
-		System.out.println(dest);
-		this.buildStarGraph();
-		if ( sgSet.isEmpty() )
-		{
-			return;
-		}
-		File dir = new File(dest);
-		if ( ! dir.exists() )
-		{
-			dir.mkdirs();
-		}
-		for( StarGraph sg : sgSet ) {
-			File sgFile = new File(dest + "/" + sg.getVarName() + ".txt");
-			FileWriter fw = new FileWriter(sgFile);
-			PrintWriter pw = new PrintWriter(fw);
-			for ( Edge edge: sg.getEdges() )
-			{
-				String content = edge.toString();
-				pw.println(content);
-				//System.out.println(edge.toString());
-			}
-			pw.close();
-		}
+//		System.out.println(dest);
+//		this.buildStarGraph();
+//		if ( sgSet.isEmpty() )
+//		{
+//			return;
+//		}
+//		File dir = new File(dest);
+//		if ( ! dir.exists() )
+//		{
+//			dir.mkdirs();
+//		}
+//		for( StarGraph sg : sgSet ) {
+//			File sgFile = new File(dest + "/" + sg.getVarName() + ".txt");
+//			FileWriter fw = new FileWriter(sgFile);
+//			PrintWriter pw = new PrintWriter(fw);
+//			for ( Edge edge: sg.getEdges() )
+//			{
+//				String content = edge.toString();
+//				pw.println(content);
+//				//System.out.println(edge.toString());
+//			}
+//			pw.close();
+//		}
 	}
 
 	public HashSet<StarGraph> getStarGraph() {

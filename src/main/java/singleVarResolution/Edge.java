@@ -10,13 +10,14 @@ public class Edge {
 	private String pe;
 	private String rel;
 	int freq = 0;
-	long hashCode;
+	int hashCode;
 
 	public Edge(String pe, String rel, int freq) {
 		this.pe = pe;
 		this.rel = rel;
 		this.freq = freq;
-		hashCode = (long)pe.hashCode() * (long)rel.hashCode();
+		long tmp = ((long) pe.hashCode() + rel.hashCode()) % Integer.MAX_VALUE;
+		hashCode = (int) tmp;
 	}
 
 	public boolean isEquals(Edge e) {
