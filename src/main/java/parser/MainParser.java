@@ -48,8 +48,8 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-		//demo.parseForest("test");
-		demo.parseAssociation("");
+		demo.parseForest("test");
+		//demo.parseAssociation("");
 		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
@@ -185,6 +185,10 @@ public class MainParser {
 			fileType = "testFileList.txt";
 			sgPath = sgTestDir;
 			outputDir = testSetDir;
+		} else {
+			fileType = "test.txt";
+			sgPath = "../SGDebug";
+			outputDir = "../TestRun";
 		}
 		File fileListing = new File(fileList + "/" + fileType);
 		if ( fileListing.exists() )
@@ -194,7 +198,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 100 ) break;
+				//if ( count > 10 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
@@ -210,7 +214,7 @@ public class MainParser {
 //					path = "../TestRun" + path;
 
 
-					ForestVisitor myVisitor = new ForestVisitor(path);
+					ForestVisitor myVisitor = new ForestVisitor(path, flag);
 					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
