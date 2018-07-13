@@ -103,10 +103,11 @@ public class MainSingleVarResolution {
 		numOfTest = sgData.sgSet.size() / 10;
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
-//				testSg.add(new StarGraph(sg));
+				StarGraph sgg = new StarGraph(sg);
 
 				// This is for choose 1 relation type
-				StarGraph sgg = new StarGraph(sg, RELATION_TYPE);
+//				StarGraph sgg = new StarGraph(sg, RELATION_TYPE);
+
 				if (sgg.getSizeGraph() == 0) continue;
 
 				testSg.add(sgg);

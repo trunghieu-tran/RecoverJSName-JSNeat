@@ -62,7 +62,7 @@ public class BeamSearch {
 				int ii = orderRecovering.get(i);
 				int jj = orderRecovering.get(j);
 				String rel = "TODO" ; // TODO - find rel based on their indexers
-				sum += AssociationMiner.getScoreAssociation3(setName.get(i), setName.get(j), rel);
+//				sum += AssociationMiner.getScoreAssociation3(setName.get(i), setName.get(j), rel);
 			}
 		return sum / (len * (len - 1) / 2);
 	}
