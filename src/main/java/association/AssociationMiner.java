@@ -9,11 +9,15 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 //Non-hash Version
 public class AssociationMiner {
 	HashMap<String, Integer> var2Hash = new HashMap<>();
 	HashMap<String, Integer> var1Hash = new HashMap<>();
+	int n0Thread = 8;
 	public static void main(String[] args) {
 		String path = "../AssocData";
 		AssociationMiner am = new AssociationMiner();
@@ -44,6 +48,117 @@ public class AssociationMiner {
 	    }
 	    pw1.close();
 	    pw2.close();
+	}
+	
+	public class LoadOneFile implements Runnable {
+		int flag;
+		File file;
+		public LoadOneFile(int flag, File f) {
+			this.flag = flag;
+			file = f;
+		}
+		@Override
+		public void run() {
+
+			HashSet<String> varList = new HashSet<>();
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(file));
+				String st;
+				while ((st = br.readLine()) != null) {
+					String[] subs = st.split(" ");
+					if ( flag == 0 ) {
+						if ( subs.length == 1 ) {
+							//hash1
+							String varHashCode = subs[0];
+							if ( var1Hash.containsKey(varHashCode) ) {
+								var1Hash.put(varHashCode, var1Hash.get(varHashCode)+1);
+							} else {
+								var1Hash.put(varHashCode, 1);
+							}
+							varList.add(subs[0]);
+						}
+					}
+					else if ( flag == 1 ) {
+						if ( subs.length == 3 ) {
+							//hash2
+							String relHashCode = st;
+							if ( var2Hash.containsKey(relHashCode) ) {
+								var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+							} else {
+								var2Hash.put(relHashCode, 1);
+							}
+							
+							//hash1.l
+							String varHashCode1 = subs[0]+subs[2];
+							if ( var1Hash.containsKey(varHashCode1) ) {
+								var1Hash.put(varHashCode1, var1Hash.get(varHashCode1)+1);
+							} else {
+								var1Hash.put(varHashCode1, 1);
+							}
+							
+							//hash1.2
+							String varHashCode2 = subs[0]+subs[2];
+							if ( var1Hash.containsKey(varHashCode2) ) {
+								var1Hash.put(varHashCode2, var1Hash.get(varHashCode2)+1);
+							} else {
+								var1Hash.put(varHashCode2, 1);
+							}
+						}
+					}
+				}
+				br.close();
+			} 
+			catch ( IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//Fill var2Hash if flag == 0
+			ArrayList<String> al = new ArrayList<String>(varList);
+			for (int i = 0; i < al.size() - 1; i++) {
+				for ( int j = i + 1; j < al.size(); j++ ) {
+					String relHashCode = al.get(i) + al.get(j);
+					if ( var2Hash.containsKey(relHashCode) ) {
+						var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+					} else {
+						var2Hash.put(relHashCode, 1);
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @param flag
+	 * if flag == 0, indirect relationship
+	 * if flag == 1, direct relationship
+	 */
+	public void loadAssocDataMultiThread(int flag, String path) {
+		File corpus = new File(path);
+		int count = 0;
+		ExecutorService executor = Executors.newFixedThreadPool(n0Thread);
+		for( File dir: corpus.listFiles() ) {
+			count++;
+			if ( count % 100 == 0)
+			{
+				System.out.println("Processed " + count + " files");
+			}
+			//Each dir is a function
+			for ( File file: dir.listFiles() ) {
+				LoadOneFile onefile = new LoadOneFile(flag, file);
+				executor.execute(onefile);
+			}
+		}
+		
+		// Wait until all threads are finish
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(7, TimeUnit.DAYS))
+				executor.shutdownNow();
+		} catch (Exception e) {
+			System.out.println("Waiting error");
+			executor.shutdownNow();
+		}
+		System.out.println("FINISHED all threads for corpus loading");
 	}
 	
 	/**
