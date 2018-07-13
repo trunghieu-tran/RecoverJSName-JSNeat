@@ -21,7 +21,7 @@ public class AssociationMiner {
 	public static void main(String[] args) {
 		String path = "../AssocData";
 		AssociationMiner am = new AssociationMiner();
-		am.loadAssocData(0, path);
+		am.loadAssocDataMultiThread(0, path);
 		am.writeHashAssoc("../HashAssocData");
 	}
 	
@@ -158,7 +158,7 @@ public class AssociationMiner {
 			System.out.println("Waiting error");
 			executor.shutdownNow();
 		}
-		System.out.println("FINISHED all threads for corpus loading");
+		System.out.println("FINISHED all threads for assocation mining");
 	}
 	
 	/**
