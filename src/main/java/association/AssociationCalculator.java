@@ -2,7 +2,6 @@ package association;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,9 +15,9 @@ public class AssociationCalculator {
 		AssociationCalculator ac;
 		try {
 			ac = new AssociationCalculator("indirect", path);
-			System.out.println( ac.getAssocScore("a", "b", ""));
-			System.out.println( ac.getAssocScore("b", "c", ""));
-			System.out.println( ac.getAssocScore("c", "d", ""));
+//			System.out.println( ac.getAssocScore("a", "b", ""));
+//			System.out.println( ac.getAssocScore("b", "c", ""));
+//			System.out.println( ac.getAssocScore("c", "d", ""));
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

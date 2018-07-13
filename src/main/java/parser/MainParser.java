@@ -48,8 +48,8 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-		demo.parseForest("test");
-		//demo.parseAssociation("");
+		//demo.parseForest("test");
+		demo.parseAssociation("train");
 		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
