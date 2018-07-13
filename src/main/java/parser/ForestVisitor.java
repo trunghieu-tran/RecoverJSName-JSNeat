@@ -13,12 +13,14 @@ import singleVarResolution.StarGraphToPrint;
  * Build a forest from the training dataset
  */
 public class ForestVisitor implements NodeVisitor{
+	String flag; //test //train //debug
 	String path;
 	String sgPath;
 	HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 	int anonymousCount = 0; //Handle Anonymous Function
 	
-	public ForestVisitor(String path) {
+	public ForestVisitor(String path, String flag) {
+		this.flag = flag;
 		this.path = path;
 	}
 	
@@ -55,6 +57,9 @@ public class ForestVisitor implements NodeVisitor{
 
 			String functionName = ((FunctionNode)node).getName();
 			if ( functionName.isEmpty() ) {
+				if ( flag.equals("test") ) {
+					return true;
+				}
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
 			}
 			String dir = path + "_" + functionName;

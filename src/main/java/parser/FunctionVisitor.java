@@ -449,7 +449,7 @@ public class FunctionVisitor implements NodeVisitor{
 		return varName;
 	}
 
-	private void addRecord(String pe1, String pe2, String relationship) {
+	public void addRecord(String pe1, String pe2, String relationship) {
 		//String newName = this.normalizeVarName(name);
 		//variableNames.add(newName);
 		//programEntities.add(pe);
@@ -539,6 +539,29 @@ public class FunctionVisitor implements NodeVisitor{
 		// TODO Auto-generated method stub
 		this.buildStarGraph();
 		return sgSet;
+	}
+
+	public void printAsso(String dest) throws IOException {
+		if ( ! recordList.isEmpty() ) {
+			File dir = new File(dest);
+			if ( ! dir.exists() )
+			{
+				dir.mkdirs();
+			}
+			System.out.println(dest);
+			File assoFile = new File(dest + "/assoc.txt");
+			FileWriter fw = new FileWriter(assoFile);
+			PrintWriter pw = new PrintWriter(fw);
+			for( Record r: recordList.keySet() ) {
+				if ( r.type == 1 ) {
+					pw.println(r.pe + " " + r.name + " " + r.relationship);
+				}
+			}
+			for( String var: variableNames ) {
+				pw.println(var);
+			}
+			pw.close();
+		}
 	}
 
 }

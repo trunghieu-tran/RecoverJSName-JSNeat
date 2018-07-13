@@ -31,7 +31,8 @@ public class MainParser {
 //	static String output = "../Data/_Output";
 //	static String output = ".\\resources/parsedData";
 //	static String testSetDir = ".\\resources/parsedData/testSet";
-	static String associateDir = "../AssocData";
+	static String assocTrainDir = "../AssocData";
+	static String assocTestDir = "../AssocTestData";
 	static String trainSetDir = "../TrainSet";
 	static String testSetDir = "../TestSet";
 	static String bakerDir = "../BakerData";
@@ -48,7 +49,7 @@ public class MainParser {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
 		demo.parseForest("test");
-		//demo.parseAssociation("train");
+		//demo.parseAssociation("");
 		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
@@ -56,11 +57,16 @@ public class MainParser {
 	}
 
 	public void parseAssociation(String flag) throws IOException {
-		String fileType = "";
+		String fileType = "", output = "";
 		if ( flag.equals("train")) {
 			fileType = "trainFileList.txt";
+			output = assocTrainDir;
 		} else if ( flag.equals("test")) {
 			fileType = "testFileList.txt";
+			output = assocTestDir;
+		} else {
+			fileType = "test.txt";
+			output = "../debugAssoc";
 		}
 		File fileListing = new File(fileList + "/" + fileType);
 		if ( fileListing.exists() )
@@ -70,9 +76,10 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 1000 ) break;
+				if ( count > 10 ) break;
 				try
 				{
+					//System.out.println(str);
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
 			    	FileReader strReader = new FileReader(str);
@@ -82,8 +89,8 @@ public class MainParser {
 					String projectName = path.substring(0, path.indexOf("\\"));
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
-//					path = associateDir + path;
-					path = "../TestRun" + path;
+					path = output + path;
+//					path = "../TestRun" + path;
 					AssociateVisitor ascVis = new AssociateVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(ascVis);
@@ -178,6 +185,10 @@ public class MainParser {
 			fileType = "testFileList.txt";
 			sgPath = sgTestDir;
 			outputDir = testSetDir;
+		} else {
+			fileType = "test.txt";
+			sgPath = "../SGDebug";
+			outputDir = "../TestRun";
 		}
 		File fileListing = new File(fileList + "/" + fileType);
 		if ( fileListing.exists() )
@@ -187,7 +198,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 100 ) break;
+				//if ( count > 10 ) break;
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
@@ -203,7 +214,7 @@ public class MainParser {
 //					path = "../TestRun" + path;
 
 
-					ForestVisitor myVisitor = new ForestVisitor(path);
+					ForestVisitor myVisitor = new ForestVisitor(path, flag);
 					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
