@@ -12,6 +12,7 @@ import java.util.HashSet;
  */
 public class FunctionInfo {
 	private HashSet<StarGraph> starGraphsList;
+	private HashSet<String> varVarRels;
 	private String dir;
 
 	public FunctionInfo(HashSet<StarGraph> starGraphsList, String dir) {

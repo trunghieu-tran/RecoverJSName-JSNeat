@@ -51,12 +51,7 @@ public class SimilarGraphFinder {
 			res.add(new Pair<>(varName, finalScore));
 		}
 
-		res.sort(new Comparator<Pair<String, Double>>() {
-			@Override
-			public int compare(Pair<String, Double> o1, Pair<String, Double> o2) {
-				return o2.getValue().compareTo(o1.getValue());
-			}
-		});
+		res.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 		return res;
 	}

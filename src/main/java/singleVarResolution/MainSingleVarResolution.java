@@ -17,8 +17,9 @@ import java.util.concurrent.TimeUnit;
  * @organization UTDallas
  */
 public class MainSingleVarResolution {
+	private static String RELATION_TYPE = "CoArgument";
 	private static int TOPK = 10;
-	private static final int numberOfThread = 20;
+	private static final int numberOfThread = 20    ;
 	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData";
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
 	private static String tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt";
@@ -38,31 +39,32 @@ public class MainSingleVarResolution {
 
 		int[] tops = {1, 5, 10};
 		int numOfTest = cache.size();
-		int numOfOne = 0;
+		int[] numOfEdge = new int[11];
 		for (StarGraph sg : cache.keySet())
-			if (sg.getSizeGraph() == 1) ++numOfOne;
+			if (sg.getSizeGraph() <= 10) numOfEdge[sg.getSizeGraph()]++;
 
 		res.append("Number of training = ").append(sgData.sgSet.size()).append("\n");
 		res.append("Number of testcase = ").append(numOfTest).append("\n");
-		res.append("Number of testcase_1_edge = ").append(numOfOne).append("\n");
+
+		for (int i = 1; i <= 10; ++i)
+			res.append("Number of testcase ").append(i).append("_edges = ").append(numOfEdge[i]).append("\n");
+
 
 
 		for (int i = 0; i < tops.length; ++i) {
+			int[] cntE = new int[11];
 			int cnt = 0;
-			int cnt1 = 0;
-			int cntNot1 = 0;
 			for (StarGraph sg : cache.keySet()) {
 				if (isInTopK(cache.get(sg), tops[i], sg.getVarName())) {
 					cnt++;
-					if (sg.getSizeGraph() == 1) cnt1++;
-					else cntNot1++;
+					if (sg.getSizeGraph() <= 10) cntE[sg.getSizeGraph()]++;
 				}
 			}
 
 			res.append("== TopK = ").append(tops[i]).append("===\n");
 			res.append("Accuracy = ").append((double) cnt / numOfTest).append("\n");
-			res.append("Accuracy1 = ").append((double) cnt1 / numOfOne).append("\n");
-			res.append("AccuracyNOT1 = ").append((double) cntNot1 / (numOfTest - numOfOne)).append("\n");
+			for (int ii = 1; ii <= 10; ++ii)
+				res.append("Accuracy ").append(ii).append("_edges = ").append((double) cntE[ii] / numOfEdge[ii]).append("\n");
 		}
 
 		FileIO.writeStringToFile(tmpOutputAccuracy, res.toString());
@@ -70,7 +72,7 @@ public class MainSingleVarResolution {
 
 	public void loadData() {
 		sgData = new SGData();
-		sgData.getData(data, -1);
+		sgData.getData(data, 1000000);
 	}
 
 	public class ProcessingOneGraph implements Runnable {
@@ -97,11 +99,17 @@ public class MainSingleVarResolution {
 	public void testing() {
 		HashSet<StarGraph> testSg = new HashSet<>();
 		int cc = 0;
-		int c = 0;
+		int c = 6;
 		numOfTest = sgData.sgSet.size() / 10;
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
-				testSg.add(new StarGraph(sg));
+//				testSg.add(new StarGraph(sg));
+
+				// This is for choose 1 relation type
+				StarGraph sgg = new StarGraph(sg, RELATION_TYPE);
+				if (sgg.getSizeGraph() == 0) continue;
+
+				testSg.add(sgg);
 				++cc;
 				if (cc == numOfTest) break;
 			}

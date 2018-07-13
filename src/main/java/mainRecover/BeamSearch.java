@@ -1,5 +1,6 @@
 package mainRecover;
 
+import association.AssociationMiner;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -52,13 +53,26 @@ public class BeamSearch {
 	}
 
 	private double getScoreTogether(ArrayList<String> setName) {
-		// TODO
-		return 0.5;
+		int len = setName.size();
+		if (len <= 1) return 0;
+
+		double sum = 0;
+		for (int i = 0; i < len; ++i)
+			for (int j = i + 1; j < len; ++j) {
+				int ii = orderRecovering.get(i);
+				int jj = orderRecovering.get(j);
+				String rel = "TODO" ; // TODO - find rel based on their indexers
+				sum += AssociationMiner.getScoreAssociation3(setName.get(i), setName.get(j), rel);
+			}
+		return sum / (len * (len - 1) / 2);
 	}
 
 	private double getConfidentScore(ArrayList<Double> similarScores, double scoreTogether) {
-		// TODO
-		return 0.5;
+		if (similarScores.size() == 0) return 0;
+		double sum = 0;
+		for (double d : similarScores) sum += d;
+		sum /= similarScores.size();
+		return sum + scoreTogether;
 	}
 
 	private void recovering(int idx, int K) {
@@ -84,12 +98,7 @@ public class BeamSearch {
 				allPosssibleRecover.add(new Pair<>(setNameTmp, sc));
 			}
 		}
-		allPosssibleRecover.sort(new Comparator<Pair<ArrayList<String>, Double>>() {
-			@Override
-			public int compare(Pair<ArrayList<String>, Double> o1, Pair<ArrayList<String>, Double> o2) {
-				return o2.getValue().compareTo(o1.getValue());
-			}
-		});
+		allPosssibleRecover.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 		currRecovering.clear();
 		for (int i = 0; i < Math.min(K, allPosssibleRecover.size()); ++i) {

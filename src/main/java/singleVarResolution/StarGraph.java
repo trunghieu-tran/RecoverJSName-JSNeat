@@ -12,21 +12,32 @@ import java.util.List;
  */
 public class StarGraph {
 	private static double THRESHOLD = 0.8;
-//	private HashSet<Edge> edges;
+	private HashSet<Edge> edges;
 	private List<Integer> vectorRepresentation;
 
 	private String varName;
 	private int functionCode;
 
 	public StarGraph(StarGraph sg) {
-//		this.edges = sg.edges;
+		this.edges = sg.edges;
 		this.vectorRepresentation = sg.vectorRepresentation;
 		this.functionCode = sg.functionCode;
 		this.varName = sg.varName;
 	}
 
+	public StarGraph(StarGraph sg, String rel) {
+		this.functionCode = sg.functionCode;
+		this.varName = sg.varName;
+		this.edges = new HashSet<>();
+		for (Edge e : sg.edges)
+			if (e.getRel().equals(rel)) {
+				this.edges.add(e);
+			}
+		this.updateVectorRepresentation(this.edges);
+	}
+
 	public StarGraph(HashSet<Edge> edges, String varNameFunction) {
-//		this.edges = edges;
+		this.edges = edges;
 		String[] tmp = varNameFunction.split("-");
 		this.varName = tmp[0];
 
@@ -51,9 +62,9 @@ public class StarGraph {
 		return vectorRepresentation.size();
 	}
 	
-//	public HashSet<Edge> getEdges() {
-//		return edges;
-//	}
+	public HashSet<Edge> getEdges() {
+		return edges;
+	}
 
 	// check whether the testing graph is similar to other graph from corpus
 	public double getSimilarScoreTo(StarGraph sg) {
@@ -86,8 +97,8 @@ public class StarGraph {
 	public String toString() {
 		StringBuilder res = new StringBuilder();
 		res.append("StarGraphInFo : ").append(this.varName).append("-").append(this.functionCode).append(" (").append(getSizeGraph()).append(")\n");
-//		for (Edge e : edges)
-//			res.append(e.toString()).append("\n");
+		for (Edge e : edges)
+			res.append(e.toString()).append("\n");
 		return res.toString();
 	}
 }
