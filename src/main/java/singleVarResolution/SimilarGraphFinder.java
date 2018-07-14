@@ -15,8 +15,9 @@ import java.util.HashSet;
  */
 public class SimilarGraphFinder {
 	private HashSet<StarGraph> sgSet;
-
-	public SimilarGraphFinder(HashSet<StarGraph> sgSet) {
+	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs;
+	public SimilarGraphFinder(HashSet<StarGraph> sgSet,  HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs) {
+		this.mapEdgeToGraphs = mapEdgeToGraphs;
 		this.sgSet = sgSet;
 	}
 
@@ -56,9 +57,20 @@ public class SimilarGraphFinder {
 		return res;
 	}
 
+	private HashSet<StarGraph> getCandidateStarGraphForGraph(StarGraph g) {
+		HashSet<StarGraph> tmp = new HashSet<>();
+		for (Edge e : g.getEdges()) {
+			if (mapEdgeToGraphs.containsKey(e.hashCode)) {
+				tmp.addAll(mapEdgeToGraphs.get(e.hashCode));
+			}
+		}
+		return tmp;
+	}
+
 	private HashSet<Pair<StarGraph, Double>> getSimilarStarGraphWith(StarGraph g) {
+		HashSet<StarGraph> candSg = getCandidateStarGraphForGraph(g);
 		HashSet<Pair<StarGraph, Double>> res = new HashSet<>();
-		for (StarGraph sg : sgSet) {
+		for (StarGraph sg : candSg) {
 			double sc = g.getSimilarScoreTo(sg);
 			if (sc == -1.0) continue;
 			res.add(new Pair<>(sg, sc));

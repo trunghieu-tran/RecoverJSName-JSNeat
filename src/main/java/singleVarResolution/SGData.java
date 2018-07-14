@@ -4,10 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +17,8 @@ public class SGData {
 
 	public HashSet<StarGraph> sgSet = new HashSet<>();
 	public HashSet<FunctionInfo> testFunctionSet = new HashSet<>();
+	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
+
 	private int numOfFunction = -1;
 
 	public void getTestData(String sgDir) throws IOException {
@@ -243,4 +242,18 @@ public class SGData {
 		}
 	}	
 
+	public void IndexingGraphByEdges() {
+		for (StarGraph sg : sgSet) {
+			for (Edge e : sg.getEdges()) {
+				if (mapEdgeToGraphs.containsKey(e.hashCode))
+					mapEdgeToGraphs.get(e.hashCode).add(sg);
+				else {
+					HashSet<StarGraph> tmp = new HashSet<>();
+					tmp.add(sg);
+					mapEdgeToGraphs.put(e.hashCode, tmp);
+				}
+			}
+		}
+		System.out.println("Size of mapEdgeToGraph = " + Integer.toString(mapEdgeToGraphs.size()));
+	}
 }
