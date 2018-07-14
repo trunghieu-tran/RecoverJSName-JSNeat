@@ -36,6 +36,24 @@ public class StarGraph {
 		this.updateVectorRepresentation(this.edges);
 	}
 
+	public StarGraph(StarGraph sg, String rel, boolean isRemoved) {
+		this.functionCode = sg.functionCode;
+		this.varName = sg.varName;
+		this.edges = new HashSet<>();
+		if (isRemoved) {
+			for (Edge e : sg.edges)
+				if (!e.getRel().equals(rel)) {
+					this.edges.add(e);
+				}
+		} else {
+			for (Edge e : sg.edges)
+				if (e.getRel().equals(rel)) {
+					this.edges.add(e);
+				}
+		}
+		this.updateVectorRepresentation(this.edges);
+	}
+
 	public StarGraph(HashSet<Edge> edges, String varNameFunction) {
 		this.edges = edges;
 		String[] tmp = varNameFunction.split("-");

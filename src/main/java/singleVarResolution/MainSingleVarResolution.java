@@ -72,7 +72,7 @@ public class MainSingleVarResolution {
 
 	public void loadData() {
 		sgData = new SGData();
-		sgData.getData(data, 1000000);
+		sgData.getData(data, -1);
 		sgData.IndexingGraphByEdges();
 	}
 
@@ -100,7 +100,7 @@ public class MainSingleVarResolution {
 	public void testing() {
 		HashSet<StarGraph> testSg = new HashSet<>();
 		int cc = 0;
-		int c = 6;
+		int c = 5;
 		numOfTest = sgData.sgSet.size() / 10;
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
