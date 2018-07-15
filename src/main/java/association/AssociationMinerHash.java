@@ -9,14 +9,15 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
 public class AssociationMinerHash {
-	HashMap<Integer, Integer> var2Hash = new HashMap<>();
-	HashMap<Integer, Integer> var1Hash = new HashMap<>();
+	ConcurrentHashMap<Integer, Integer> var2Hash = new ConcurrentHashMap<>();
+	ConcurrentHashMap<Integer, Integer> var1Hash = new ConcurrentHashMap<>();
 	int n0Thread = 8;
 	public static void main(String[] args) {
 		String path = "../AssocData";

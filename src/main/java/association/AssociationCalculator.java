@@ -15,9 +15,9 @@ public class AssociationCalculator {
 		AssociationCalculator ac;
 		try {
 			ac = new AssociationCalculator("indirect", path);
-//			System.out.println( ac.getAssocScore("a", "b", ""));
-//			System.out.println( ac.getAssocScore("b", "c", ""));
-//			System.out.println( ac.getAssocScore("c", "d", ""));
+			System.out.println( ac.getAssocScore("a", "b", ""));
+			System.out.println( ac.getAssocScore("b", "c", ""));
+			System.out.println( ac.getAssocScore("c", "d", ""));
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -35,13 +35,13 @@ public class AssociationCalculator {
 		String line1;
 		while ((line1 = br1.readLine()) != null) {
 			String[] subs = line1.split(" ");
-			var1Hash.put(subs[0].hashCode(), Integer.parseInt(subs[1]));
+			var1Hash.put(Integer.parseInt(subs[0]), Integer.parseInt(subs[1]));
 		}
 		br1.close();
 		String line2;
 		while ((line2 = br2.readLine()) != null) {
 			String[] subs = line2.split(" ");
-			var2Hash.put(subs[0].hashCode(), Integer.parseInt(subs[1]));
+			var2Hash.put(Integer.parseInt(subs[0]), Integer.parseInt(subs[1]));
 		}
 		br2.close();
 		
