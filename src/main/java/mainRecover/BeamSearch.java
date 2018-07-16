@@ -1,5 +1,6 @@
 package mainRecover;
 
+import association.AssociationCalculator;
 import association.AssociationMiner;
 import javafx.util.Pair;
 
@@ -19,10 +20,12 @@ public class BeamSearch {
 	private ArrayList<ArrayList<String>> currRecovering = new ArrayList<>();
 	private ArrayList<Integer> orderRecovering = new ArrayList<>();
 	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
+	private AssociationCalculator ac;
 
-	public BeamSearch(ArrayList<ArrayList<Pair<String, Double>>> candidateLists) {
+	public BeamSearch(ArrayList<ArrayList<Pair<String, Double>>> candidateLists, AssociationCalculator ac) {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
+		this.ac = ac;
 		updateMapVarNamevsScore();
 	}
 
@@ -61,7 +64,8 @@ public class BeamSearch {
 			for (int j = i + 1; j < len; ++j) {
 				int ii = orderRecovering.get(i);
 				int jj = orderRecovering.get(j);
-				String rel = "TODO" ; // TODO - find rel based on their indexers
+				String rel = "" ; // TODO - find rel based on their indexers
+				sum += ac.getAssocScore(setName.get(i), setName.get(j), rel);
 //				sum += AssociationMiner.getScoreAssociation3(setName.get(i), setName.get(j), rel);
 			}
 		return sum / (len * (len - 1) / 2);

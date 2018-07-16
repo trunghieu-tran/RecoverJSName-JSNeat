@@ -1,6 +1,7 @@
 package mainRecover;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import association.AssociationCalculator;
 import javafx.util.Pair;
 import singleVarResolution.SGData;
 import singleVarResolution.SimilarGraphFinder;
@@ -23,20 +25,25 @@ import utils.FileIO;
 public class MainRecover {
 	private static final int numberOfThread = 20;
 	private static int TOPK = 10;
+	private static int TOPK_BEAMSEARCH = 30;
 
 	private static String InputData = "/home/nmt140230/RecoverJSName/StarGraphTestData/";
 	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData";
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
 	private static String tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt";
+	private static String tmpOutputNoBS = "./resources/tmp/tmp_noBS.txt";
+	private static String tmpOutputAccuracyNoBS = "./resources/tmp/tmpAccuracy_noBS.txt";
+	private static String asscociationData = "/home/nmt140230/RecoverJSName/HashAssocData";
 
 	private static SGData sgData = new SGData();
+	private static AssociationCalculator ac;
 	private Set<FunctionInfo> functionList;
 	private SimilarGraphFinder sf;
 	int cnt = 0;
 
 	public void loadInput() {
 		try {
-			sgData.getTestData(InputData);
+			sgData.getTestData(InputData, 100);
 			functionList = sgData.testFunctionSet;
 			System.out.println(">>> The number of loaded function for testing = " + Integer.toString(functionList.size()));
 		} catch (IOException e) {
@@ -45,22 +52,58 @@ public class MainRecover {
 	}
 
 	public void loadTrainingData() {
-		sgData.getData(TrainingData, 1000000);
+		sgData.getData(TrainingData, -1);
+		sgData.IndexingGraphByEdges();
+		try {
+			ac = new AssociationCalculator("indirect", asscociationData, -1);
+		} catch (Exception e) {
+			System.out.println("ERROR Association constructor");
+		}
 	}
 
 	public class ProcessingOneFunction implements Runnable {
 		FunctionInfo fi;
+		BeamSearch bs;
 		HashMap<StarGraph, ArrayList<Pair<String, Double>>> resolvedVarName = new HashMap<>();
+		HashMap<StarGraph, ArrayList<Pair<String, Double>>> resolvedVarName_withoutBS = new HashMap<>();
+		HashMap<Integer, StarGraph> idToSG = new HashMap<>();
+		ArrayList<ArrayList<String>> resolvedWithBs;
 		int num;
+		int nVar;
 		public ProcessingOneFunction(FunctionInfo fi, int num) {
 			this.fi = fi;
 			this.num = num;
+			this.nVar = fi.getStarGraphsList().size();
+		}
+
+		private void beamSearchInvocation(ArrayList<ArrayList<Pair<String, Double>>> tmp) {
+			bs = new BeamSearch(tmp, ac);
+			resolvedWithBs = bs.getTopKRecoveringResult(TOPK_BEAMSEARCH);
+
+			resolvedVarName.clear();
+			for (int i = 0; i < nVar; ++i) {
+				StarGraph sg = idToSG.get(i);
+				ArrayList<Pair<String, Double>> tmp2 = new ArrayList<>();
+				for (ArrayList<String> arr : resolvedWithBs)
+					tmp2.add(new Pair<>(arr.get(i), 1.0));
+				resolvedVarName.put(sg, tmp2);
+			}
 		}
 		public void run() {
+			ArrayList<ArrayList<Pair<String, Double>>> tmp = new ArrayList<>();
+
+			int cc = 0;
 			for (StarGraph sg : fi.getStarGraphsList()) {
 				ArrayList<Pair<String, Double>> res = sf.getCandidateListForStarGraph(sg);
 				resolvedVarName.put(sg, res);
+				tmp.add(res);
+				idToSG.put(cc++, sg);
 			}
+
+			resolvedVarName_withoutBS = new HashMap<>(resolvedVarName);
+
+			beamSearchInvocation(tmp);
+
 			if (num % 5000 == 0) {
 				System.out.println("[" + Integer.toString(num) + "/" + Integer.toString(functionList.size()) + "] >>> Processing function " + fi.getDir());
 			}
@@ -72,13 +115,14 @@ public class MainRecover {
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 		ArrayList<ProcessingOneFunction> pfs = new ArrayList<>();
 		HashMap<StarGraph, ArrayList<String>> cache = new HashMap<>();
+		HashMap<StarGraph, ArrayList<String>> cacheNoBs = new HashMap<>();
 		StringBuilder resStr = new StringBuilder();
+		StringBuilder resStrNoBs = new StringBuilder();
 
 		for (FunctionInfo fi : functionList) {
 			ProcessingOneFunction pf = new ProcessingOneFunction(fi, ++cnt);
 			executor.execute(pf);
 			pfs.add(pf);
-//			if (cnt == 10000) break;
 		}
 
 		// Wait until all threads are finish
@@ -94,14 +138,23 @@ public class MainRecover {
 
 
 		for (ProcessingOneFunction pf : pfs) {
+			resStr.append(">>>>> Function ").append(pf.fi.getDir()).append(" <<<<<").append("\n");
+			resStrNoBs.append(">>>>> Function ").append(pf.fi.getDir()).append(" <<<<<").append("\n");
+
 			for (StarGraph sg : pf.fi.getStarGraphsList()) {
 				ArrayList<Pair<String, Double>> varNames = pf.resolvedVarName.getOrDefault(sg, null);
+				ArrayList<Pair<String, Double>> varNamesNoBs = pf.resolvedVarName_withoutBS.getOrDefault(sg, null);
+
 				ArrayList<String> names = new ArrayList<>();
-//				cache.put(sg, varNames);
+				ArrayList<String> namesNoBs = new ArrayList<>();
 
 				resStr.append("----------\n");
 				resStr.append(sg.toString());
 				resStr.append("---\n");
+
+				resStrNoBs.append("----------\n");
+				resStrNoBs.append(sg.toString());
+				resStrNoBs.append("---\n");
 
 				int ccc = 0;
 				for (Pair<String, Double> p : varNames) {
@@ -109,12 +162,25 @@ public class MainRecover {
 					resStr.append(p.getKey()).append(" ");
 					if (++ccc == TOPK) break;
 				}
+
+				ccc = 0;
+				for (Pair<String, Double> p : varNamesNoBs) {
+					namesNoBs.add(p.getKey());
+					resStrNoBs.append(p.getKey()).append(" ");
+					if (++ccc == TOPK) break;
+				}
+
 				resStr.append("\n");
+				resStrNoBs.append("\n");
+
 				cache.put(sg, names);
+				cacheNoBs.put(sg, namesNoBs);
 			}
 		}
 		FileIO.writeStringToFile(tmpOutput, resStr.toString());
-		analyzing(cache);
+		FileIO.writeStringToFile(tmpOutputNoBS, resStrNoBs.toString());
+		analyzing(cache, tmpOutputAccuracy);
+		analyzing(cacheNoBs, tmpOutputAccuracyNoBS);
 	}
 
 	private  boolean isInTopK(ArrayList<String> list, int k, String oracle) {
@@ -123,7 +189,7 @@ public class MainRecover {
 		return false;
 	}
 
-	private  void analyzing(HashMap<StarGraph, ArrayList<String>> cache) {
+	private  void analyzing(HashMap<StarGraph, ArrayList<String>> cache, String fileout) {
 		StringBuilder res = new StringBuilder();
 
 		int[] tops = {1, 5, 10};
@@ -156,7 +222,7 @@ public class MainRecover {
 				res.append("Accuracy ").append(ii).append("_edges = ").append((double) cntE[ii] / numOfEdge[ii]).append("\n");
 		}
 
-		FileIO.writeStringToFile(tmpOutputAccuracy, res.toString());
+		FileIO.writeStringToFile(fileout, res.toString());
 	}
 
 	public static void main(String[] args) {

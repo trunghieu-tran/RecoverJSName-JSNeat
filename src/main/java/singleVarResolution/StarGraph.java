@@ -36,18 +36,24 @@ public class StarGraph {
 		this.updateVectorRepresentation(this.edges);
 	}
 
-	public StarGraph(StarGraph sg, String rel, boolean isRemoved) {
+	private boolean isNotInList(ArrayList<String> rels, String rel) {
+		for (String r : rels)
+			if (r.equals(rel)) return false;
+		return true;
+	}
+	public StarGraph(StarGraph sg, ArrayList<String> rels, boolean isRemoved) {
 		this.functionCode = sg.functionCode;
 		this.varName = sg.varName;
 		this.edges = new HashSet<>();
+		// isRemoved : removed all rels edges
 		if (isRemoved) {
 			for (Edge e : sg.edges)
-				if (!e.getRel().equals(rel)) {
+				if (isNotInList(rels, e.getRel())) {
 					this.edges.add(e);
 				}
 		} else {
 			for (Edge e : sg.edges)
-				if (e.getRel().equals(rel)) {
+				if (!isNotInList(rels, e.getRel())) {
 					this.edges.add(e);
 				}
 		}

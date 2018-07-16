@@ -71,8 +71,9 @@ public class MainSingleVarResolution {
 	}
 
 	public void loadData() {
+		System.out.println("Loading corpus...");
 		sgData = new SGData();
-		sgData.getData(data, -1);
+		sgData.getData(data, 1000000);
 		sgData.IndexingGraphByEdges();
 	}
 
@@ -97,18 +98,35 @@ public class MainSingleVarResolution {
 		}
 	}
 
+	private ArrayList<String> getRels() {
+		ArrayList<String> rels = new ArrayList<>();
+		rels.add("CoArgument");
+//		rels.add("Assignment");
+//		rels.add("Argument");
+//		rels.add("FieldAccess");
+//		rels.add("FunctionCall");
+		rels.add("Boolean");
+		return rels;
+	}
+
 	public void testing() {
 		HashSet<StarGraph> testSg = new HashSet<>();
 		int cc = 0;
 		int c = 5;
 		numOfTest = sgData.sgSet.size() / 10;
+		ArrayList<String> rels = getRels();
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
-				StarGraph sgg = new StarGraph(sg);
+				// This is for a normal graph
+//				StarGraph sgg = new StarGraph(sg);
 
 				// This is for choose 1 relation type
 //				StarGraph sgg = new StarGraph(sg, RELATION_TYPE);
 
+				// This is for a graph without RELATION_TYPE
+
+
+				StarGraph sgg = new StarGraph(sg, rels, true);
 				if (sgg.getSizeGraph() == 0) continue;
 
 				testSg.add(sgg);

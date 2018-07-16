@@ -20,8 +20,12 @@ public class SGData {
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
 
 	private int numOfFunction = -1;
+	private int numOfTestFunction = -1;
 
-	public void getTestData(String sgDir) throws IOException {
+	public void getTestData(String sgDir, int numOfTest) throws IOException {
+		this.numOfTestFunction = numOfTest;
+		int cnt = 0;
+		int cntSg = 0;
 		//Structure of root: root --> Dir (Function) --> File (var-name)
 		File root = new File(sgDir);
 		for ( File dir : root.listFiles())
@@ -58,10 +62,15 @@ public class SGData {
 				br.close();
 			}
 			this.testFunctionSet.add(fi);
+			cntSg += fi.getStarGraphsList().size();
+			if (++cnt == numOfTestFunction) break;
 		}
+		System.out.println("Number of Testing function = " + Integer.toString(testFunctionSet.size()));
+		System.out.println("Number of Stargraph in testing functions = " + Integer.toString(cntSg));
 	}
 	
 	public void getData(String path, int numOfFunction) {
+		System.out.println("getData sgData");
 		this.numOfFunction = numOfFunction;
 
 		MainParser main = new MainParser();
@@ -120,9 +129,11 @@ public class SGData {
 		}
 	}
 	private void readDataFromFile_MultiThread(String sgDir) {
+		System.out.println("readDataFromFile_MultiThread");
 		File dir = new File(sgDir);
 		ArrayList<File> files = new ArrayList<>();
 		searchDir(dir, files);
+		System.out.println("nFiles = " + Integer.toString(files.size()));
 		int cnt = 0;
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 		ArrayList<ReadingGraph> rgs = new ArrayList<>();
@@ -223,7 +234,6 @@ public class SGData {
 	}
 	
 	public void searchDir(File dir, ArrayList<File> files) {
-		
 		if ( dir.isFile() )
 		{
 			files.add(dir);
