@@ -138,7 +138,7 @@ public class MainSingleVarResolution {
 		sgData.sgSet.removeAll(testSg);
 
 		StringBuilder resStr = new StringBuilder();
-		SimilarGraphFinder sf = new SimilarGraphFinder(sgData.sgSet, sgData.mapEdgeToGraphs);
+		SimilarGraphFinder sf = new SimilarGraphFinder(sgData.mapEdgeToGraphs);
 		HashMap<StarGraph, ArrayList<String>> cache = new HashMap<>();
 
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);

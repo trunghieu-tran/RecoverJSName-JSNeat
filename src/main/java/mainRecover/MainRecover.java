@@ -43,7 +43,7 @@ public class MainRecover {
 
 	public void loadInput() {
 		try {
-			sgData.getTestData(testingFolderJsNice, -1);
+			sgData.getTestData(TrainingData, 2000);
 			functionList = sgData.testFunctionSet;
 			System.out.println(">>> The number of loaded function for testing = " + Integer.toString(functionList.size()));
 		} catch (IOException e) {
@@ -112,7 +112,7 @@ public class MainRecover {
 	}
 
 	public void process() {
-		sf = new SimilarGraphFinder(sgData.sgSet, sgData.mapEdgeToGraphs);
+		sf = new SimilarGraphFinder(sgData.mapEdgeToGraphs);
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 		ArrayList<ProcessingOneFunction> pfs = new ArrayList<>();
 		HashMap<StarGraph, ArrayList<String>> cache = new HashMap<>();

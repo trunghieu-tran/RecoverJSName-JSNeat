@@ -14,11 +14,10 @@ import java.util.HashSet;
  * @organization UTDallas
  */
 public class SimilarGraphFinder {
-	private HashSet<StarGraph> sgSet;
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs;
-	public SimilarGraphFinder(HashSet<StarGraph> sgSet,  HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs) {
+
+	public SimilarGraphFinder(HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs) {
 		this.mapEdgeToGraphs = mapEdgeToGraphs;
-		this.sgSet = sgSet;
 	}
 
 	private double getScoreOfVarName(ArrayList<Double> scList) {

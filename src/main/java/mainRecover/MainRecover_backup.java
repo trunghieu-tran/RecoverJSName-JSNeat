@@ -110,7 +110,7 @@ public class MainRecover_backup {
 	}
 
 	public void process() {
-		sf = new SimilarGraphFinder(sgData.sgSet, sgData.mapEdgeToGraphs);
+		sf = new SimilarGraphFinder(sgData.mapEdgeToGraphs);
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 		ArrayList<ProcessingOneFunction> pfs = new ArrayList<>();
 		HashMap<StarGraph, ArrayList<String>> cache = new HashMap<>();

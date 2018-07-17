@@ -21,7 +21,7 @@ public class SGData {
 	private int numOfFunction = -1;
 	private int numOfTestFunction = -1;
 
-	public void getTestData(String sgDir, int numOfTest) throws IOException {
+	public void getTestDataJSNice(String sgDir, int numOfTest) throws IOException {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
 		int cntSg = 0;
@@ -55,6 +55,57 @@ public class SGData {
 					functionName = path.substring(path.indexOf("JSNiceTestSet")+14, path.lastIndexOf("/"));
 					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
 				}
+
+				int hashCode = Objects.hash(functionName);
+				//read file content --> edges
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				String st;
+				HashSet<Edge> edges = new HashSet<>();
+				while ((st = br.readLine()) != null) {
+					String[] subs = st.split(" ");
+					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
+					edges.add(e);
+				}
+				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
+				if (!edges.isEmpty()) {
+					fi.addSG(sg);
+				}
+				br.close();
+			}
+			this.testFunctionSet.add(fi);
+			cntSg += fi.getStarGraphsList().size();
+			if (++cnt == numOfTestFunction) break;
+		}
+		System.out.println("Number of Testing function = " + Integer.toString(testFunctionSet.size()));
+		System.out.println("Number of Stargraph in testing functions = " + Integer.toString(cntSg));
+	}
+	public void getTestData(String sgDir, int numOfTest) throws IOException {
+		this.numOfTestFunction = numOfTest;
+		int cnt = 0;
+		int cntSg = 0;
+		int cTotal = 1;
+		//Structure of root: root --> Dir (Function) --> File (var-name)
+		File root = new File(sgDir);
+		for ( File dir : root.listFiles())
+		{
+			++cTotal;
+			if (cTotal % 900 != 0) continue;
+
+			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
+			for (File f : dir.listFiles()) {
+				//for each file name = variable Name
+				String path = f.getCanonicalPath();
+//				System.out.println(path);
+				String functionName = "", varName = "";
+
+				if (path.indexOf("\\") != -1) {
+					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("\\"));
+					varName = path.substring(path.lastIndexOf("\\") + 1, path.indexOf(".txt"));
+				} else {
+					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("/"));
+					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
+				}
+
 
 				int hashCode = Objects.hash(functionName);
 				//read file content --> edges
@@ -147,11 +198,11 @@ public class SGData {
 		ArrayList<ReadingGraph> rgs = new ArrayList<>();
 
 		File root = new File(sgDir);
-		int cTotal = 0;
+		int cTotal = 1;
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
-//			if (cTotal % 10 == 0) continue;
+			if (cTotal % 10 == 0) continue;
 
  			for (File f : dir.listFiles()) {
 			    try {
