@@ -57,7 +57,7 @@ public class ForestVisitor implements NodeVisitor{
 
 			String functionName = ((FunctionNode)node).getName();
 			if ( functionName.isEmpty() ) {
-				if ( flag.equals("test") ) {
+				if ( flag.equals("test") || flag.equals("jsnice") ) {
 					return true;
 				}
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
@@ -65,7 +65,7 @@ public class ForestVisitor implements NodeVisitor{
 			String dir = path + "_" + functionName;
 			String temp = sgPath + "_" + functionName;
 			FunctionVisitor fv = new FunctionVisitor(vn, dir);
-			node.visit(fv);
+			node.visit(fv); 
 			try {
 				//fv.printToFile(dir);
 //				if (functionName.equals("tokenize"))

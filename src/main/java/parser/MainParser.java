@@ -48,8 +48,9 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//demo.generateFileList(all);
-		//demo.parseForest("test");
-		demo.parseAssociation("train");
+		//demo.generateFileList2("../JSNiceData");
+		demo.parseForest("jsnice");
+//		demo.parseAssociation("train");
 		//demo.parseBaker();
 //		demo.parseTestSet();
 //		demo.parseTrainSetTM();
@@ -141,6 +142,25 @@ public class MainParser {
 	    pwTestList.close();
 	}
 
+	public void generateFileList2 (String filePath) throws Exception
+	{
+		File testFileList = new File(fileList + "/testJSNiceList.txt");
+		FileWriter fwTestList = new FileWriter(testFileList);
+	    PrintWriter pwTestList = new PrintWriter(fwTestList);
+	    
+		File dir = new File(filePath);
+		ArrayList<File> files = new ArrayList<>();
+		searchDir(dir, files);
+		//File[] files = dir.listFiles();
+		int i = 1;
+
+		for ( File file : files )
+		{
+			pwTestList.println(file.getCanonicalPath());
+		}
+	    pwTestList.close();
+	}
+	
 	public void parseBaker() throws Exception
 	{
 		File trainFileList = new File(fileList + "/trainFileList.txt");
@@ -185,6 +205,10 @@ public class MainParser {
 			fileType = "testFileList.txt";
 			sgPath = sgTestDir;
 			outputDir = testSetDir;
+		} else if ( flag.equals("jsnice")) {
+			fileType = "testJSNiceList.txt";
+			sgPath = "../JSNiceTestSet";
+			outputDir = "";
 		} else {
 			fileType = "test.txt";
 			sgPath = "../SGDebug";
@@ -362,7 +386,7 @@ public class MainParser {
 			}
 			else if ( file.getName().contains(".js") )
 			{
-				if ( !file.getName().startsWith("._"))
+				if ( !(file.getName().startsWith("._") || file.getName().contains(".min.js")) )
 				{
 					files.add(file);
 				}

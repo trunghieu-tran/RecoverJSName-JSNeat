@@ -174,8 +174,52 @@ public class FunctionVisitor implements NodeVisitor{
 			case (Token.LET):
 			case (Token.CONST): visitVarInit(node); break;
 			case (Token.IF): visitIfStmt(node); break;
+			case (Token.EXPR_VOID): visitExprStmt(node); break;
 		}
 		return true;
+	}
+
+	/*
+	 * Handle function call without receiver
+	 */
+	private void visitExprStmt(AstNode node) {
+		ExpressionStatement es = (ExpressionStatement) node;
+		AstNode tempNode = es.getExpression();
+		if ( tempNode instanceof FunctionCall ) {
+
+			FunctionCall fc = (FunctionCall) tempNode;
+			AstNode target = fc.getTarget();
+			if ( ! (target instanceof Name) )
+			{
+				return;
+			}
+			String functionName = ((Name)target).getIdentifier()+ "("
+					+ fc.getArguments().size() + ")";
+			ArrayList<AstNode> argumentList = new ArrayList<>();
+			//Argument
+			for( AstNode ast : fc.getArguments() )
+			{
+				if ( ast instanceof Name )
+				{
+					argumentList.add(ast);
+					String argName = ((Name)ast).getIdentifier();
+					addRecord(functionName, argName, "Argument");
+				}
+			}
+			
+			//CoArgument
+			for ( int i = 0; i < argumentList.size()-1; i++ )
+			{
+				for ( int j = i+1; j < argumentList.size(); j++ )
+				{
+					String name1 = ((Name) argumentList.get(i)).getIdentifier();
+					String name2 = ((Name) argumentList.get(j)).getIdentifier();
+					addRecord(name1, name2, "CoArgument");
+					addRecord(name2, name1, "CoArgument");
+				}
+			}
+		}
+		
 	}
 
 	private void visitIfStmt(AstNode node) {
@@ -184,11 +228,9 @@ public class FunctionVisitor implements NodeVisitor{
 			IfStatement ifNode = (IfStatement) node;
 			AstNode condNode = ifNode.getCondition();
 			if ( condNode instanceof Name ) {
-				// @TODO : add record variable of type boolean;
 				addRecord("#bool", ((Name)condNode).getIdentifier(), "Boolean");
 			}
 			if ( condNode instanceof InfixExpression ) {
-				// @TODO: if (a > b) : good; if ( a LOGICAL_EXPR b ): both a,b are bool;
 				ArrayList<String> operands = new ArrayList<>(visitInfixExp(condNode));
 				addFromInfix(operands, "");
 				
@@ -250,17 +292,10 @@ public class FunctionVisitor implements NodeVisitor{
 	}
 	
 	private void addFromInfix(ArrayList<String> operands, String name) {
-//		for ( String operand: operands)
-//		{
-//			System.out.print(operand + " ");
-//		}
-//		System.out.println();
 		for( int i = 0; i < operands.size()-1; i++ ) {
 			for ( int j = i+1; j < operands.size(); j++ ) {
 				String opr1 = operands.get(i), opr2 = operands.get(j);
-				if ( !opr1.contains("#array") && !opr2.contains("#array") ) {
-					return;
-				} else {
+				if (! (opr1.contains("#array") || opr2.contains("#array")) ) {
 					addRecord(opr1, opr2, "Infix");
 					addRecord(opr2, opr1, "Infix");
 				}
