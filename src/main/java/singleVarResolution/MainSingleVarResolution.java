@@ -20,7 +20,7 @@ public class MainSingleVarResolution {
 	private static String RELATION_TYPE = "CoArgument";
 	private static int TOPK = 10;
 	private static final int numberOfThread = 20    ;
-	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData";
+	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData"; // 7.9M
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
 	private static String tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt";
 
@@ -118,7 +118,7 @@ public class MainSingleVarResolution {
 		for (StarGraph sg : sgData.sgSet) {
 			if (++c % 10 == 0) {
 				// This is for a normal graph
-//				StarGraph sgg = new StarGraph(sg);
+				StarGraph sgg = new StarGraph(sg);
 
 				// This is for choose 1 relation type
 //				StarGraph sgg = new StarGraph(sg, RELATION_TYPE);
@@ -126,7 +126,7 @@ public class MainSingleVarResolution {
 				// This is for a graph without RELATION_TYPE
 
 
-				StarGraph sgg = new StarGraph(sg, rels, true);
+//				StarGraph sgg = new StarGraph(sg, rels, true);
 				if (sgg.getSizeGraph() == 0) continue;
 
 				testSg.add(sgg);

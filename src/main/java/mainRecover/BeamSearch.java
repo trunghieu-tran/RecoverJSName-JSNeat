@@ -17,12 +17,17 @@ public class BeamSearch {
 	private ArrayList< ArrayList<Pair<String, Double>> > candidateLists;
 	private int numOfVar;
 	private HashSet<Integer> marked = new HashSet<>();
+	//
 	private ArrayList<ArrayList<String>> currRecovering = new ArrayList<>();
+	// a1 b1..
+	// a2 b2
 	private ArrayList<Integer> orderRecovering = new ArrayList<>();
+	// 2 3 1 4
 	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
+	// a, a1 -> score
 	private AssociationCalculator ac;
 
-	public BeamSearch(ArrayList<ArrayList<Pair<String, Double>>> candidateLists, AssociationCalculator ac) {
+	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationCalculator ac) {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
 		this.ac = ac;
@@ -143,6 +148,9 @@ public class BeamSearch {
 	}
 
 	public ArrayList< ArrayList<String>> getTopKRecoveringResult(int K) {
+		// a b c d
+		// a1 b1 c1 d1
+		// a2 b1 c1 d3
 		// first recover
 		initTheFirstRecover(K);
 

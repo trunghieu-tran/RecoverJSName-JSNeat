@@ -46,7 +46,7 @@ public class SimilarGraphFinder {
 		}
 
 		for (String varName : mapVarNameVsScore.keySet()) {
-			ArrayList<Double> scList = mapVarNameVsScore.getOrDefault(varName, new ArrayList<>());
+			ArrayList<Double> scList = mapVarNameVsScore.get(varName);
 			if (scList.size() == 0) continue;
 			double finalScore = getScoreOfVarName(scList);
 			res.add(new Pair<>(varName, finalScore));

@@ -18,7 +18,6 @@ public class SGData {
 	public HashSet<StarGraph> sgSet = new HashSet<>();
 	public HashSet<FunctionInfo> testFunctionSet = new HashSet<>();
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
-
 	private int numOfFunction = -1;
 	private int numOfTestFunction = -1;
 
@@ -26,22 +25,34 @@ public class SGData {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
 		int cntSg = 0;
+//		int cTotal = 0;
 		//Structure of root: root --> Dir (Function) --> File (var-name)
 		File root = new File(sgDir);
 		for ( File dir : root.listFiles())
 		{
+//			++cTotal;
+//			if (cTotal % 10 != 0) continue;
+
 			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
-			for( File f: dir.listFiles() )
-			{
+			for (File f : dir.listFiles()) {
 				//for each file name = variable Name
 				String path = f.getCanonicalPath();
-				//System.out.println(path);
-				String functionName = "", varName = ""; 
+//				System.out.println(path);
+				String functionName = "", varName = "";
+
+//				if (path.indexOf("\\") != -1) {
+//					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("\\"));
+//					varName = path.substring(path.lastIndexOf("\\") + 1, path.indexOf(".txt"));
+//				} else {
+//					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("/"));
+//					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
+//				}
+
 				if ( path.indexOf("\\") != -1) {
-					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
+					functionName = path.substring(path.indexOf("JSNiceTestSet")+14, path.lastIndexOf("\\"));
 					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
 				} else {
-					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("/"));
+					functionName = path.substring(path.indexOf("JSNiceTestSet")+14, path.lastIndexOf("/"));
 					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
 				}
 
@@ -56,7 +67,7 @@ public class SGData {
 					edges.add(e);
 				}
 				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
-				if (! edges.isEmpty() ) {
+				if (!edges.isEmpty()) {
 					fi.addSG(sg);
 				}
 				br.close();
@@ -87,7 +98,7 @@ public class SGData {
 		//Read data from previous parse
 		else { 
 //			sgSet = readDataFromFile(path);
-			readDataFromFile_MultiThread(path);
+			readDataFromFile_MultiThread2(path);
 		}
 	}
 
@@ -128,6 +139,63 @@ public class SGData {
 			}
 		}
 	}
+
+	private void readDataFromFile_MultiThread2(String sgDir) {
+		System.out.println("readDataFromFile_MultiThread");
+		int cnt = 0;
+		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
+		ArrayList<ReadingGraph> rgs = new ArrayList<>();
+
+		File root = new File(sgDir);
+		int cTotal = 0;
+		for ( File dir : root.listFiles())
+		{
+			++cTotal;
+//			if (cTotal % 10 == 0) continue;
+
+ 			for (File f : dir.listFiles()) {
+			    try {
+				    ReadingGraph rg = new ReadingGraph(f);
+				    executor.execute(rg);
+				    rgs.add(rg);
+
+				    if (++cnt % 100000 == 0)
+					    System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(7973823) + "] >>> LOADED: " + f.getCanonicalPath());
+
+				    if (cnt == numOfFunction)
+					    break;
+			    } catch (IOException e) {
+				    e.printStackTrace();
+			    }
+			}
+			if (cnt == numOfFunction)
+				break;
+		}
+
+		// Wait until all threads are finish
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(7, TimeUnit.DAYS))
+				executor.shutdownNow();
+		} catch (Exception e) {
+			System.out.println("Waiting error");
+			executor.shutdownNow();
+		}
+		System.out.println("FINISHED all threads for corpus loading");
+
+		for (ReadingGraph rg : rgs) {
+			sgSet.add(rg.sg);
+		}
+
+		// Re-check set
+		long sumEdge = 0;
+		System.out.println("nFunction size = " + Integer.toString(cTotal));
+		System.out.println("SgSET size = " + Integer.toString(sgSet.size()));
+		for (StarGraph sg : sgSet)
+			sumEdge += sg.getSizeGraph();
+		System.out.println("Total edges = " + Long.toString(sumEdge));
+	}
+
 	private void readDataFromFile_MultiThread(String sgDir) {
 		System.out.println("readDataFromFile_MultiThread");
 		File dir = new File(sgDir);
