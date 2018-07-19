@@ -47,9 +47,9 @@ public class MainParser {
 	
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		//demo.generateFileList(all);
+		demo.generateFileList(all);
 		//demo.generateFileList2("../JSNiceData");
-		demo.parseForest("jsnice");
+		demo.parseForest("");
 //		demo.parseAssociation("train");
 		//demo.parseBaker();
 //		demo.parseTestSet();
@@ -142,7 +142,7 @@ public class MainParser {
 	    pwTestList.close();
 	}
 
-	public void generateFileList2 (String filePath) throws Exception
+	public void generateTestSetListJSNice (String filePath) throws Exception
 	{
 		File testFileList = new File(fileList + "/testJSNiceList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);

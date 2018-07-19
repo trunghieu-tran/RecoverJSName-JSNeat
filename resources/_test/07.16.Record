@@ -1,0 +1,29 @@
+wholeName(2) y Argument 0
+x y CoArgument 0
+a y Infix 1
+lastName y Assignment 0
+firstName y Infix 0
+
+firstName a Infix 0
+#bool a Boolean 0
+c a Infix 1
+y a Infix 1
+m(2) a Argument 0
+c a CoArgument 1
+
+wholeName(2) z Assignment 0
+a z Assignment 1
+y z Assignment 1
+lastName z Assignment 0
+firstName z Assignment 0
+
+wholeName(2) person FunctionCall 0
+firstName person FieldAccess 0
+lastName person FieldAccess 0
+
+#bool c Boolean 0
+person c ArrayAccess 1
+[] c Assignment 0
+fn c FieldAccess 0
+m(2) c Argument 0
+a c CoArgument 1
