@@ -11,7 +11,7 @@ import java.util.List;
  * @organization UTDallas
  */
 public class StarGraph {
-	private static double THRESHOLD = 0.8;
+	private static double THRESHOLD = 1.0;
 	private HashSet<Edge> edges;
 	private List<Integer> vectorRepresentation;
 

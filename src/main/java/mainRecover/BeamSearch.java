@@ -3,6 +3,7 @@ package mainRecover;
 import association.AssociationCalculator;
 import association.AssociationMiner;
 import javafx.util.Pair;
+import utils.FileIO;
 
 import java.util.*;
 
@@ -26,11 +27,16 @@ public class BeamSearch {
 	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
 	// a, a1 -> score
 	private AssociationCalculator ac;
+	private HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
+	public long totalAss = 0;
+	public long totalAssCounted = 0;
+	private String fileOutAssociation;
 
-	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationCalculator ac) {
+	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationCalculator ac, String file) {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
 		this.ac = ac;
+		this.fileOutAssociation = file;
 		updateMapVarNamevsScore();
 	}
 
@@ -65,15 +71,19 @@ public class BeamSearch {
 		if (len <= 1) return 0;
 
 		double sum = 0;
+		double res = 0;
 		for (int i = 0; i < len; ++i)
 			for (int j = i + 1; j < len; ++j) {
-				int ii = orderRecovering.get(i);
-				int jj = orderRecovering.get(j);
 				String rel = "" ; // TODO - find rel based on their indexers
-				sum += ac.getAssocScore(setName.get(i), setName.get(j), rel);
-//				sum += AssociationMiner.getScoreAssociation3(setName.get(i), setName.get(j), rel);
+				double tmp = ac.getAssocScore(setName.get(i), setName.get(j), rel);
+				res = Math.max(res, tmp);
+				cache_Association.put(new Pair<>(setName.get(i), setName.get(j)), tmp);
+				sum += tmp;
+				totalAss++;
+				if (tmp > 0) totalAssCounted++;
 			}
-		return sum / (len * (len - 1) / 2);
+//		res = sum / (len * (len - 1) / 2);
+		return res;
 	}
 
 	private double getConfidentScore(ArrayList<Double> similarScores, double scoreTogether) {
@@ -147,11 +157,16 @@ public class BeamSearch {
 			}
 	}
 
+	private void writeOutCacheAssociation() {
+		StringBuilder sb = new StringBuilder();
+		for (Pair<String, String> key : cache_Association.keySet()) {
+			sb.append(key.getKey()).append(" ").append(key.getValue()).append(" ").append(cache_Association.get(key)).append("\n");
+		}
+		FileIO.writeStringToFile(this.fileOutAssociation, sb.toString());
+	}
+
 	public ArrayList< ArrayList<String>> getTopKRecoveringResult(int K) {
-		// a b c d
-		// a1 b1 c1 d1
-		// a2 b1 c1 d3
-		// first recover
+
 		initTheFirstRecover(K);
 
 		// recover the rest
@@ -173,6 +188,7 @@ public class BeamSearch {
 		}
 
 		reverseToOriginalOrder();
+		writeOutCacheAssociation();
 
 		return currRecovering;
 	}

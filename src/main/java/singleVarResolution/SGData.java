@@ -16,10 +16,11 @@ public class SGData {
 	private static final int numberOfThread = 20;
 
 	public HashSet<StarGraph> sgSet = new HashSet<>();
+	public HashSet<StarGraph> sgSetTesting = new HashSet<>();
 	public HashSet<FunctionInfo> testFunctionSet = new HashSet<>();
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
-	private int numOfFunction = -1;
-	private int numOfTestFunction = -1;
+	int numOfFunction = -1;
+	int numOfTestFunction = -1;
 
 	public void getTestDataJSNice(String sgDir, int numOfTest) throws IOException {
 		this.numOfTestFunction = numOfTest;
@@ -92,7 +93,9 @@ public class SGData {
 			if (cTotal % 900 != 0) continue;
 
 			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
-			for (File f : dir.listFiles()) {
+			File[] sgFiles = dir.listFiles();
+			if (sgFiles == null || sgFiles.length >= 20) continue;
+			for (File f : sgFiles) {
 				//for each file name = variable Name
 				String path = f.getCanonicalPath();
 //				System.out.println(path);
@@ -120,6 +123,7 @@ public class SGData {
 				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
 				if (!edges.isEmpty()) {
 					fi.addSG(sg);
+					sgSetTesting.add(sg);
 				}
 				br.close();
 			}
@@ -384,5 +388,47 @@ public class SGData {
 			}
 		}
 		System.out.println("Size of mapEdgeToGraph = " + Integer.toString(mapEdgeToGraphs.size()));
+	}
+
+	public String Analyzing_TrainingSet(HashSet<StarGraph> sgSet) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Number of Training Stargraphs : ").append(sgSet.size()).append("\n");
+
+		int totalEdges = 0;
+		int[] countSGbyNumofEdge = new int[12];
+		HashMap<String, Integer> relMapEdge = new HashMap<>();
+		HashMap<String, Integer> relMapGraph = new HashMap<>();
+		HashSet<Integer> setEdge = new HashSet<>();
+		for (StarGraph sg : sgSet) {
+			if (sg.getSizeGraph() <= 10)  countSGbyNumofEdge[sg.getSizeGraph()]++;
+			else countSGbyNumofEdge[11]++;
+
+			totalEdges += sg.getSizeGraph();
+			Set<String> setRel = new HashSet<>();
+			for (Edge e : sg.getEdges()) {
+				relMapEdge.put(e.getRel(), relMapEdge.getOrDefault(e.getRel(), 0) + 1);
+				setRel.add(e.getRel());
+				setEdge.add(e.hashCode);
+			}
+			for (String str : setRel)
+				relMapGraph.put(str, relMapGraph.getOrDefault(str, 0) + 1);
+		}
+		sb.append("Number of edges : ").append(totalEdges).append("\n");
+		sb.append("Number of unique edges : ").append(setEdge.size()).append("\n").append("\n");
+
+
+		for (int i = 1; i <= 10; ++i)
+			sb.append("Number of stargraph ").append(i).append(" edges : ").append(countSGbyNumofEdge[i]).append("\n");
+		sb.append("Number of stargraph ").append("> 10 edges : ").append("\n").append("\n");
+
+		sb.append("Relations by Edges: ").append("\n");
+		for (String key : relMapEdge.keySet()) {
+			sb.append(key).append(" ").append(relMapEdge.get(key)).append("\n");
+		}
+		sb.append("\n").append("Relations by Graphs: ").append("\n");
+		for (String key : relMapGraph.keySet()) {
+			sb.append(key).append(" ").append(relMapGraph.get(key)).append("\n");
+		}
+		return sb.toString();
 	}
 }

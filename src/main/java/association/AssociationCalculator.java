@@ -53,6 +53,7 @@ public class AssociationCalculator {
 	public double getAssocScore(String var1, String var2, String rel) {
 		int n1 = var1Hash.getOrDefault(var1.hashCode(), 0);
 		int n2 = var1Hash.getOrDefault(var2.hashCode(), 0);
+		if (n1 * n2 == 0) return 0.0;
 		int n1and2 = 0;
 		if ( flag.equals("indirect") ) {
 			if ( var2Hash.containsKey((var1+var2).hashCode())) {
@@ -62,7 +63,7 @@ public class AssociationCalculator {
 			}
 		}
 		double mau = n1 + n2 - n1and2;
-		if (mau == 0) return 0;
-		return (double) n1and2 / (double) (n1 + n2 - n1and2);
+		if (mau <= 0) return 0;
+		return (double) n1and2 /  mau;
 	}
 }
