@@ -368,14 +368,15 @@ public class MainParser {
 				}
 			}
 		}
-	
-		
 	}
 	
 	public void searchDir(File dir, ArrayList<File> files) {
 		if ( dir.isFile() )
 		{
 			files.add(dir);
+			return;
+		}
+		if ( dir == null || dir.listFiles() == null ) {
 			return;
 		}
 		for ( File file : dir.listFiles() )

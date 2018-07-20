@@ -22,10 +22,89 @@ public class AssociationMinerHash {
 	public static void main(String[] args) {
 		String path = "../AssocData";
 		AssociationMinerHash am = new AssociationMinerHash();
-		am.loadAssocDataMultiThread(0, path);
+		//am.loadAssocDataMultiThread(0, path);
+		am.loadAssocDataSingleThread(0, path);
 		am.writeHashAssoc("../HashAssocData");
 	}
 	
+	public void loadAssocDataSingleThread(int flag, String path) {
+		File corpus = new File(path);
+		int count = 0;
+		for( File dir: corpus.listFiles() ) {
+			count++;
+			if ( count % 100 == 0)
+			{
+				System.out.println("Processed " + count + " files");
+			}
+			for ( File file : dir.listFiles() ) {
+				HashSet<String> varList = new HashSet<>();
+				try {
+					BufferedReader br = new BufferedReader(new FileReader(file));
+					String st;
+					while ((st = br.readLine()) != null) {
+						String[] subs = st.split(" ");
+						if ( flag == 0 ) {
+							if ( subs.length == 1 ) {
+								//hash1
+								int varHashCode = subs[0].hashCode();
+								if ( var1Hash.containsKey(varHashCode) ) {
+									var1Hash.put(varHashCode, var1Hash.get(varHashCode)+1);
+								} else {
+									var1Hash.put(varHashCode, 1);
+								}
+								varList.add(subs[0]);
+							}
+						}
+						else if ( flag == 1 ) {
+							if ( subs.length == 3 ) {
+								//hash2
+								int relHashCode = st.replace(" ", "").hashCode();
+								if ( var2Hash.containsKey(relHashCode) ) {
+									var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+								} else {
+									var2Hash.put(relHashCode, 1);
+								}
+								
+								//hash1.l
+								int varHashCode1 = (subs[0]+subs[2]).hashCode();
+								if ( var1Hash.containsKey(varHashCode1) ) {
+									var1Hash.put(varHashCode1, var1Hash.get(varHashCode1)+1);
+								} else {
+									var1Hash.put(varHashCode1, 1);
+								}
+								
+								//hash1.2
+								int varHashCode2 = (subs[1]+subs[2]).hashCode();
+								if ( var1Hash.containsKey(varHashCode2) ) {
+									var1Hash.put(varHashCode2, var1Hash.get(varHashCode2)+1);
+								} else {
+									var1Hash.put(varHashCode2, 1);
+								}
+							}
+						}
+					}
+					br.close();
+				}
+				catch ( IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//Fill var2Hash if flag == 0
+				ArrayList<String> al = new ArrayList<String>(varList);
+				for (int i = 0; i < al.size() - 1; i++) {
+					for ( int j = i + 1; j < al.size(); j++ ) {
+						int relHashCode = (al.get(i) + al.get(j)).hashCode();
+						if ( var2Hash.containsKey(relHashCode) ) {
+							var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+						} else {
+							var2Hash.put(relHashCode, 1);
+						}
+					}
+				}
+			}
+			
+		}
+	}
 	public void writeHashAssoc(String path) {
 		File fileHash1 = new File(path + "/hash1.txt");
 		File fileHash2 = new File(path + "/hash2.txt");
