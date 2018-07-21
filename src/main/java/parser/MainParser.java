@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,11 +27,11 @@ import singleVarResolution.StarGraphToPrint;
  */
 public class MainParser {
 	static String all = "../Data/";
-//	static String all = "F:\\Study\\Research\\RecoverJsName\\Data\\0xsky\\xblog\\xblogroot\\admin\\js\\admin.js";
-//	static String all = ".\\resources\\_test";
-//	static String output = "../Data/_Output";
-//	static String output = ".\\resources/parsedData";
-//	static String testSetDir = ".\\resources/parsedData/testSet";
+	//	static String all = "F:\\Study\\Research\\RecoverJsName\\Data\\0xsky\\xblog\\xblogroot\\admin\\js\\admin.js";
+	//	static String all = ".\\resources\\_test";
+	//	static String output = "../Data/_Output";
+	//	static String output = ".\\resources/parsedData";
+	//	static String testSetDir = ".\\resources/parsedData/testSet";
 	static String assocTrainDir = "../AssocData";
 	static String assocTestDir = "../AssocTestData";
 	static String trainSetDir = "../TrainSet";
@@ -40,21 +41,21 @@ public class MainParser {
 	public static String sgTestDir = "../StarGraphTestData";
 	static String trainTMDir = "../TrainTM";
 	static String fileList = "../FileList";
-//	ArrayList<File> testSet = new ArrayList<>();
-//	ArrayList<File> trainSet = new ArrayList<>();
-	
+	//	ArrayList<File> testSet = new ArrayList<>();
+	//	ArrayList<File> trainSet = new ArrayList<>();
+	int countFile; 
 	public HashSet<StarGraphToPrint> sgSet = new HashSet<>();
-	
+
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		demo.generateFileList(all);
-		//demo.generateFileList2("../JSNiceData");
-		demo.parseForest("");
-//		demo.parseAssociation("train");
+		//		demo.generateFileList(all);
+		demo.generateTestSetListJSNice("../JSNiceData");
+		//demo.parseForest("");
+		//		demo.parseAssociation("train");
 		//demo.parseBaker();
-//		demo.parseTestSet();
-//		demo.parseTrainSetTM();
-//		demo.parseTestSetTM();
+		//		demo.parseTestSet();
+		//		demo.parseTrainSetTM();
+		//		demo.parseTestSetTM();
 	}
 
 	public void parseAssociation(String flag) throws IOException {
@@ -83,7 +84,7 @@ public class MainParser {
 					//System.out.println(str);
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
-			    	FileReader strReader = new FileReader(str);
+					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
@@ -91,12 +92,12 @@ public class MainParser {
 					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
-//					path = "../TestRun" + path;
+					//					path = "../TestRun" + path;
 					AssociateVisitor ascVis = new AssociateVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(ascVis);
 				}
-				
+
 				catch (Exception e)
 				{
 					System.out.println("Exception :" + e.getMessage());
@@ -111,12 +112,12 @@ public class MainParser {
 	{
 		File trainFileList = new File(fileList + "/trainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
-	    PrintWriter pwTrainList = new PrintWriter(fwTrainList);
-	    
+		PrintWriter pwTrainList = new PrintWriter(fwTrainList);
+
 		File testFileList = new File(fileList + "/testFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
-	    PrintWriter pwTestList = new PrintWriter(fwTestList);
-	    
+		PrintWriter pwTestList = new PrintWriter(fwTestList);
+
 		File dir = new File(filePath);
 		ArrayList<File> files = new ArrayList<>();
 		searchDir(dir, files);
@@ -138,33 +139,31 @@ public class MainParser {
 		}
 		//myVisitor.print();
 		//myVisitor.printToFile(output);
-	    pwTrainList.close();
-	    pwTestList.close();
+		pwTrainList.close();
+		pwTestList.close();
 	}
 
 	public void generateTestSetListJSNice (String filePath) throws Exception
 	{
 		File testFileList = new File(fileList + "/testJSNiceList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
-	    PrintWriter pwTestList = new PrintWriter(fwTestList);
-	    
+		PrintWriter pwTestList = new PrintWriter(fwTestList);
+
 		File dir = new File(filePath);
 		ArrayList<File> files = new ArrayList<>();
 		searchDir(dir, files);
 		//File[] files = dir.listFiles();
-		int i = 1;
-
 		for ( File file : files )
 		{
 			pwTestList.println(file.getCanonicalPath());
 		}
-	    pwTestList.close();
+		pwTestList.close();
 	}
-	
+
 	public void parseBaker() throws Exception
 	{
 		File trainFileList = new File(fileList + "/trainFileList.txt");
-//		File trainFileList = new File(fileList + "/test.txt");
+		//		File trainFileList = new File(fileList + "/test.txt");
 		CompilerEnvirons env = new CompilerEnvirons();
 		env.setRecoverFromErrors(true);
 		BakerVisitor myVisitor = new BakerVisitor();
@@ -194,7 +193,7 @@ public class MainParser {
 			//myVisitor.printToFile(trainSetDir);
 		}
 	}
-	
+
 	public void parseForest(String flag) throws IOException {		
 		String fileType = "", sgPath = "", outputDir ="";
 		if ( flag.equals("train")) {
@@ -227,7 +226,7 @@ public class MainParser {
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
-			    	FileReader strReader = new FileReader(str);
+					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
 					String projectName = path.substring(0, path.indexOf("\\"));
@@ -235,7 +234,7 @@ public class MainParser {
 					path = "/" + projectName + "_" + fileName; 
 					String sgDir = sgPath + path;
 					path = outputDir + path;
-//					path = "../TestRun" + path;
+					//					path = "../TestRun" + path;
 
 
 					ForestVisitor myVisitor = new ForestVisitor(path, flag);
@@ -244,7 +243,7 @@ public class MainParser {
 					rootNode.visit(myVisitor);
 					sgSet.addAll(myVisitor.getStarForest());
 				}
-				
+
 				catch (Exception e)
 				{
 					System.out.println("Exception :" + e.getMessage());
@@ -253,20 +252,20 @@ public class MainParser {
 				}
 			}
 		}
-//		for ( StarGraph sg: sgSet )
-//		{
-//			System.out.println(sg.getVarName());
-//			for( Edge e: sg.getEdges() ) {
-//				System.out.println(e.toString());
-//			}
-//		}
+		//		for ( StarGraph sg: sgSet )
+		//		{
+		//			System.out.println(sg.getVarName());
+		//			for( Edge e: sg.getEdges() ) {
+		//				System.out.println(e.toString());
+		//			}
+		//		}
 	}
-	
+
 	public void parseTestSet() throws Exception
 	{
 		//File to record test set
 		File testFileList = new File(testSetDir + "/fileList.txt");
-//		File testFileList = new File(testSetDir + "/test.txt");
+		//		File testFileList = new File(testSetDir + "/test.txt");
 		if ( testFileList.exists() )
 		{
 			List<String> lines = FileUtils.readLines(testFileList, "UTF-8");
@@ -276,7 +275,7 @@ public class MainParser {
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
-			    	FileReader strReader = new FileReader(str);
+					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
@@ -297,11 +296,11 @@ public class MainParser {
 			}
 		}
 	}
-	
+
 	//For Topic Model training module
 	public void parseTrainSetTM() throws Exception
 	{
-//		File trainFileList = new File(trainSetDir + "/test.txt");
+		//		File trainFileList = new File(trainSetDir + "/test.txt");
 		File trainFileList = new File(trainSetDir + "/fileList.txt");
 		if ( trainFileList.exists() )
 		{
@@ -320,7 +319,7 @@ public class MainParser {
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					//Should separate into visitor for each function
 					rootNode.visit(myVisitor);
-//					myVisitor.print();
+					//					myVisitor.print();
 					myVisitor.printToFile(trainTMDir);
 				}
 				catch (Exception e)
@@ -332,12 +331,12 @@ public class MainParser {
 			//myVisitor.printToFile(trainSetDir);
 		}
 	}
-	
+
 	public void parseTestSetTM() throws IOException {
 
 		//File to record test set
 		File testFileList = new File(testSetDir + "/fileList.txt");
-//		File testFileList = new File(testSetDir + "/test.txt");
+		//		File testFileList = new File(testSetDir + "/test.txt");
 		if ( testFileList.exists() )
 		{
 			List<String> lines = FileUtils.readLines(testFileList, "UTF-8");
@@ -347,7 +346,7 @@ public class MainParser {
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
 					env.setRecoverFromErrors(true);
-			    	FileReader strReader = new FileReader(str);
+					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
@@ -369,7 +368,7 @@ public class MainParser {
 			}
 		}
 	}
-	
+
 	public void searchDir(File dir, ArrayList<File> files) {
 		if ( dir.isFile() )
 		{
@@ -381,6 +380,7 @@ public class MainParser {
 		}
 		for ( File file : dir.listFiles() )
 		{
+
 			if ( file.isDirectory() )
 			{
 				searchDir(file,files);
@@ -389,7 +389,41 @@ public class MainParser {
 			{
 				if ( !(file.getName().startsWith("._") || file.getName().contains(".min.js")) )
 				{
-					files.add(file);
+					int lineNumber = 0;
+					LineNumberReader countLineN0;
+					try
+					{
+						FileReader input = new FileReader(file.getCanonicalPath());
+						countLineN0 = new LineNumberReader(input);
+
+						while (countLineN0.skip(Long.MAX_VALUE) > 0)
+						{
+							// Loop just in case the file is > Long.MAX_VALUE or skip() decides to not read the entire file
+						}
+						lineNumber = countLineN0.getLineNumber() + 1;  // +1 because line index starts at 0
+						countLineN0.close();
+					}
+					
+					catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+					
+					if ( lineNumber > 10 ) {
+						files.add(file);
+						countFile++;
+						if ( countFile % 500 == 0) {
+							System.out.println("Added " + countFile + " files");
+						}
+					} 
+					else {
+						try {
+							file.delete();
+						} catch (Exception e) {
+							System.out.println("File can't be deleted");
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}

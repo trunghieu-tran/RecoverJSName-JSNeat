@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,9 +22,9 @@ public class AssociationMinerHash {
 	ConcurrentHashMap<Integer, Integer> var1Hash = new ConcurrentHashMap<>();
 	int n0Thread = 8;
 	public static void main(String[] args) {
-		String path = "../AssocData";
+		String path = "../debugAssoc";
 		AssociationMinerHash am = new AssociationMinerHash();
-		//am.loadAssocDataMultiThread(0, path);
+//		am.loadAssocDataMultiThread(0, path);
 		am.loadAssocDataSingleThread(0, path);
 		am.writeHashAssoc("../HashAssocData");
 	}
@@ -105,6 +107,7 @@ public class AssociationMinerHash {
 			
 		}
 	}
+	
 	public void writeHashAssoc(String path) {
 		File fileHash1 = new File(path + "/hash1.txt");
 		File fileHash2 = new File(path + "/hash2.txt");
@@ -122,9 +125,11 @@ public class AssociationMinerHash {
 	    PrintWriter pw2 = new PrintWriter(fileWriter2);
 	    for(Integer i : var1Hash.keySet()) {
 	    	pw1.println(i + " " + var1Hash.get(i));
+	    	System.out.println(i + " " + var1Hash.get(i));
 	    }
 	    for(Integer i : var2Hash.keySet()) {
 	    	pw2.println(i + " " + var2Hash.get(i));
+	    	System.out.println(i + " " + var2Hash.get(i));
 	    }
 	    pw1.close();
 	    pw2.close();
@@ -139,7 +144,8 @@ public class AssociationMinerHash {
 		}
 		@Override
 		public void run() {
-
+			HashMap<Integer, Integer> var2HashLocal = new HashMap<>();
+			HashMap<Integer, Integer> var1HashLocal = new HashMap<>();
 			HashSet<String> varList = new HashSet<>();
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(file));
@@ -150,10 +156,10 @@ public class AssociationMinerHash {
 						if ( subs.length == 1 ) {
 							//hash1
 							int varHashCode = subs[0].hashCode();
-							if ( var1Hash.containsKey(varHashCode) ) {
-								var1Hash.put(varHashCode, var1Hash.get(varHashCode)+1);
+							if ( var1HashLocal.containsKey(varHashCode) ) {
+								var1HashLocal.put(varHashCode, var1HashLocal.get(varHashCode)+1);
 							} else {
-								var1Hash.put(varHashCode, 1);
+								var1HashLocal.put(varHashCode, 1);
 							}
 							varList.add(subs[0]);
 						}
@@ -162,26 +168,26 @@ public class AssociationMinerHash {
 						if ( subs.length == 3 ) {
 							//hash2
 							int relHashCode = st.replace(" ", "").hashCode();
-							if ( var2Hash.containsKey(relHashCode) ) {
-								var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+							if ( var2HashLocal.containsKey(relHashCode) ) {
+								var2HashLocal.put(relHashCode, var2HashLocal.get(relHashCode)+1);
 							} else {
-								var2Hash.put(relHashCode, 1);
+								var2HashLocal.put(relHashCode, 1);
 							}
 							
 							//hash1.l
 							int varHashCode1 = (subs[0]+subs[2]).hashCode();
-							if ( var1Hash.containsKey(varHashCode1) ) {
-								var1Hash.put(varHashCode1, var1Hash.get(varHashCode1)+1);
+							if ( var1HashLocal.containsKey(varHashCode1) ) {
+								var1HashLocal.put(varHashCode1, var1HashLocal.get(varHashCode1)+1);
 							} else {
-								var1Hash.put(varHashCode1, 1);
+								var1HashLocal.put(varHashCode1, 1);
 							}
 							
 							//hash1.2
 							int varHashCode2 = (subs[1]+subs[2]).hashCode();
-							if ( var1Hash.containsKey(varHashCode2) ) {
-								var1Hash.put(varHashCode2, var1Hash.get(varHashCode2)+1);
+							if ( var1HashLocal.containsKey(varHashCode2) ) {
+								var1HashLocal.put(varHashCode2, var1HashLocal.get(varHashCode2)+1);
 							} else {
-								var1Hash.put(varHashCode2, 1);
+								var1HashLocal.put(varHashCode2, 1);
 							}
 						}
 					}
@@ -197,12 +203,19 @@ public class AssociationMinerHash {
 			for (int i = 0; i < al.size() - 1; i++) {
 				for ( int j = i + 1; j < al.size(); j++ ) {
 					int relHashCode = (al.get(i) + al.get(j)).hashCode();
-					if ( var2Hash.containsKey(relHashCode) ) {
-						var2Hash.put(relHashCode, var2Hash.get(relHashCode)+1);
+					if ( var2HashLocal.containsKey(relHashCode) ) {
+						var2HashLocal.put(relHashCode, var2HashLocal.get(relHashCode)+1);
 					} else {
-						var2Hash.put(relHashCode, 1);
+						var2HashLocal.put(relHashCode, 1);
 					}
 				}
+			}
+			//Merge local hashmap with global
+			for ( Integer i : var1HashLocal.keySet() ) {
+				var1Hash.put(i, var1Hash.getOrDefault(i, 0) + var1HashLocal.get(i));
+			}
+			for ( Integer i : var2HashLocal.keySet() ) {
+				var2Hash.put(i, var2Hash.getOrDefault(i, 0) + var2HashLocal.get(i));
 			}
 		}
 	}
@@ -215,13 +228,25 @@ public class AssociationMinerHash {
 	public void loadAssocDataMultiThread(int flag, String path) {
 		File corpus = new File(path);
 		int count = 0;
-		ExecutorService executor = Executors.newFixedThreadPool(n0Thread);
+		ArrayList<File> currFileBatch = new ArrayList<>();
+		int check = 0;
 		for( File dir: corpus.listFiles() ) {
 			count++;
 			if ( count % 100 == 0)
 			{
 				System.out.println("Processed " + count + " files");
 			}
+			check++;
+			if ( check < n0Thread ) {
+				currFileBatch.add(dir);
+			}
+			if ( currFileBatch.size() == n0Thread ) {
+				check = 0;
+				ExecutorService executor = Executors.newFixedThreadPool(n0Thread);
+				File file = new File (dir.getCanonicalPath() + "/assoc.txt");
+				Set<LoadOneFile> running = new HashSet<>();
+			}
+			
 			//Each dir is a function
 			for ( File file: dir.listFiles() ) {
 				LoadOneFile onefile = new LoadOneFile(flag, file);
@@ -240,7 +265,4 @@ public class AssociationMinerHash {
 		}
 		System.out.println("FINISHED all threads for assocation mining");
 	}
-	
-
-
 }
