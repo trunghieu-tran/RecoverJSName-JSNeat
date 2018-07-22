@@ -16,12 +16,17 @@ import java.util.concurrent.TimeUnit;
 public class AssociationMinerHash {
 	ConcurrentHashMap<Integer, Integer> var2Hash = new ConcurrentHashMap<>();
 	ConcurrentHashMap<Integer, Integer> var1Hash = new ConcurrentHashMap<>();
-	int n0Thread = 8;
+	int n0Thread = 3;
 	public static void main(String[] args) {
 		String path = "../debugAssoc";
 		AssociationMinerHash am = new AssociationMinerHash();
-//		am.loadAssocDataMultiThread(0, path);
-		am.loadAssocDataSingleThread(0, path);
+		try {
+			am.loadAssocDataMultiThread(0, path);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//am.loadAssocDataSingleThread(0, path);
 		am.writeHashAssoc("../HashAssocData");
 	}
 	
@@ -218,6 +223,7 @@ public class AssociationMinerHash {
 			if (!lf.isLoaded) return false;
 		return true;
 	}
+	
 	/**
 	 * @param flag
 	 * if flag == 0, indirect relationship
@@ -237,55 +243,64 @@ public class AssociationMinerHash {
 			allFiles.addAll(Arrays.asList(tmp));
 		}
 
-		// Devide files into parts of n0Thread-files
+		// Divide files into parts of n0Thread-files
+		int countFile = 0;
 		for( File file: allFiles) {
-
 			currFileBatch.add(file);
-
-			if ( currFileBatch.size() == n0Thread ) {
-
-				ExecutorService executor = Executors.newFixedThreadPool(n0Thread);
-				Set<LoadOneFile> running = new HashSet<>();
-
-				for (File f : currFileBatch) {
-					LoadOneFile onefile = new LoadOneFile(flag, f);
-					executor.execute(onefile);
-					running.add(onefile);
-				}
-
-				// Shutdown all current threads
-				executor.shutdown();
-				try {
-					while (!executor.isTerminated()) {
-						if (isDone(running)) {
-							executor.shutdownNow();
-							System.out.println("\n Terminated threads manually");
-							break;
-						}
-					}
-				} catch (Exception e) {
-					System.out.println("Waiting error");
-					executor.shutdownNow();
-				}
-
-				//Merge local hashmap with global
-				for (LoadOneFile o : running) {
-					for (Integer i : o.var1HashLocal.keySet()) {
-						var1Hash.put(i, var1Hash.getOrDefault(i, 0) + o.var1HashLocal.get(i));
-					}
-					for (Integer i : o.var2HashLocal.keySet()) {
-						var2Hash.put(i, var2Hash.getOrDefault(i, 0) + o.var2HashLocal.get(i));
-					}
-				}
-
-				// clean currFileBach
-				currFileBatch.clear();
-				System.out.println("LOADED " + n0Thread + " Files");
+			countFile++;
+			if ( countFile % 500 == 0 ) {
+				System.out.println("Processed " + countFile + " files");
 			}
+			if ( currFileBatch.size() == n0Thread ) {
+				processingFiles(flag, currFileBatch, n0Thread);
+				//System.out.println("LOADED " + n0Thread + " Files");
+			}
+		}
+		// Handle the remaining files
+		if ( ! currFileBatch.isEmpty() ) {
+			System.out.println("LOADED " + currFileBatch.size() + " Files");
+			processingFiles(flag, currFileBatch, currFileBatch.size());
 		}
 		
 		// Wait until all threads are finish
 
 		System.out.println("FINISHED all threads for assocation mining");
+	}
+
+	private void processingFiles(int flag, ArrayList<File> currFileBatch, int numThread) {
+		ExecutorService executor = Executors.newFixedThreadPool(numThread);
+		Set<LoadOneFile> running = new HashSet<>();
+		for (File f : currFileBatch) {
+			LoadOneFile onefile = new LoadOneFile(flag, f);
+			executor.execute(onefile);
+			running.add(onefile);
+		}
+
+		// Shutdown all current threads
+		executor.shutdown();
+		try {
+			while (!executor.isTerminated()) {
+				if (isDone(running)) {
+					executor.shutdownNow();
+					//System.out.println("\n Terminated threads manually");
+					break;
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("Waiting error");
+			executor.shutdownNow();
+		}
+
+		//Merge local hash map with global
+		for (LoadOneFile o : running) {
+			for (Integer i : o.var1HashLocal.keySet()) {
+				var1Hash.put(i, var1Hash.getOrDefault(i, 0) + o.var1HashLocal.get(i));
+			}
+			for (Integer i : o.var2HashLocal.keySet()) {
+				var2Hash.put(i, var2Hash.getOrDefault(i, 0) + o.var2HashLocal.get(i));
+			}
+		}
+		// clean currFileBach
+		currFileBatch.clear();
 	}
 }

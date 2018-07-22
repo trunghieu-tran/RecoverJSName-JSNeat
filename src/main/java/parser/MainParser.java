@@ -49,8 +49,8 @@ public class MainParser {
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
 		//		demo.generateFileList(all);
-		demo.generateTestSetListJSNice("../JSNiceData");
-		//demo.parseForest("");
+		//demo.generateTestSetListJSNice("../JSNiceData");
+		demo.parseForest("");
 		//		demo.parseAssociation("train");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
