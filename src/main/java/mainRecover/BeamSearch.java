@@ -82,7 +82,7 @@ public class BeamSearch {
 				totalAss++;
 				if (tmp > 0) totalAssCounted++;
 			}
-//		res = sum / (len * (len - 1) / 2);
+		res = sum / (len * (len - 1) / 2);
 		return res;
 	}
 

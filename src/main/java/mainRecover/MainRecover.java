@@ -25,8 +25,8 @@ public class MainRecover {
 	private static int TOPK = 10;
 	private static int TOPK_BEAMSEARCH = 30;
 
-	private static String InputData = "/home/nmt140230/RecoverJSName/StarGraphTestData/"; //  138K stargraph
-	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData"; // 7.9 M
+	private static String InputData = "/home/nmt140230/RecoverJSName/StarGraphTestData/"; //  38k functions
+	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData"; // 2.1M function ~ 7.9 M sg
 	private static String cacheFolder = "./resources/cache/";
 
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
@@ -85,7 +85,8 @@ public class MainRecover {
 		startClock();
 
 		try {
-			sgData.getTestData(TrainingData, 2000);
+			sgData.getTestData(InputData, -1);
+//			sgData.getTestDataJSNice(InputData, -1);
 			functionList = sgData.testFunctionSet;
 			System.out.println(">>> The number of loaded function for testing = " + Integer.toString(functionList.size()));
 			write_analyzing_varNumber(functionList, tmpAnalysis_VarNumTesting);

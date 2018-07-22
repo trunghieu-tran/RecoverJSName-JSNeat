@@ -6,11 +6,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -138,14 +134,16 @@ public class AssociationMinerHash {
 	public class LoadOneFile implements Runnable {
 		int flag;
 		File file;
+		boolean isLoaded = false;
+		HashMap<Integer, Integer> var2HashLocal = new HashMap<>();
+		HashMap<Integer, Integer> var1HashLocal = new HashMap<>();
+
 		public LoadOneFile(int flag, File f) {
 			this.flag = flag;
 			file = f;
 		}
 		@Override
 		public void run() {
-			HashMap<Integer, Integer> var2HashLocal = new HashMap<>();
-			HashMap<Integer, Integer> var1HashLocal = new HashMap<>();
 			HashSet<String> varList = new HashSet<>();
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(file));
@@ -210,59 +208,84 @@ public class AssociationMinerHash {
 					}
 				}
 			}
-			//Merge local hashmap with global
-			for ( Integer i : var1HashLocal.keySet() ) {
-				var1Hash.put(i, var1Hash.getOrDefault(i, 0) + var1HashLocal.get(i));
-			}
-			for ( Integer i : var2HashLocal.keySet() ) {
-				var2Hash.put(i, var2Hash.getOrDefault(i, 0) + var2HashLocal.get(i));
-			}
+
+			isLoaded = true;
 		}
 	}
-	
+
+	private boolean isDone(Set<LoadOneFile> running) {
+		for (LoadOneFile lf : running)
+			if (!lf.isLoaded) return false;
+		return true;
+	}
 	/**
 	 * @param flag
 	 * if flag == 0, indirect relationship
 	 * if flag == 1, direct relationship
 	 */
-	public void loadAssocDataMultiThread(int flag, String path) {
+	public void loadAssocDataMultiThread(int flag, String path) throws Exception{
 		File corpus = new File(path);
-		int count = 0;
 		ArrayList<File> currFileBatch = new ArrayList<>();
-		int check = 0;
-		for( File dir: corpus.listFiles() ) {
-			count++;
-			if ( count % 100 == 0)
-			{
-				System.out.println("Processed " + count + " files");
-			}
-			check++;
-			if ( check < n0Thread ) {
-				currFileBatch.add(dir);
-			}
+		File[] dirs = corpus.listFiles();
+		if (dirs == null) return;
+		ArrayList<File> allFiles = new ArrayList<>();
+
+		// Get all files from all directories and put into allFiles
+		for( File dir: corpus.listFiles()) {
+			File[] tmp = dir.listFiles();
+			if (tmp == null) continue;
+			allFiles.addAll(Arrays.asList(tmp));
+		}
+
+		// Devide files into parts of n0Thread-files
+		for( File file: allFiles) {
+
+			currFileBatch.add(file);
+
 			if ( currFileBatch.size() == n0Thread ) {
-				check = 0;
+
 				ExecutorService executor = Executors.newFixedThreadPool(n0Thread);
-				File file = new File (dir.getCanonicalPath() + "/assoc.txt");
 				Set<LoadOneFile> running = new HashSet<>();
-			}
-			
-			//Each dir is a function
-			for ( File file: dir.listFiles() ) {
-				LoadOneFile onefile = new LoadOneFile(flag, file);
-				executor.execute(onefile);
+
+				for (File f : currFileBatch) {
+					LoadOneFile onefile = new LoadOneFile(flag, f);
+					executor.execute(onefile);
+					running.add(onefile);
+				}
+
+				// Shutdown all current threads
+				executor.shutdown();
+				try {
+					while (!executor.isTerminated()) {
+						if (isDone(running)) {
+							executor.shutdownNow();
+							System.out.println("\n Terminated threads manually");
+							break;
+						}
+					}
+				} catch (Exception e) {
+					System.out.println("Waiting error");
+					executor.shutdownNow();
+				}
+
+				//Merge local hashmap with global
+				for (LoadOneFile o : running) {
+					for (Integer i : o.var1HashLocal.keySet()) {
+						var1Hash.put(i, var1Hash.getOrDefault(i, 0) + o.var1HashLocal.get(i));
+					}
+					for (Integer i : o.var2HashLocal.keySet()) {
+						var2Hash.put(i, var2Hash.getOrDefault(i, 0) + o.var2HashLocal.get(i));
+					}
+				}
+
+				// clean currFileBach
+				currFileBatch.clear();
+				System.out.println("LOADED " + n0Thread + " Files");
 			}
 		}
 		
 		// Wait until all threads are finish
-		executor.shutdown();
-		try {
-			if (!executor.awaitTermination(7, TimeUnit.DAYS))
-				executor.shutdownNow();
-		} catch (Exception e) {
-			System.out.println("Waiting error");
-			executor.shutdownNow();
-		}
+
 		System.out.println("FINISHED all threads for assocation mining");
 	}
 }

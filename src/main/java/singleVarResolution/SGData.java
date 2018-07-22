@@ -26,12 +26,11 @@ public class SGData {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
 		int cntSg = 0;
-//		int cTotal = 0;
-		//Structure of root: root --> Dir (Function) --> File (var-name)
+		int cTotal = 1;
 		File root = new File(sgDir);
 		for ( File dir : root.listFiles())
 		{
-//			++cTotal;
+			++cTotal;
 //			if (cTotal % 10 != 0) continue;
 
 			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
@@ -84,13 +83,13 @@ public class SGData {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
 		int cntSg = 0;
-		int cTotal = 1;
+		int cTotal = 0;
 		//Structure of root: root --> Dir (Function) --> File (var-name)
 		File root = new File(sgDir);
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
-			if (cTotal % 900 != 0) continue;
+//			if (cTotal % 18 != 0) continue;
 
 			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
 			File[] sgFiles = dir.listFiles();
@@ -206,7 +205,7 @@ public class SGData {
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
-			if (cTotal % 10 == 0) continue;
+//			if (cTotal % 10 == 0) continue;
 
  			for (File f : dir.listFiles()) {
 			    try {
