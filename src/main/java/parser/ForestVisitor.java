@@ -49,12 +49,12 @@ public class ForestVisitor implements NodeVisitor{
 			node.visit(visitor);
 			vn.addAll(visitor.getVN());
 			//Test variable name set
-			System.out.println("Variable Names List");
-			for(String s: vn)
-			{
-				System.out.print(s + " ");
-			}
-			System.out.println();
+			//System.out.println("Variable Names List");
+			//for(String s: vn)
+			//{
+			//	System.out.print(s + " ");
+			//}
+			//System.out.println();
 
 			String functionName = ((FunctionNode)node).getName();
 			if ( functionName.isEmpty() ) {
@@ -62,6 +62,7 @@ public class ForestVisitor implements NodeVisitor{
 					return true;
 				}
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
+				return true;
 			}
 			String dir = path + "_" + functionName;
 			String temp = sgPath + "_" + functionName;
@@ -73,7 +74,7 @@ public class ForestVisitor implements NodeVisitor{
 //				{
 //					fv.print();
 //				}
-				fv.print();
+				//fv.print();
 				fv.printStarGraph(temp);
 				sgSet.addAll(fv.getStarGraph());
 			} 

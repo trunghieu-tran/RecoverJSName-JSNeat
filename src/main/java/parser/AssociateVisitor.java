@@ -50,6 +50,7 @@ public class AssociateVisitor implements NodeVisitor{
 			String functionName = fn.getName();
 			if ( functionName.isEmpty() ) {
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
+				return true;
 			}
 			String dir = path + "_" + functionName;
 			FunctionVisitor fv = new FunctionVisitor(vn, dir);

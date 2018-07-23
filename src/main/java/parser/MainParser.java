@@ -50,8 +50,8 @@ public class MainParser {
 		MainParser demo = new MainParser();
 		//		demo.generateFileList(all);
 		//demo.generateTestSetListJSNice("../JSNiceData");
-		demo.parseForest("");
-		//		demo.parseAssociation("train");
+		demo.parseForest("test");
+		//demo.parseAssociation("train");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
 		//		demo.parseTrainSetTM();
@@ -61,7 +61,7 @@ public class MainParser {
 	public void parseAssociation(String flag) throws IOException {
 		String fileType = "", output = "";
 		if ( flag.equals("train")) {
-			fileType = "trainFileList.txt";
+			fileType = "gitTrainFileList.txt";
 			output = assocTrainDir;
 		} else if ( flag.equals("test")) {
 			fileType = "testFileList.txt";
@@ -78,7 +78,10 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( count > 10 ) break;
+				//if ( count > 10 ) break;
+				if ( count % 500 == 0 ) {
+					System.out.println("Processed " + count + " files");
+				}
 				try
 				{
 					//System.out.println(str);
@@ -88,8 +91,8 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("\\"));
-					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					String projectName = path.substring(0, path.indexOf("/"));
+					String fileName = path.substring(path.lastIndexOf("/")+1);
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
 					//					path = "../TestRun" + path;
@@ -100,8 +103,8 @@ public class MainParser {
 
 				catch (Exception e)
 				{
-					System.out.println("Exception :" + e.getMessage());
-					e.printStackTrace();
+					//System.out.println("Exception :" + e.getMessage());
+					//e.printStackTrace();
 					continue;
 				}
 			}
@@ -194,16 +197,18 @@ public class MainParser {
 		}
 	}
 
-	public void parseForest(String flag) throws IOException {		
+	public void parseForest(String flag) throws IOException {
+		int countProbFile = 0;
+		int count = 0;
 		String fileType = "", sgPath = "", outputDir ="";
 		if ( flag.equals("train")) {
-			fileType = "trainFileList.txt";
-			sgPath = sgTrainDir;
-			outputDir = trainSetDir;
+			fileType = "gitTrainFileList.txt";
+			sgPath = "../GitTrainData";
+			outputDir = "../GitTrainData";
 		} else if ( flag.equals("test")) {
-			fileType = "testFileList.txt";
-			sgPath = sgTestDir;
-			outputDir = testSetDir;
+			fileType = "gitTestFileList.txt";
+			sgPath = "../GitTestData";
+			outputDir = "../GitTestData";
 		} else if ( flag.equals("jsnice")) {
 			fileType = "testJSNiceList.txt";
 			sgPath = "../JSNiceTestSet";
@@ -216,12 +221,14 @@ public class MainParser {
 		File fileListing = new File(fileList + "/" + fileType);
 		if ( fileListing.exists() )
 		{
-			int count = 0;
 			List<String> lines = FileUtils.readLines(fileListing, "UTF-8");
 			for ( String str: lines)
 			{
 				count++;
 				//if ( count > 10 ) break;
+				if ( count % 500 == 0) {
+					System.out.println("Processed " + count + " files");
+				}
 				try
 				{
 					CompilerEnvirons env = new CompilerEnvirons();
@@ -229,14 +236,12 @@ public class MainParser {
 					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("\\"));
-					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					String projectName = path.substring(0, path.indexOf("/"));
+					String fileName = path.substring(path.lastIndexOf("/")+1);
 					path = "/" + projectName + "_" + fileName; 
 					String sgDir = sgPath + path;
 					path = outputDir + path;
 					//					path = "../TestRun" + path;
-
-
 					ForestVisitor myVisitor = new ForestVisitor(path, flag);
 					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
@@ -246,8 +251,9 @@ public class MainParser {
 
 				catch (Exception e)
 				{
-					System.out.println("Exception :" + e.getMessage());
-					e.printStackTrace();
+					countProbFile++;
+					System.out.println("File " + str + " can't be parsed");
+					//e.printStackTrace();
 					continue;
 				}
 			}
@@ -259,6 +265,7 @@ public class MainParser {
 		//				System.out.println(e.toString());
 		//			}
 		//		}
+		System.out.println("Finish parsing. Success: " + (count - countProbFile) + " .Fail:  " + countProbFile);
 	}
 
 	public void parseTestSet() throws Exception

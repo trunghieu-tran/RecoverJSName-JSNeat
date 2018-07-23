@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 public class AssociationMinerHash {
 	ConcurrentHashMap<Integer, Integer> var2Hash = new ConcurrentHashMap<>();
 	ConcurrentHashMap<Integer, Integer> var1Hash = new ConcurrentHashMap<>();
-	int n0Thread = 3;
+	int n0Thread = 10;
 	public static void main(String[] args) {
-		String path = "../debugAssoc";
+		String path = "../AssocData";
 		AssociationMinerHash am = new AssociationMinerHash();
 		try {
 			am.loadAssocDataMultiThread(0, path);
@@ -126,11 +126,11 @@ public class AssociationMinerHash {
 	    PrintWriter pw2 = new PrintWriter(fileWriter2);
 	    for(Integer i : var1Hash.keySet()) {
 	    	pw1.println(i + " " + var1Hash.get(i));
-	    	System.out.println(i + " " + var1Hash.get(i));
+	    	//System.out.println(i + " " + var1Hash.get(i));
 	    }
 	    for(Integer i : var2Hash.keySet()) {
 	    	pw2.println(i + " " + var2Hash.get(i));
-	    	System.out.println(i + " " + var2Hash.get(i));
+	    	//System.out.println(i + " " + var2Hash.get(i));
 	    }
 	    pw1.close();
 	    pw2.close();
@@ -236,8 +236,13 @@ public class AssociationMinerHash {
 		if (dirs == null) return;
 		ArrayList<File> allFiles = new ArrayList<>();
 
+		int countDir = 0;
 		// Get all files from all directories and put into allFiles
 		for( File dir: corpus.listFiles()) {
+			countDir++;
+			if ( countDir % 500 == 0 ) {
+				System.out.println("Loaded " + countDir + " files");
+			}
 			File[] tmp = dir.listFiles();
 			if (tmp == null) continue;
 			allFiles.addAll(Arrays.asList(tmp));

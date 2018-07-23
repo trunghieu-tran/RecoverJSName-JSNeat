@@ -545,7 +545,7 @@ public class FunctionVisitor implements NodeVisitor{
 	}
 	
 	public void printStarGraph(String dest) throws IOException {
-		System.out.println(dest);
+		//System.out.println(dest);
 		this.buildStarGraph();
 		if ( sgSet.isEmpty() )
 		{
@@ -583,7 +583,7 @@ public class FunctionVisitor implements NodeVisitor{
 			{
 				dir.mkdirs();
 			}
-			System.out.println(dest);
+			//System.out.println(dest);
 			File assoFile = new File(dest + "/assoc.txt");
 			FileWriter fw = new FileWriter(assoFile);
 			PrintWriter pw = new PrintWriter(fw);
