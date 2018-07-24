@@ -19,8 +19,16 @@ public class SGData {
 	public HashSet<StarGraph> sgSetTesting = new HashSet<>();
 	public HashSet<FunctionInfo> testFunctionSet = new HashSet<>();
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
+	public HashMap<String, Integer> mapTrainFunctionName = new HashMap<>();
+	public HashMap<String, Integer> mapTestFunctionName = new HashMap<>();
+
 	int numOfFunction = -1;
 	int numOfTestFunction = -1;
+
+	private String getFunctionName(String str) {
+		String[] tmp = str.split("_");
+		return tmp[tmp.length - 1];
+	}
 
 	public void getTestDataJSNice(String sgDir, int numOfTest) throws IOException {
 		this.numOfTestFunction = numOfTest;
@@ -86,6 +94,7 @@ public class SGData {
 		int cTotal = 0;
 		//Structure of root: root --> Dir (Function) --> File (var-name)
 		File root = new File(sgDir);
+
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
@@ -108,6 +117,10 @@ public class SGData {
 					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
 				}
 
+				String functionN = getFunctionName(functionName);
+				if (!Objects.equals(functionN, "")) {
+					mapTestFunctionName.put(functionN, mapTestFunctionName.getOrDefault(functionN, 0) + 1);
+				}
 
 				int hashCode = Objects.hash(functionName);
 				//read file content --> edges
@@ -119,6 +132,13 @@ public class SGData {
 					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
 					edges.add(e);
 				}
+
+				// ADD function name
+				if (!Objects.equals(functionN, "")) {
+					Edge funcE = new Edge(functionN, "varFunction", 1);
+					edges.add(funcE);
+				}
+
 				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
 				if (!edges.isEmpty()) {
 					fi.addSG(sg);
@@ -175,6 +195,11 @@ public class SGData {
 					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
 				}
 
+				String functionN = getFunctionName(functionName);
+				if (!Objects.equals(functionN, "")) {
+					mapTrainFunctionName.put(functionN, mapTrainFunctionName.getOrDefault(functionN, 0) + 1);
+				}
+
 				int hashCode = Objects.hash(functionName);
 				//read file content --> edges
 				BufferedReader br = new BufferedReader(new FileReader(f));
@@ -185,7 +210,12 @@ public class SGData {
 					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
 					edges.add(e);
 				}
-				// TODO - hashcode can be empty
+				// ADD function name
+				if (!Objects.equals(functionN, "")) {
+					Edge funcE = new Edge(functionN, "varFunction", 1);
+					edges.add(funcE);
+				}
+				//
 				sg = new StarGraph(edges, varName + "-" + hashCode);
 				br.close();
 			} catch (IOException e) {
@@ -202,6 +232,12 @@ public class SGData {
 
 		File root = new File(sgDir);
 		int cTotal = 1;
+
+		int nTrainFunctions = 0;
+		for ( File dir : root.listFiles()) {
+			nTrainFunctions += dir.listFiles().length;
+		}
+
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
@@ -214,7 +250,7 @@ public class SGData {
 				    rgs.add(rg);
 
 				    if (++cnt % 100000 == 0)
-					    System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(7973823) + "] >>> LOADED: " + f.getCanonicalPath());
+					    System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(nTrainFunctions) + "] >>> LOADED: " + f.getCanonicalPath());
 
 				    if (cnt == numOfFunction)
 					    break;
