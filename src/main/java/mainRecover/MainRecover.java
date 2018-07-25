@@ -38,7 +38,6 @@ public class MainRecover {
 	private static String tmpOutputAccuracyNoBS = "./resources/tmp/tmpAccuracy_noBS.txt";
 	private static String tmpCache_Association = "./resources/tmp/tmpCacheAssociation.txt";
 	private static String tmpAnalysis_VarNumTesting = "./resources/tmp/tmpVarNumberTesting.txt";
-	private static String tmpAnalysis_VarNumTraining = "./resources/tmp/tmpVarNumberTraining.txt";
 	private static String tmpRuningTime = "./resources/tmp/tmpRunningTime.txt";
 	private static String tmpAnalysisTrainingInfo = "./resources/tmp/tmpTrainingInfo.txt";
 	private static String tmpAnalysisTestingInfo = "./resources/tmp/tmpTestingInfo.txt";
@@ -94,7 +93,6 @@ public class MainRecover {
 
 		try {
 			sgData.getTestData(InputData2, -1);
-//			sgData.getTestDataJSNice(InputData, -1);
 			functionList = sgData.testFunctionSet;
 			System.out.println(">>> The number of loaded function for testing = " + Integer.toString(functionList.size()));
 			write_analyzing_varNumber(functionList, tmpAnalysis_VarNumTesting);
@@ -148,10 +146,6 @@ public class MainRecover {
 		}
 		endClock("Load association time: ");
 	}
-
-//	private void readOutputFromFile(String f, HashMap<String, Array<String>>) {
-//
-//	}
 
 	public class ProcessingOneFunction implements Runnable {
 		FunctionInfo fi;
@@ -224,20 +218,8 @@ public class MainRecover {
 
 			beamSearchInvocation(tmp, idToSG);
 			isSolved = true;
-//			writeOutputToFile();
-			System.out.print(">");//testing function " + fi.getDir() + " " + Integer.toString(fi.getStarGraphsList().size()));
+			System.out.print(">");
 		}
-	}
-
-
-	public void process_not_multithread() {
-		startClock();
-		sf = new SimilarGraphFinder(sgData.mapEdgeToGraphs);
-		for (FunctionInfo fi : functionList) {
-			ProcessingOneFunction pf = new ProcessingOneFunction(fi, cnt++);
-			pf.run();
-		}
-		endClock("Resolving time: ");
 	}
 
 	private boolean isDone(Set<ProcessingOneFunction> running) {
@@ -377,7 +359,6 @@ public class MainRecover {
 
 			if (perfect && pf.fi.getStarGraphsList().size() >= 1)
 				sbPerfect.append(pf.fi.getDir()).append(" ").append(pf.fi.getStarGraphsList().size()).append("\n");
-//				System.out.println("<3 PERFECT" + pf.fi.getDir());
 		}
 		FileIO.writeStringToFile(tmpOutput, resStr.toString());
 		FileIO.writeStringToFile(tmpOutputNoBS, resStrNoBs.toString());
@@ -485,7 +466,6 @@ public class MainRecover {
 		mr.loadInput();
 		mr.analyzingTrainingVsTesting();
 		mr.process();
-//		mr.process_not_multithread();
 		mr.write_RuningTime();
 		mr.write_caching();
 	}

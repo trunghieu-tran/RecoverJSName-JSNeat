@@ -30,63 +30,6 @@ public class SGData {
 		return tmp[tmp.length - 1];
 	}
 
-	public void getTestDataJSNice(String sgDir, int numOfTest) throws IOException {
-		this.numOfTestFunction = numOfTest;
-		int cnt = 0;
-		int cntSg = 0;
-		int cTotal = 1;
-		File root = new File(sgDir);
-		for ( File dir : root.listFiles())
-		{
-			++cTotal;
-//			if (cTotal % 10 != 0) continue;
-
-			FunctionInfo fi = new FunctionInfo(dir.getCanonicalPath());
-			for (File f : dir.listFiles()) {
-				//for each file name = variable Name
-				String path = f.getCanonicalPath();
-//				System.out.println(path);
-				String functionName = "", varName = "";
-
-//				if (path.indexOf("\\") != -1) {
-//					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("\\"));
-//					varName = path.substring(path.lastIndexOf("\\") + 1, path.indexOf(".txt"));
-//				} else {
-//					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("/"));
-//					varName = path.substring(path.lastIndexOf("/") + 1, path.indexOf(".txt"));
-//				}
-
-				if ( path.indexOf("\\") != -1) {
-					functionName = path.substring(path.indexOf("JSNiceTestSet")+14, path.lastIndexOf("\\"));
-					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
-				} else {
-					functionName = path.substring(path.indexOf("JSNiceTestSet")+14, path.lastIndexOf("/"));
-					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
-				}
-
-				int hashCode = Objects.hash(functionName);
-				//read file content --> edges
-				BufferedReader br = new BufferedReader(new FileReader(f));
-				String st;
-				HashSet<Edge> edges = new HashSet<>();
-				while ((st = br.readLine()) != null) {
-					String[] subs = st.split(" ");
-					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
-					edges.add(e);
-				}
-				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
-				if (!edges.isEmpty()) {
-					fi.addSG(sg);
-				}
-				br.close();
-			}
-			this.testFunctionSet.add(fi);
-			cntSg += fi.getStarGraphsList().size();
-			if (++cnt == numOfTestFunction) break;
-		}
-		System.out.println("Number of Testing function = " + Integer.toString(testFunctionSet.size()));
-		System.out.println("Number of Stargraph in testing functions = " + Integer.toString(cntSg));
-	}
 	public void getTestData(String sgDir, int numOfTest) throws IOException {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
