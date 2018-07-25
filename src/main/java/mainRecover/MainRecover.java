@@ -177,27 +177,6 @@ public class MainRecover {
 			}
 		}
 
-		private void writeOutputToFile() {
-			StringBuilder sb = new StringBuilder();
-			sb.append(fi.getDir()).append(" ").append(fi.getStarGraphsList().size()).append("\n");
-			for (StarGraph sg : resolvedVarName.keySet()) {
-				sb.append(sg.getVarName()).append(" :");
-				for (String str : resolvedVarName.get(sg)) {
-					sb.append(" ").append(str);
-				}
-				sb.append("\n");
-			}
-			sb.append("-\n");
-			for (StarGraph sg : resolvedVarName_withoutBS.keySet()) {
-				sb.append(sg.getVarName()).append(" :");
-				for (String str : resolvedVarName_withoutBS.get(sg)) {
-					sb.append(" ").append(str);
-				}
-				sb.append("\n");
-			}
-			FileIO.writeStringToFile(cacheFolder + Integer.toString(this.cnt) + ".txt", sb.toString());
-		}
-
 		public void run() {
 			ArrayList<ArrayList<Pair<String, Double>>> tmp = new ArrayList<>();
 			HashMap<Integer, StarGraph> idToSG = new HashMap<>();
