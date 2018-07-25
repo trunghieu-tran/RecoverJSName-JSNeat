@@ -12,6 +12,7 @@ import javafx.util.Pair;
 import singleVarResolution.SGData;
 import singleVarResolution.SimilarGraphFinder;
 import singleVarResolution.StarGraph;
+import utils.Constants;
 import utils.FileIO;
 
 /**
@@ -21,9 +22,9 @@ import utils.FileIO;
  * @organization UTDallas
  */
 public class MainRecover {
-	private static final int numberOfThread = 20;
-	private static int TOPK = 30;
-	private static int TOPK_BEAMSEARCH = 30;
+	private static final int numberOfThread = Constants.numberOfThread;
+	private static int TOPK = Constants.TOPK_RESULT;
+	private static int TOPK_BEAMSEARCH = Constants.TOPK_BEAMSEARCH;
 
 	private static String InputData = "/home/nmt140230/RecoverJSName/StarGraphTestData/"; //  38k functions
 	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData"; // 2.1M function ~ 7.9 M sg
@@ -49,7 +50,6 @@ public class MainRecover {
 	private static String tmpTestFunctioName = "./resources/tmp/tmpTestFunctionName.txt";
 
 	private static String asscociationData = "/home/nmt140230/RecoverJSName/HashAssocData";
-	private static String testingFolderJsNice = "/home/nmt140230/RecoverJSName/JSNiceTestSet";
 	private static SGData sgData = new SGData();
 	private static AssociationCalculator ac;
 	private static SimilarGraphFinder sf;
@@ -151,6 +151,7 @@ public class MainRecover {
 		FunctionInfo fi;
 		int cnt;
 		boolean isSolved = false;
+		long totalAss = 0, totalAssCounted = 0;
 		HashMap<StarGraph, ArrayList<String>> resolvedVarName_withoutBS = new HashMap<>();
 		HashMap<StarGraph, ArrayList<String>> resolvedVarName = new HashMap<>();
 
@@ -164,8 +165,8 @@ public class MainRecover {
 
 			ArrayList<ArrayList<String>> resolvedWithBs = bs.getTopKRecoveringResult(TOPK_BEAMSEARCH);
 
-			totalAss += bs.totalAss;
-			totalAssCounted += bs.totalAssCounted;
+			this.totalAss = bs.totalAss;
+			this.totalAssCounted = bs.totalAssCounted;
 
 			for (int i = 0; i < fi.getStarGraphsList().size(); ++i) {
 				StarGraph sg = idToSG.get(i);
@@ -177,25 +178,10 @@ public class MainRecover {
 			}
 		}
 
-		private void writeOutputToFile() {
-			StringBuilder sb = new StringBuilder();
-			sb.append(fi.getDir()).append(" ").append(fi.getStarGraphsList().size()).append("\n");
-			for (StarGraph sg : resolvedVarName.keySet()) {
-				sb.append(sg.getVarName()).append(" :");
-				for (String str : resolvedVarName.get(sg)) {
-					sb.append(" ").append(str);
-				}
-				sb.append("\n");
-			}
-			sb.append("-\n");
-			for (StarGraph sg : resolvedVarName_withoutBS.keySet()) {
-				sb.append(sg.getVarName()).append(" :");
-				for (String str : resolvedVarName_withoutBS.get(sg)) {
-					sb.append(" ").append(str);
-				}
-				sb.append("\n");
-			}
-			FileIO.writeStringToFile(cacheFolder + Integer.toString(this.cnt) + ".txt", sb.toString());
+		private double getCombinationScore(double scTask, double scItself, int sgsize) {
+			double weightTask = 1.0 / sgsize;
+			double weightItself = 1.0 - weightTask;
+			return scTask * weightTask + scItself * weightItself;
 		}
 
 		public void run() {
@@ -205,7 +191,36 @@ public class MainRecover {
 
 			int cc = 0;
 			for (StarGraph sg : fi.getStarGraphsList()) {
-				ArrayList<Pair<String, Double>> res = sf.getCandidateListForStarGraph(sg);
+				ArrayList<Pair<String, Double>> res = new ArrayList<>();
+
+				// Itself
+				ArrayList<Pair<String, Double>> res_itself = sf.getCandidateListForStarGraph(sg);
+
+				// Task
+				Map<String, Double> res_func = new HashMap<>();
+				for (String str : sgData.nameSet) {
+					double sc = sgData.varFuncAssociation.getAsscociationScore(str, fi.getFuncName());
+					if (sc > 0) {
+						res_func.put(str, sc);
+					}
+				}
+//				for (String key : res_func.keySet()) {
+//					res.add(new Pair<>(key, res_func.get(key)));
+//				}
+
+				// Merge itself + task
+				for (Pair<String, Double> p : res_itself) {
+					double scFunc = res_func.getOrDefault(p.getKey(), 0.0);
+
+					double newScore = getCombinationScore(scFunc, p.getValue(), sg.getSizeGraph());
+
+					if (newScore > 0)
+						res.add(new Pair<>(p.getKey(), newScore));
+				}
+
+				// Sort result
+
+				res.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 				ArrayList<String> res2 = new ArrayList<>();
 				for (Pair<String, Double> p : res) res2.add(p.getKey());
@@ -217,6 +232,7 @@ public class MainRecover {
 			}
 
 			beamSearchInvocation(tmp, idToSG);
+
 			isSolved = true;
 			System.out.print(">");
 		}
@@ -316,13 +332,17 @@ public class MainRecover {
 		StringBuilder sbPerfect = new StringBuilder();
 
 		for (ProcessingOneFunction pf : pfs) {
+
+			totalAssCounted += pf.totalAssCounted;
+			totalAss += pf.totalAss;
+
 			resStr.append("\n").append(">>>>> Function ").append(pf.fi.getDir()).append(" <<<<<").append(pf.fi.getStarGraphsList().size()).append("\n");
 			resStrNoBs.append("\n").append(">>>>> Function ").append(pf.fi.getDir()).append(" <<<<<").append(pf.fi.getStarGraphsList().size()).append("\n");
 
 			boolean perfect = true;
 			for (StarGraph sg : pf.fi.getStarGraphsList()) {
-				ArrayList<String> names = pf.resolvedVarName.getOrDefault(sg, null);
-				ArrayList<String> namesNoBs = pf.resolvedVarName_withoutBS.getOrDefault(sg, null);
+				ArrayList<String> names = pf.resolvedVarName.getOrDefault(sg, new ArrayList<>());
+				ArrayList<String> namesNoBs = pf.resolvedVarName_withoutBS.getOrDefault(sg, new ArrayList<>());
 
 				if (names == null || names.size() == 0) {
 					perfect = false;

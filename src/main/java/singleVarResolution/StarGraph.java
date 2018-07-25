@@ -1,4 +1,6 @@
 package singleVarResolution;
+import utils.Constants;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,7 +13,7 @@ import java.util.List;
  * @organization UTDallas
  */
 public class StarGraph {
-	private static double THRESHOLD = 0.8;
+	private static double THRESHOLD = Constants.THRESHOLD;
 	private HashSet<Edge> edges;
 	private List<Integer> vectorRepresentation;
 

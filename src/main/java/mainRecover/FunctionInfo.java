@@ -14,6 +14,7 @@ public class FunctionInfo {
 	private HashSet<StarGraph> starGraphsList;
 	private HashSet<String> varVarRels;
 	private String dir;
+	private String funcName;
 
 	public FunctionInfo(HashSet<StarGraph> starGraphsList, String dir) {
 		this.starGraphsList = starGraphsList;
@@ -28,6 +29,14 @@ public class FunctionInfo {
 		return starGraphsList;
 	}
 
+
+	public String getFuncName() {
+		return funcName;
+	}
+
+	public void setFuncName(String funcName) {
+		this.funcName = funcName;
+	}
 
 	public String getDir() {
 		return dir;

@@ -9,11 +9,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import association.AssociationVarFunctionName;
 import mainRecover.FunctionInfo;
 import parser.MainParser;
+import utils.Constants;
 
 public class SGData {
-	private static final int numberOfThread = 20;
+	private static int numberOfThread = Constants.numberOfThread;
+	private static boolean enableFuncNameEdge = Constants.enableFuncNameEdge;
 
 	public HashSet<StarGraph> sgSet = new HashSet<>();
 	public HashSet<StarGraph> sgSetTesting = new HashSet<>();
@@ -21,6 +24,9 @@ public class SGData {
 	public HashMap<Integer, HashSet<StarGraph>> mapEdgeToGraphs = new HashMap<>();
 	public HashMap<String, Integer> mapTrainFunctionName = new HashMap<>();
 	public HashMap<String, Integer> mapTestFunctionName = new HashMap<>();
+	public Set<String> nameSet = new HashSet<>();
+
+	public AssociationVarFunctionName varFuncAssociation = new AssociationVarFunctionName();
 
 	int numOfFunction = -1;
 	int numOfTestFunction = -1;
@@ -49,7 +55,6 @@ public class SGData {
 			for (File f : sgFiles) {
 				//for each file name = variable Name
 				String path = f.getCanonicalPath();
-//				System.out.println(path);
 				String functionName = "", varName = "";
 
 				if (path.indexOf("\\") != -1) {
@@ -77,10 +82,14 @@ public class SGData {
 				}
 
 				// ADD function name
-				if (!Objects.equals(functionN, "")) {
-					Edge funcE = new Edge(functionN, "varFunction", 1);
-					edges.add(funcE);
+				if (enableFuncNameEdge) {
+					if (!Objects.equals(functionN, "")) {
+						Edge funcE = new Edge(functionN, "varFunction", 1);
+						edges.add(funcE);
+					}
 				}
+
+				fi.setFuncName(functionN);
 
 				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
 				if (!edges.isEmpty()) {
@@ -114,14 +123,16 @@ public class SGData {
 		}
 		//Read data from previous parse
 		else { 
-//			sgSet = readDataFromFile(path);
-			readDataFromFile_MultiThread2(path);
+			readDataFromFile_MultiThread(path);
 		}
 	}
 
 	public class ReadingGraph implements Runnable {
 		File f;
 		StarGraph sg;
+		HashMap<String, Integer> mapTrainFunctionNameLocal = new HashMap<>();
+		AssociationVarFunctionName varFuncAssociationLocal = new AssociationVarFunctionName();
+
 		public ReadingGraph(File f) {
 			this.f = f;
 		}
@@ -140,7 +151,7 @@ public class SGData {
 
 				String functionN = getFunctionName(functionName);
 				if (!Objects.equals(functionN, "")) {
-					mapTrainFunctionName.put(functionN, mapTrainFunctionName.getOrDefault(functionN, 0) + 1);
+					mapTrainFunctionNameLocal.put(functionN, mapTrainFunctionNameLocal.getOrDefault(functionN, 0) + 1);
 				}
 
 				int hashCode = Objects.hash(functionName);
@@ -153,12 +164,19 @@ public class SGData {
 					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
 					edges.add(e);
 				}
+
 				// ADD function name
-				if (!Objects.equals(functionN, "")) {
-					Edge funcE = new Edge(functionN, "varFunction", 1);
-					edges.add(funcE);
+				if (enableFuncNameEdge) {
+					if (!Objects.equals(functionN, "")) {
+						Edge funcE = new Edge(functionN, "varFunction", 1);
+						edges.add(funcE);
+					}
 				}
-				//
+				// Add association between varname and functionname
+				varFuncAssociationLocal.addFuncName(functionN);
+				varFuncAssociationLocal.addVarName(varName);
+				varFuncAssociationLocal.addVarFuncName(varName, functionN);
+
 				sg = new StarGraph(edges, varName + "-" + hashCode);
 				br.close();
 			} catch (IOException e) {
@@ -167,7 +185,7 @@ public class SGData {
 		}
 	}
 
-	private void readDataFromFile_MultiThread2(String sgDir) {
+	private void readDataFromFile_MultiThread(String sgDir) {
 		System.out.println("readDataFromFile_MultiThread");
 		int cnt = 0;
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
@@ -216,124 +234,26 @@ public class SGData {
 		}
 		System.out.println("FINISHED all threads for corpus loading");
 
+		// Merge data
 		for (ReadingGraph rg : rgs) {
 			sgSet.add(rg.sg);
+			for (String key : rg.mapTrainFunctionNameLocal.keySet()) {
+				mapTrainFunctionName.put(key, mapTrainFunctionName.getOrDefault(key, 0) + 1);
+			}
+			varFuncAssociation.mergeDataFrom(rg.varFuncAssociationLocal);
+			nameSet.add(rg.sg.getVarName());
 		}
 
 		// Re-check set
 		long sumEdge = 0;
 		System.out.println("nFunction size = " + Integer.toString(cTotal));
+		System.out.println("nName unique = " + Integer.toString(nameSet.size()));
 		System.out.println("SgSET size = " + Integer.toString(sgSet.size()));
 		for (StarGraph sg : sgSet)
 			sumEdge += sg.getSizeGraph();
 		System.out.println("Total edges = " + Long.toString(sumEdge));
 	}
 
-	private void readDataFromFile_MultiThread(String sgDir) {
-		System.out.println("readDataFromFile_MultiThread");
-		File dir = new File(sgDir);
-		ArrayList<File> files = new ArrayList<>();
-		searchDir(dir, files);
-		System.out.println("nFiles = " + Integer.toString(files.size()));
-		int cnt = 0;
-		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
-		ArrayList<ReadingGraph> rgs = new ArrayList<>();
-		for( File f: files ) {
-			try {
-				ReadingGraph rg = new ReadingGraph(f);
-				executor.execute(rg);
-				rgs.add(rg);
-
-				if (++cnt % 10000 == 0)
-					System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(files.size()) + "] >>> LOADED: " + f.getCanonicalPath());
-
-				if (cnt == numOfFunction)
-					break;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Wait until all threads are finish
-		executor.shutdown();
-		try {
-			if (!executor.awaitTermination(7, TimeUnit.DAYS))
-				executor.shutdownNow();
-		} catch (Exception e) {
-			System.out.println("Waiting error");
-			executor.shutdownNow();
-		}
-		System.out.println("FINISHED all threads for corpus loading");
-
-		for (ReadingGraph rg : rgs) {
-			sgSet.add(rg.sg);
-		}
-
-		// Re-check set
-		long sumEdge = 0;
-		System.out.println("SgSET size = " + Integer.toString(sgSet.size()));
-		for (StarGraph sg : sgSet)
-			sumEdge += sg.getSizeGraph();
-		System.out.println("Total edges = " + Long.toString(sumEdge));
-	}
-
-	private HashSet<StarGraph> readDataFromFile(String sgDir) {
-		//Find all files
-		File dir = new File(sgDir);
-		ArrayList<File> files = new ArrayList<>();
-		searchDir(dir, files);
-		int cnt = 0;
-		for( File f: files )
-		{
-			String path = "";
-			try {
-				//for each file name = variable Name
-				path = f.getCanonicalPath();
-				String functionName = "", varName = "";
-				if ( path.indexOf("\\") != -1) {
-					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("\\"));
-					varName = path.substring(path.lastIndexOf("\\")+1, path.indexOf(".txt"));
-				} else {
-					functionName = path.substring(path.indexOf("Data")+5, path.lastIndexOf("/"));
-					varName = path.substring(path.lastIndexOf("/")+1, path.indexOf(".txt"));
-				}
-
-				int hashCode = Objects.hash(functionName);
-				//read file content --> edges
-				BufferedReader br = new BufferedReader(new FileReader(f));
-				String st;
-				HashSet<Edge> edges = new HashSet<>();
-				while ((st = br.readLine()) != null) {
-					String[] subs = st.split(" ");
-					Edge e = new Edge(subs[0], subs[1], Integer.valueOf(subs[2]));
-					edges.add(e);
-				}
-				// TODO - hashcode can be empty
-				StarGraph sg = new StarGraph(edges, varName + "-" + hashCode);
-				sgSet.add(sg);
-				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			if (++cnt % 10000 == 0)
-			System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(files.size()) + "] >>> LOADED: " + path);
-
-			if (cnt == numOfFunction)
-				break;
-		}
-
-//		for ( StarGraph sg: sgSet )
-//		{
-//			System.out.println(sg.getVarName());
-//			for( Edge e: sg.getEdges() ) {
-//				System.out.println(e.toString());
-//			}
-//		}
-		System.out.println("DONE loading corpus data!!!!");
-		return sgSet;
-	}
-	
 	public void searchDir(File dir, ArrayList<File> files) {
 		if ( dir.isFile() )
 		{
@@ -371,6 +291,7 @@ public class SGData {
 	public String Analyzing_TrainingSet(HashSet<StarGraph> sgSet) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Number of Training Stargraphs : ").append(sgSet.size()).append("\n");
+		sb.append("nName unique in Training data = ").append(nameSet.size()).append("\n");
 
 		int totalEdges = 0;
 		int[] countSGbyNumofEdge = new int[12];
