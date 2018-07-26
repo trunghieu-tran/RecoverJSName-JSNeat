@@ -1,6 +1,8 @@
 package parser;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.mozilla.javascript.ast.AstNode;
 import org.mozilla.javascript.ast.Name;
@@ -8,7 +10,7 @@ import org.mozilla.javascript.ast.NodeVisitor;
 import org.mozilla.javascript.ast.VariableInitializer;
 
 public class FindVariableVisitor implements NodeVisitor{
-	HashSet<String> vn = new HashSet<>();
+	ArrayList<String> vn = new ArrayList<>();
 	@Override
 	public boolean visit(AstNode node) {
 		if ( node instanceof VariableInitializer)
@@ -27,7 +29,7 @@ public class FindVariableVisitor implements NodeVisitor{
 		return true;
 	}
 	
-	public HashSet<String> getVN() {
+	public ArrayList<String> getVN() {
 		return vn;
 	}
 }

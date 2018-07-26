@@ -14,14 +14,14 @@ import singleVarResolution.StarGraphToPrint;
  * @author Mike
  * Build a forest from the training dataset
  */
-public class ForestVisitor implements NodeVisitor{
+public class JSNiceVisitor implements NodeVisitor{
 	String flag; //test //train //debug
 	String path;
 	String sgPath;
 	HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 	int anonymousCount = 0; //Handle Anonymous Function
-	ArrayList<LinkedHashSet<String>> allVariables;
-	public ForestVisitor(String path, String flag) {
+	ArrayList<ArrayList<String>> allVariables;
+	public JSNiceVisitor(String path, String flag) {
 		this.flag = flag;
 		this.path = path;
 		if ( flag.equals("jsnice") ) {
@@ -33,18 +33,19 @@ public class ForestVisitor implements NodeVisitor{
 		return sgSet;
 	}
 	
-	public ArrayList<LinkedHashSet<String>> getAllVar() {
+	public ArrayList<ArrayList<String>> getAllVar() {
 		if ( flag.equals("jsnice") ) {
 			return allVariables;
 		}
 		System.out.println("Wrong FLAG, will return NULL!");
 		return null;
 	}
+	
 	@Override
 	public boolean visit(AstNode node) {
 		if ( node instanceof FunctionNode )
 		{
-			LinkedHashSet<String> vn = new LinkedHashSet<>();
+			ArrayList<String> vn = new ArrayList<>();
 			FunctionNode fn = (FunctionNode) node;
 			List<AstNode> list = fn.getParams();
 			for(AstNode at: list)
@@ -54,6 +55,7 @@ public class ForestVisitor implements NodeVisitor{
 					vn.add(((Name)at).getIdentifier());
 				}
 			}
+			
 			/**
 			 * @TODO: add function hierarchy to find more variable
 			 * 
@@ -62,13 +64,13 @@ public class ForestVisitor implements NodeVisitor{
 			node.visit(visitor);
 			vn.addAll(visitor.getVN());
 			//Test variable name set
-			//System.out.println("Variable Names List");
-			//for(String s: vn)
-			//{
-			//	System.out.print(s + " ");
-			//}
-			//System.out.println();
-			if ( flag.equals("jsnice") && vn.isEmpty()) {
+//			System.out.println("Variable Names List");
+//			for(String s: vn)
+//			{
+//				System.out.print(s + " ");
+//			}
+//			System.out.println();
+			if ( flag.equals("jsnice") && !vn.isEmpty()) {
 				allVariables.add(vn);
 			}
 			String functionName = ((FunctionNode)node).getName();
@@ -79,23 +81,23 @@ public class ForestVisitor implements NodeVisitor{
 				functionName = "anonymous" + Integer.toString(anonymousCount++);
 				return true;
 			}
-			String dir = path + "_" + functionName;
-			String temp = sgPath + "_" + functionName;
-			FunctionVisitor fv = new FunctionVisitor(vn, dir);
-			node.visit(fv); 
-			try {
-				//fv.printToFile(dir);
-//				if (functionName.equals("tokenize"))
-//				{
-//					fv.print();
-//				}
-				//fv.print();
-				fv.printStarGraph(temp);
-				sgSet.addAll(fv.getStarGraph());
-			} 
-			catch (IOException e) {
-				e.printStackTrace();
-			}
+//			String dir = path + "_" + functionName;
+//			String temp = sgPath + "_" + functionName;
+//			FunctionVisitor fv = new FunctionVisitor(vn, dir);
+//			node.visit(fv); 
+//			try {
+//				//fv.printToFile(dir);
+////				if (functionName.equals("tokenize"))
+////				{
+////					fv.print();
+////				}
+//				//fv.print();
+//				fv.printStarGraph(temp);
+//				sgSet.addAll(fv.getStarGraph());
+//			} 
+//			catch (IOException e) {
+//				e.printStackTrace();
+//			}
 		}
 		return true;
 	}

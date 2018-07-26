@@ -242,7 +242,7 @@ public class MainParser {
 					String sgDir = sgPath + path;
 					path = outputDir + path;
 					//					path = "../TestRun" + path;
-					ForestVisitor myVisitor = new ForestVisitor(path, flag);
+					JSNiceVisitor myVisitor = new JSNiceVisitor(path, flag);
 					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
