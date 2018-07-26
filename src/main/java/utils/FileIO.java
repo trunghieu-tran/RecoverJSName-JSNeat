@@ -1,6 +1,6 @@
 package utils;
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * @author Harry Tran on 5/23/18.
@@ -58,6 +58,20 @@ public class FileIO {
 		});
 		for (String str : directories) {
 			res.add(dir + str + "/");
+		}
+		return res;
+	}
+
+	public static Set<String> getAllFilesFromDirectory(String dir) {
+		Set<String> res = new HashSet<>();
+		File root = new File(dir);
+		try {
+			File[] fs = root.listFiles();
+			for (File f : fs)
+				if (!f.isDirectory())
+					res.add(f.getName());
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 		return res;
 	}
