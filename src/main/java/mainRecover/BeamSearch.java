@@ -90,7 +90,7 @@ public class BeamSearch {
 		if (similarScores.size() == 0) return 0;
 		double sum = 0;
 		for (double d : similarScores) sum += d;
-		sum /= similarScores.size();
+//		sum /= similarScores.size();
 		return sum + scoreTogether;
 	}
 
