@@ -63,7 +63,7 @@ public class CheckJSNiceParser {
 			allVar1 = myVisitor.getAllVar();
 		}
 		catch (Exception e) {
-			System.out.println("Can't parse file " + file1);
+			System.out.println("\nCan't parse file " + file1);
 		}
 		
 		try {
@@ -77,7 +77,7 @@ public class CheckJSNiceParser {
 			allVar2 = myVisitor.getAllVar();
 		}
 		catch (Exception e) {
-			System.out.println("Can't parse file " + file2);
+			System.out.println("\nCan't parse file " + file2);
 		}
 	}
 	
