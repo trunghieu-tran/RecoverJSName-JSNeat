@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
@@ -18,7 +19,7 @@ import org.mozilla.javascript.ast.AstRoot;
 import singleVarResolution.Edge;
 import singleVarResolution.StarGraph;
 import singleVarResolution.StarGraphToPrint;
-
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_224;
 /**
  * @author Mike Tran
  * Main program. 
@@ -44,13 +45,14 @@ public class MainParser {
 	//	ArrayList<File> testSet = new ArrayList<>();
 	//	ArrayList<File> trainSet = new ArrayList<>();
 	int countFile; 
+	public HashSet<String> fileHashSet = new HashSet<>();
 	public HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		//		demo.generateFileList(all);
+		demo.generateFileList("../CheckDupData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
-		demo.parseForest("test");
+		//demo.parseForest("");
 		//demo.parseAssociation("train");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
@@ -113,11 +115,11 @@ public class MainParser {
 
 	public void generateFileList (String filePath) throws Exception
 	{
-		File trainFileList = new File(fileList + "/trainFileList.txt");
+		File trainFileList = new File(fileList + "/dupTrainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
 		PrintWriter pwTrainList = new PrintWriter(fwTrainList);
 
-		File testFileList = new File(fileList + "/testFileList.txt");
+		File testFileList = new File(fileList + "/dupTestFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
 		PrintWriter pwTestList = new PrintWriter(fwTestList);
 
@@ -215,7 +217,7 @@ public class MainParser {
 			outputDir = "";
 		} else {
 			fileType = "test.txt";
-			sgPath = "../SGDebug";
+			sgPath = "../TestRun";
 			outputDir = "../TestRun";
 		}
 		File fileListing = new File(fileList + "/" + fileType);
@@ -236,13 +238,13 @@ public class MainParser {
 					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("/"));
-					String fileName = path.substring(path.lastIndexOf("/")+1);
+					String projectName = path.substring(0, path.indexOf("\\"));
+					String fileName = path.substring(path.lastIndexOf("\\")+1);
 					path = "/" + projectName + "_" + fileName; 
 					String sgDir = sgPath + path;
 					path = outputDir + path;
 					//					path = "../TestRun" + path;
-					JSNiceVisitor myVisitor = new JSNiceVisitor(path, flag);
+					ForestVisitor myVisitor = new ForestVisitor(path, flag);
 					myVisitor.getSgPath(sgDir);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(myVisitor);
@@ -253,7 +255,7 @@ public class MainParser {
 				{
 					countProbFile++;
 					System.out.println("File " + str + " can't be parsed");
-					//e.printStackTrace();
+					e.printStackTrace();
 					continue;
 				}
 			}
@@ -376,7 +378,7 @@ public class MainParser {
 		}
 	}
 
-	public void searchDir(File dir, ArrayList<File> files) {
+	public void searchDir(File dir, ArrayList<File> files) throws IOException {
 		if ( dir.isFile() )
 		{
 			files.add(dir);
@@ -417,10 +419,20 @@ public class MainParser {
 					}
 					
 					if ( lineNumber > 10 ) {
-						files.add(file);
-						countFile++;
-						if ( countFile % 500 == 0) {
-							System.out.println("Added " + countFile + " files");
+						boolean duplicate = false;
+						try {
+							duplicate = checkFileHash(file);
+						} catch (IOException e) {
+							System.out.println("Can't hash the file");
+							//e.printStackTrace();
+						}
+						if ( !duplicate ) {
+							files.add(file);
+							fileHashSet.add(new DigestUtils(SHA_224).digestAsHex(file));
+							countFile++;
+							if ( countFile % 500 == 0) {
+								System.out.println("Added " + countFile + " files");
+							}
 						}
 					} 
 					else {
@@ -434,5 +446,15 @@ public class MainParser {
 				}
 			}
 		}
+	}
+
+	private boolean checkFileHash(File file) throws IOException {
+		String hdigest = new DigestUtils(SHA_224).digestAsHex(file);
+		for (String s: fileHashSet) {
+			if ( hdigest.equals(s)) {
+				return true;
+			}
+		}
+		return false;
 	}	
 }
