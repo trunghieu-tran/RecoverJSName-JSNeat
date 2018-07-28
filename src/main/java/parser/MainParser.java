@@ -45,15 +45,15 @@ public class MainParser {
 	//	ArrayList<File> testSet = new ArrayList<>();
 	//	ArrayList<File> trainSet = new ArrayList<>();
 	int countFile; 
-	public HashSet<String> fileHashSet = new HashSet<>();
+	public HashSet<Integer> fileHashSet = new HashSet<>();
 	public HashSet<StarGraphToPrint> sgSet = new HashSet<>();
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		demo.generateFileList("../CheckDupData");
+		//demo.generateFileList("../GithubData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
-		//demo.parseForest("");
-		//demo.parseAssociation("train");
+		//demo.parseForest("test");
+		demo.parseAssociation("train");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
 		//		demo.parseTrainSetTM();
@@ -66,7 +66,7 @@ public class MainParser {
 			fileType = "gitTrainFileList.txt";
 			output = assocTrainDir;
 		} else if ( flag.equals("test")) {
-			fileType = "testFileList.txt";
+			fileType = "gitTestFileList.txt";
 			output = assocTestDir;
 		} else {
 			fileType = "test.txt";
@@ -93,11 +93,17 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("/"));
-					String fileName = path.substring(path.lastIndexOf("/")+1);
+					String projectName = "", fileName = "";
+					if ( path.indexOf("\\") > 0 ) { //Windows
+						projectName = path.substring(0, path.indexOf("\\"));
+						fileName = path.substring(path.lastIndexOf("\\")+1);
+					} else {  //Linux
+						projectName = path.substring(0, path.indexOf("/"));
+						fileName = path.substring(path.lastIndexOf("/")+1);
+					}
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
-					//					path = "../TestRun" + path;
+					//path = "../TestRun" + path;
 					AssociateVisitor ascVis = new AssociateVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(ascVis);
@@ -115,11 +121,11 @@ public class MainParser {
 
 	public void generateFileList (String filePath) throws Exception
 	{
-		File trainFileList = new File(fileList + "/dupTrainFileList.txt");
+		File trainFileList = new File(fileList + "/gitTrainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
 		PrintWriter pwTrainList = new PrintWriter(fwTrainList);
 
-		File testFileList = new File(fileList + "/dupTestFileList.txt");
+		File testFileList = new File(fileList + "/gitTestFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
 		PrintWriter pwTestList = new PrintWriter(fwTestList);
 
@@ -131,7 +137,7 @@ public class MainParser {
 
 		for ( File file : files )
 		{
-			if ( i < 10 ) {
+			if ( i < 184 ) {
 				//trainSet.add(file);
 				pwTrainList.println(file.getCanonicalPath());
 				i++;
@@ -227,7 +233,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				//if ( count > 10 ) break;
+				if ( (count - countProbFile) > 350000 ) break;
 				if ( count % 500 == 0) {
 					System.out.println("Processed " + count + " files");
 				}
@@ -238,8 +244,14 @@ public class MainParser {
 					FileReader strReader = new FileReader(str);
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("\\"));
-					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					String projectName = "", fileName = "";
+					if ( path.indexOf("\\") >= 0 ) { //Windows
+						projectName = path.substring(0, path.indexOf("\\"));
+						fileName = path.substring(path.lastIndexOf("\\")+1);
+					} else {  //Linux
+						projectName = path.substring(0, path.indexOf("/"));
+						fileName = path.substring(path.lastIndexOf("/")+1);
+					}
 					path = "/" + projectName + "_" + fileName; 
 					String sgDir = sgPath + path;
 					path = outputDir + path;
@@ -254,8 +266,8 @@ public class MainParser {
 				catch (Exception e)
 				{
 					countProbFile++;
-					System.out.println("File " + str + " can't be parsed");
-					e.printStackTrace();
+					//System.out.println("File " + str + " can't be parsed");
+					//e.printStackTrace();
 					continue;
 				}
 			}
@@ -428,10 +440,14 @@ public class MainParser {
 						}
 						if ( !duplicate ) {
 							files.add(file);
-							fileHashSet.add(new DigestUtils(SHA_224).digestAsHex(file));
+							fileHashSet.add(
+									(new DigestUtils(SHA_224).digestAsHex(file)).hashCode());
 							countFile++;
 							if ( countFile % 500 == 0) {
 								System.out.println("Added " + countFile + " files");
+							}
+							if ( countFile > 500000 ) {
+								return;
 							}
 						}
 					} 
@@ -450,10 +466,9 @@ public class MainParser {
 
 	private boolean checkFileHash(File file) throws IOException {
 		String hdigest = new DigestUtils(SHA_224).digestAsHex(file);
-		for (String s: fileHashSet) {
-			if ( hdigest.equals(s)) {
-				return true;
-			}
+		if ( fileHashSet.contains(hdigest.hashCode() ) )
+		{
+			return true;
 		}
 		return false;
 	}	

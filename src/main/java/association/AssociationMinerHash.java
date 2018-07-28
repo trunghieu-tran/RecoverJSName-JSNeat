@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class AssociationMinerHash {
 	ConcurrentHashMap<Integer, Integer> var2Hash = new ConcurrentHashMap<>();
 	ConcurrentHashMap<Integer, Integer> var1Hash = new ConcurrentHashMap<>();
-	int n0Thread = 10;
+	int n0Thread = 20;
 	public static void main(String[] args) {
 		String path = "../AssocData";
 		AssociationMinerHash am = new AssociationMinerHash();
