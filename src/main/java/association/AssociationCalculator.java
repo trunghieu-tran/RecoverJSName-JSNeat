@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class AssociationCalculator {
+	HashMap<Integer, Integer> var3Hash = new HashMap<>();
 	HashMap<Integer, Integer> var2Hash = new HashMap<>();
 	HashMap<Integer, Integer> var1Hash = new HashMap<>();
+
 	String flag, path;
 	public static void main(String[] args) {
 		String path = "../HashAssocData";

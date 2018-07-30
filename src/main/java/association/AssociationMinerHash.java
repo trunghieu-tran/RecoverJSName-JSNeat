@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import utils.GetSubsetOfSizeN;
 
 
 public class AssociationMinerHash {
@@ -43,31 +43,6 @@ public class AssociationMinerHash {
 //		}
 	}
 
-	
-
-	private static void getSubsets(ArrayList<String> superSet, int k, int idx, HashSet<String> current,ArrayList<HashSet<String>> solution) {
-	    //successful stop clause
-	    if (current.size() == k) {
-	        solution.add(new HashSet<>(current));
-	        return;
-	    }
-	    //unsuccessful stop clause
-	    if (idx == superSet.size()) return;
-	    String x = superSet.get(idx);
-	    current.add(x);
-	    //"guess" x is in the subset
-	    getSubsets(superSet, k, idx+1, current, solution);
-	    current.remove(x);
-	    //"guess" x is not in the subset
-	    getSubsets(superSet, k, idx+1, current, solution);
-	}
-
-	public static ArrayList<HashSet<String>> getSubsets(ArrayList<String> superSet, int k) {
-		ArrayList<HashSet<String>> res = new ArrayList<>();
-	    getSubsets(superSet, k, 0, new HashSet<String>(), res);
-	    return res;
-	}
-	
 	public void loadAssocDataSingleThread(int flag, String path) {
 		File corpus = new File(path);
 		int count = 0;
@@ -256,7 +231,7 @@ public class AssociationMinerHash {
 		 * @param al
 		 */
 		private void addTriplets(HashMap<Integer, Integer> map3, ArrayList<String> al) {
-			ArrayList<HashSet<String>> subset3 = getSubsets(al,  3);
+			ArrayList<HashSet<String>> subset3 = GetSubsetOfSizeN.getSubsets(al,  3);
 			for (int i = 0; i < subset3.size(); i++) {
 				for ( String s: subset3.get(i) ) {
 					System.out.print(s + " ");

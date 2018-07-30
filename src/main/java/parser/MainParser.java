@@ -17,7 +17,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.mozilla.javascript.CompilerEnvirons;
 import org.mozilla.javascript.IRFactory;
@@ -26,7 +25,6 @@ import org.mozilla.javascript.ast.AstRoot;
 import singleVarResolution.Edge;
 import singleVarResolution.StarGraph;
 import singleVarResolution.StarGraphToPrint;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_224;
 /**
  * @author Mike Tran
  * Main program. 
