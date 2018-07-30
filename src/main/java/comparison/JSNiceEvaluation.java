@@ -45,6 +45,7 @@ public class JSNiceEvaluation {
 				if (isOkFile(originalTests + str) && isOkFile(recoveredTests + str))
 					filesPair.add(new Pair<>(originalTests + str, recoveredTests + str));
 			}
+		sbR.append("Valid pair = ").append(filesPair.size()).append("\n");
 	}
 
 	public void process() {
