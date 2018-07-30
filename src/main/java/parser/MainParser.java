@@ -1,14 +1,21 @@
 package parser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -50,10 +57,10 @@ public class MainParser {
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		//demo.generateFileList("../GithubData");
+		//demo.generateFileList("../CheckDupData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
-		//demo.parseForest("test");
-		demo.parseAssociation("train");
+//		demo.parseForest("");
+		demo.parseAssociation("");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
 		//		demo.parseTrainSetTM();
@@ -66,7 +73,7 @@ public class MainParser {
 			fileType = "gitTrainFileList.txt";
 			output = assocTrainDir;
 		} else if ( flag.equals("test")) {
-			fileType = "gitTestFileList.txt";
+			fileType = "testFileList.txt";
 			output = assocTestDir;
 		} else {
 			fileType = "test.txt";
@@ -93,17 +100,11 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = "", fileName = "";
-					if ( path.indexOf("\\") > 0 ) { //Windows
-						projectName = path.substring(0, path.indexOf("\\"));
-						fileName = path.substring(path.lastIndexOf("\\")+1);
-					} else {  //Linux
-						projectName = path.substring(0, path.indexOf("/"));
-						fileName = path.substring(path.lastIndexOf("/")+1);
-					}
+					String projectName = path.substring(0, path.indexOf("/"));
+					String fileName = path.substring(path.lastIndexOf("/")+1);
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
-					//path = "../TestRun" + path;
+					//					path = "../TestRun" + path;
 					AssociateVisitor ascVis = new AssociateVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(ascVis);
@@ -121,11 +122,11 @@ public class MainParser {
 
 	public void generateFileList (String filePath) throws Exception
 	{
-		File trainFileList = new File(fileList + "/gitTrainFileList.txt");
+		File trainFileList = new File(fileList + "/dupTrainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
 		PrintWriter pwTrainList = new PrintWriter(fwTrainList);
 
-		File testFileList = new File(fileList + "/gitTestFileList.txt");
+		File testFileList = new File(fileList + "/dupTestFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
 		PrintWriter pwTestList = new PrintWriter(fwTestList);
 
@@ -137,7 +138,7 @@ public class MainParser {
 
 		for ( File file : files )
 		{
-			if ( i < 184 ) {
+			if ( i < 10 ) {
 				//trainSet.add(file);
 				pwTrainList.println(file.getCanonicalPath());
 				i++;
@@ -233,7 +234,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				if ( (count - countProbFile) > 350000 ) break;
+				//if ( count > 10 ) break;
 				if ( count % 500 == 0) {
 					System.out.println("Processed " + count + " files");
 				}
@@ -245,7 +246,7 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
 					String projectName = "", fileName = "";
-					if ( path.indexOf("\\") >= 0 ) { //Windows
+					if ( path.indexOf("\\") > 0 ) { //Windows
 						projectName = path.substring(0, path.indexOf("\\"));
 						fileName = path.substring(path.lastIndexOf("\\")+1);
 					} else {  //Linux
@@ -266,8 +267,8 @@ public class MainParser {
 				catch (Exception e)
 				{
 					countProbFile++;
-					//System.out.println("File " + str + " can't be parsed");
-					//e.printStackTrace();
+					System.out.println("File " + str + " can't be parsed");
+					e.printStackTrace();
 					continue;
 				}
 			}
@@ -300,8 +301,15 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("\\"));
-					String fileName = path.substring(path.lastIndexOf("\\")+1);
+					String projectName = "", fileName = "";
+					if ( path.indexOf("\\") > 0 ) { //Windows
+						projectName = path.substring(0, path.indexOf("\\"));
+						fileName = path.substring(path.lastIndexOf("\\")+1);
+					} else {  //Linux
+						projectName = path.substring(0, path.indexOf("/"));
+						fileName = path.substring(path.lastIndexOf("/")+1);
+					}
+					
 					path = "/" + projectName + "_" + fileName; 
 					path = testSetDir + path;
 					System.out.println(path);
@@ -390,7 +398,7 @@ public class MainParser {
 		}
 	}
 
-	public void searchDir(File dir, ArrayList<File> files) throws IOException {
+	public void searchDir(File dir, ArrayList<File> files) throws IOException, NoSuchAlgorithmException {
 		if ( dir.isFile() )
 		{
 			files.add(dir);
@@ -401,7 +409,6 @@ public class MainParser {
 		}
 		for ( File file : dir.listFiles() )
 		{
-
 			if ( file.isDirectory() )
 			{
 				searchDir(file,files);
@@ -416,7 +423,6 @@ public class MainParser {
 					{
 						FileReader input = new FileReader(file.getCanonicalPath());
 						countLineN0 = new LineNumberReader(input);
-
 						while (countLineN0.skip(Long.MAX_VALUE) > 0)
 						{
 							// Loop just in case the file is > Long.MAX_VALUE or skip() decides to not read the entire file
@@ -431,23 +437,22 @@ public class MainParser {
 					}
 					
 					if ( lineNumber > 10 ) {
+				        String content = FileUtils.readFileToString(file, "UTF-8");
+				        FileUtils.write(file, content, "UTF-8");
 						boolean duplicate = false;
 						try {
 							duplicate = checkFileHash(file);
+//							duplicate = checkFileContent(file, files);
 						} catch (IOException e) {
 							System.out.println("Can't hash the file");
 							//e.printStackTrace();
 						}
 						if ( !duplicate ) {
 							files.add(file);
-							fileHashSet.add(
-									(new DigestUtils(SHA_224).digestAsHex(file)).hashCode());
+							fileHashSet.add( (calcSHA1(file)).hashCode() );
 							countFile++;
 							if ( countFile % 500 == 0) {
 								System.out.println("Added " + countFile + " files");
-							}
-							if ( countFile > 500000 ) {
-								return;
 							}
 						}
 					} 
@@ -464,12 +469,42 @@ public class MainParser {
 		}
 	}
 
-	private boolean checkFileHash(File file) throws IOException {
-		String hdigest = new DigestUtils(SHA_224).digestAsHex(file);
+	private boolean checkFileContent(File file, ArrayList<File> files) throws IOException {
+		for ( File f : files ) {
+			if ( FileUtils.contentEquals(file, f) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean checkFileHash(File file) throws IOException, NoSuchAlgorithmException {
+		String hdigest = calcSHA1(file);
 		if ( fileHashSet.contains(hdigest.hashCode() ) )
 		{
 			return true;
 		}
 		return false;
 	}	
+	
+	/**
+	 * Read the file and calculate the SHA-1 checksum
+	 */
+	private static String calcSHA1(File file) throws FileNotFoundException,
+	        IOException, NoSuchAlgorithmException {
+
+	    MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+	    try (InputStream input = new FileInputStream(file)) {
+
+	        byte[] buffer = new byte[8192];
+	        int len = input.read(buffer);
+
+	        while (len != -1) {
+	            sha1.update(buffer, 0, len);
+	            len = input.read(buffer);
+	        }
+
+	        return new HexBinaryAdapter().marshal(sha1.digest());
+	    }
+	}
 }
