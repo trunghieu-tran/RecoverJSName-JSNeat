@@ -1,5 +1,6 @@
 package parser;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,14 +8,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
+import org.apache.commons.io.FileUtils;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 import org.apache.commons.io.FileUtils;
@@ -55,10 +58,10 @@ public class MainParser {
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		//demo.generateFileList("../CheckDupData");
+		demo.generateFileList("../CheckDupData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
 //		demo.parseForest("");
-		demo.parseAssociation("");
+//		demo.parseAssociation("");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
 		//		demo.parseTrainSetTM();
@@ -98,8 +101,14 @@ public class MainParser {
 					IRFactory factory = new IRFactory(env, new JSErrorReporter());
 					//String path = str.substring(str.indexOf("Data") + 4, str.lastIndexOf(".js"));
 					String path = str.substring(str.indexOf("Data") + 5, str.lastIndexOf(".js"));
-					String projectName = path.substring(0, path.indexOf("/"));
-					String fileName = path.substring(path.lastIndexOf("/")+1);
+					String projectName = "", fileName = "";
+					if ( path.indexOf("\\") > 0 ) { //Windows
+						projectName = path.substring(0, path.indexOf("\\"));
+						fileName = path.substring(path.lastIndexOf("\\")+1);
+					} else {  //Linux
+						projectName = path.substring(0, path.indexOf("/"));
+						fileName = path.substring(path.lastIndexOf("/")+1);
+					}
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
 					//					path = "../TestRun" + path;
@@ -435,19 +444,19 @@ public class MainParser {
 					}
 					
 					if ( lineNumber > 10 ) {
-				        String content = FileUtils.readFileToString(file, "UTF-8");
-				        FileUtils.write(file, content, "UTF-8");
+//				        String content = FileUtils.readFileToString(file, "UTF-8");
+//				        FileUtils.write(file, content, "UTF-8");
 						boolean duplicate = false;
 						try {
-							duplicate = checkFileHash(file);
-//							duplicate = checkFileContent(file, files);
+//							duplicate = checkFileHash(file);
+							duplicate = checkFileContent(file);
 						} catch (IOException e) {
 							System.out.println("Can't hash the file");
 							//e.printStackTrace();
 						}
 						if ( !duplicate ) {
 							files.add(file);
-							fileHashSet.add( (calcSHA1(file)).hashCode() );
+							//fileHashSet.add( (calcSHA1(file)).hashCode() );
 							countFile++;
 							if ( countFile % 500 == 0) {
 								System.out.println("Added " + countFile + " files");
@@ -467,13 +476,35 @@ public class MainParser {
 		}
 	}
 
-	private boolean checkFileContent(File file, ArrayList<File> files) throws IOException {
-		for ( File f : files ) {
-			if ( FileUtils.contentEquals(file, f) ) {
-				return true;
-			}
+	private boolean checkFileContent(File file) throws IOException {
+		StringBuilder contentBuilder = new StringBuilder();
+	    try (BufferedReader br = new BufferedReader(
+	    	    new InputStreamReader(
+	    	            new FileInputStream(file),
+	    	            "UTF-8"));)
+	    {
+	    	br.mark(1);
+	    	if (br.read() != 0xFEFF)
+	    	  br.reset();
+	        String sCurrentLine;
+	        while ((sCurrentLine = br.readLine()) != null)
+	        {
+	            contentBuilder.append(sCurrentLine).append("\n");
+	        }
+	    }
+	    catch (IOException e)
+	    {
+	        e.printStackTrace();
+	    }
+	    String s = contentBuilder.toString();
+		s = s.replaceAll("\\s+","");
+		System.out.println(file.getAbsolutePath());
+		System.out.println(s);
+		boolean isDuplicate = fileHashSet.contains(s.hashCode());
+		if ( ! isDuplicate ) {
+			fileHashSet.add(s.hashCode());
 		}
-		return false;
+		return isDuplicate;
 	}
 
 	private boolean checkFileHash(File file) throws IOException, NoSuchAlgorithmException {
