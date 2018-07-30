@@ -30,6 +30,7 @@ public class MainRecover {
 	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData"; // 2.1M function ~ 7.9 M sg
 
 	private static String InputData2 = "/home/nmt140230/RecoverJSName/GitTestData/"; //  15k sg ~ 5.3k function
+//	private static String InputData2 = "/home/nmt140230/RecoverJSName/TestRun/";
 	private static String TrainingData2 = "/home/nmt140230/RecoverJSName/GitTrainData"; // 2.1M sg ~ 652k function
 	private static String cacheFolder = "./resources/cache/";
 
@@ -270,6 +271,9 @@ public class MainRecover {
 				ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 				Set<ProcessingOneFunction> running = new HashSet<>();
 				for (FunctionInfo fi : currFi) {
+					// TODO - just test
+					if (fi.getStarGraphsList().size() == 1) continue;
+
 					ProcessingOneFunction pf = new ProcessingOneFunction(fi, cnt++);
 					executor.execute(pf);
 					running.add(pf);
@@ -482,6 +486,7 @@ public class MainRecover {
 	public void write_RuningTime() {
 		FileIO.writeStringToFile(tmpRuningTime, timeRecord.toString());
 	}
+
 	public static void main(String[] args) {
 		MainRecover mr = new MainRecover();
 		mr.loadTrainingData();

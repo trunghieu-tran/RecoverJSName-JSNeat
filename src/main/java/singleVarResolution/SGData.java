@@ -36,6 +36,12 @@ public class SGData {
 		return tmp[tmp.length - 1];
 	}
 
+	private String getFileName(String str) {
+		String[] tmp = str.split("_");
+		for (int i = 1; i < tmp.length - 1; ++i)
+			if (tmp[i].length() > 0) return tmp[i];
+		return "";
+	}
 	public void getTestData(String sgDir, int numOfTest) throws IOException {
 		this.numOfTestFunction = numOfTest;
 		int cnt = 0;
