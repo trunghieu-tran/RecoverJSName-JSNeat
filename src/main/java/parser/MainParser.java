@@ -58,7 +58,7 @@ public class MainParser {
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		demo.generateFileList("../CheckDupData");
+		demo.generateFileList("../GithubData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
 //		demo.parseForest("");
 //		demo.parseAssociation("");
@@ -129,11 +129,11 @@ public class MainParser {
 
 	public void generateFileList (String filePath) throws Exception
 	{
-		File trainFileList = new File(fileList + "/dupTrainFileList.txt");
+		File trainFileList = new File(fileList + "/gitTrainFileList.txt");
 		FileWriter fwTrainList = new FileWriter(trainFileList);
 		PrintWriter pwTrainList = new PrintWriter(fwTrainList);
 
-		File testFileList = new File(fileList + "/dupTestFileList.txt");
+		File testFileList = new File(fileList + "/gitTestFileList.txt");
 		FileWriter fwTestList = new FileWriter(testFileList);
 		PrintWriter pwTestList = new PrintWriter(fwTestList);
 
@@ -145,7 +145,7 @@ public class MainParser {
 
 		for ( File file : files )
 		{
-			if ( i < 10 ) {
+			if ( i < 184 ) {
 				//trainSet.add(file);
 				pwTrainList.println(file.getCanonicalPath());
 				i++;
@@ -498,8 +498,8 @@ public class MainParser {
 	    }
 	    String s = contentBuilder.toString();
 		s = s.replaceAll("\\s+","");
-		System.out.println(file.getAbsolutePath());
-		System.out.println(s);
+		//System.out.println(file.getAbsolutePath());
+		//System.out.println(s);
 		boolean isDuplicate = fileHashSet.contains(s.hashCode());
 		if ( ! isDuplicate ) {
 			fileHashSet.add(s.hashCode());
