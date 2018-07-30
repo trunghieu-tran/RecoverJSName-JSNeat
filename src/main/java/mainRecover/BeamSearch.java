@@ -4,6 +4,7 @@ import association.AssociationCalculator;
 import association.AssociationMiner;
 import javafx.util.Pair;
 import utils.FileIO;
+import utils.Normalization;
 
 import java.util.*;
 
@@ -106,15 +107,30 @@ public class BeamSearch {
 				setScore.add(getVarNameScore(orderRecovering.get(j), recovered.get(j)));
 			}
 
+
+			ArrayList<Double> tmpPTogether = new ArrayList<>();
+			ArrayList<ArrayList<String>> tmpSetNameTmp = new ArrayList<>();
+
 			for (Pair<String, Double> p : candI) {
 				ArrayList<String> setNameTmp = new ArrayList<>(recovered);
 				setNameTmp.add(p.getKey());
+				double pTogether = getScoreTogether(setNameTmp);
+				tmpPTogether.add(pTogether);
+				tmpSetNameTmp.add(setNameTmp);
+			}
+
+			int ii = 0;
+			for (Pair<String, Double> p : candI) {
+
 				ArrayList<Double> setScoreTmp = new ArrayList<>(setScore);
 				setScoreTmp.add(p.getValue());
+//				Normalization.normalize(setScoreTmp);
 
-				double pTogether = getScoreTogether(setNameTmp);
+				double pTogether = tmpPTogether.get(ii);
 				double sc = getConfidentScore(setScoreTmp, pTogether);
-				allPosssibleRecover.add(new Pair<>(setNameTmp, sc));
+
+				allPosssibleRecover.add(new Pair<>(tmpSetNameTmp.get(ii), sc));
+				++ii;
 			}
 		}
 		allPosssibleRecover.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
