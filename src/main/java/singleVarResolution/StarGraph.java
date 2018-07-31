@@ -127,4 +127,6 @@ public class StarGraph {
 			res.append(e.toString()).append("\n");
 		return res.toString();
 	}
+
+	// TODO - hashCode + Equals
 }

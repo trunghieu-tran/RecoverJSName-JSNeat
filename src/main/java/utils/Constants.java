@@ -8,7 +8,7 @@ package utils;
  */
 public class Constants {
 	public static final int numberOfThread = 20;
-	public static final boolean enableFuncNameEdge = true;
+	public static final boolean enableFuncNameEdge = false;
 	public static double THRESHOLD = 0.8;
 	public static int TOPK_RESULT = 30;
 	public static int TOPK_BEAMSEARCH = 30;
