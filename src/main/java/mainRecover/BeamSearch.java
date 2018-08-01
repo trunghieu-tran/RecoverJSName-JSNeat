@@ -121,15 +121,15 @@ public class BeamSearch {
 
 			int ii = 0;
 			Normalization.normalize(tmpPTogether);
+
 			for (Pair<String, Double> p : candI) {
 
 				ArrayList<Double> setScoreTmp = new ArrayList<>(setScore);
 				setScoreTmp.add(p.getValue());
-//				Normalization.normalize(setScoreTmp);
 
 				double pTogether = tmpPTogether.get(ii);
-//				double sc = getConfidentScore(setScoreTmp, pTogether);
-				double sc = pTogether;
+				double sc = getConfidentScore(setScoreTmp, pTogether);
+//				double sc = pTogether;
 				allPosssibleRecover.add(new Pair<>(tmpSetNameTmp.get(ii), sc));
 				++ii;
 			}

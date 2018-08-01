@@ -201,10 +201,16 @@ public class SGData {
 		int cTotal = 1;
 
 		int nTrainFunctions = 0;
+		int stc = 200000;
 		for ( File dir : root.listFiles()) {
 			nTrainFunctions += dir.listFiles().length;
+			if (nTrainFunctions > stc) {
+				System.out.println("Listed " + Integer.toString(nTrainFunctions) + " directories");
+				stc += 200000;
+			}
 		}
 
+		System.out.println(nTrainFunctions);
 		for ( File dir : root.listFiles())
 		{
 			++cTotal;
@@ -254,7 +260,7 @@ public class SGData {
 		long sumEdge = 0;
 		System.out.println("nFunction size = " + Integer.toString(cTotal));
 		System.out.println("nName unique = " + Integer.toString(nameSet.size()));
-		System.out.println("SgSET size = " + Integer.toString(sgSet.size()));
+		System.out.println("nStargraph  = " + Integer.toString(sgSet.size()));
 		for (StarGraph sg : sgSet)
 			sumEdge += sg.getSizeGraph();
 		System.out.println("Total edges = " + Long.toString(sumEdge));

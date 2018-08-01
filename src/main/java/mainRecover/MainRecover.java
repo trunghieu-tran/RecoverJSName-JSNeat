@@ -182,8 +182,7 @@ public class MainRecover {
 		private double getCombinationScore(double scTask, double scItself, int sgsize) {
 			double weightTask = 1.0 / sgsize;
 			double weightItself = 1.0 - weightTask;
-//			weightTask = 0.5;
-//			weightItself = 0.5;
+//			weightTask = 0.5;	weightItself = 0.5;
 			return scTask * weightTask + scItself * weightItself;
 		}
 
