@@ -32,6 +32,7 @@ public class MainRecover {
 	private static String InputData2 = "/home/nmt140230/RecoverJSName/GitTestData/"; //  15k sg ~ 5.3k function
 //	private static String InputData2 = "/home/nmt140230/RecoverJSName/TestRun/";
 	private static String TrainingData2 = "/home/nmt140230/RecoverJSName/GitTrainData"; // 2.1M sg ~ 652k function
+	private static String TrainingFileList = "./resources/tmp/trainingFileList.txt";
 	private static String cacheFolder = "./resources/cache/";
 
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
@@ -131,7 +132,7 @@ public class MainRecover {
 
 	public void loadTrainingData() {
 		startClock();
-		sgData.getData(TrainingData2, -1);
+		sgData.getData(TrainingData2, -1, TrainingFileList, true);
 		endClock("LoadTraining time: ");
 
 		startClock();
@@ -489,10 +490,10 @@ public class MainRecover {
 	public static void main(String[] args) {
 		MainRecover mr = new MainRecover();
 		mr.loadTrainingData();
-		mr.loadInput();
-		mr.analyzingTrainingVsTesting();
-		mr.process();
-		mr.write_RuningTime();
-		mr.write_caching();
+//		mr.loadInput();
+//		mr.analyzingTrainingVsTesting();
+//		mr.process();
+//		mr.write_RuningTime();
+//		mr.write_caching();
 	}
 }

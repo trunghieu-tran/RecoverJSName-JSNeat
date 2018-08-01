@@ -13,6 +13,7 @@ import association.AssociationVarFunctionName;
 import mainRecover.FunctionInfo;
 import parser.MainParser;
 import utils.Constants;
+import utils.FileIO;
 
 public class SGData {
 	private static int numberOfThread = Constants.numberOfThread;
@@ -30,6 +31,7 @@ public class SGData {
 
 	int numOfFunction = -1;
 	int numOfTestFunction = -1;
+	boolean usingCacheFileList = false;
 
 	private String getFunctionName(String str) {
 		String[] tmp = str.split("_");
@@ -112,10 +114,10 @@ public class SGData {
 		System.out.println("Number of Stargraph in testing functions = " + Integer.toString(cntSg));
 	}
 	
-	public void getData(String path, int numOfFunction) {
-		System.out.println("getData sgData");
+	public void getData(String path, int numOfFunction, String trainFileList, boolean usingCacheFileList) {
+		System.out.println("Started getData training");
 		this.numOfFunction = numOfFunction;
-
+		this.usingCacheFileList = usingCacheFileList;
 		MainParser main = new MainParser();
 		//Get data directly from parser
 		if ( path.isEmpty() ) {
@@ -129,7 +131,7 @@ public class SGData {
 		}
 		//Read data from previous parse
 		else { 
-			readDataFromFile_MultiThread(path);
+			readDataFromFile_MultiThread(path, trainFileList);
 		}
 	}
 
@@ -146,6 +148,7 @@ public class SGData {
 			try {
 				//for each file name = variable Name
 				String path = f.getCanonicalPath();
+//				System.out.println("Path = " + path);
 				String functionName = "", varName = "";
 				if (path.indexOf("\\") != -1) {
 					functionName = path.substring(path.indexOf("Data") + 5, path.lastIndexOf("\\"));
@@ -185,56 +188,106 @@ public class SGData {
 
 				sg = new StarGraph(edges, varName + "-" + hashCode);
 				br.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+//				e.printStackTrace();
 			}
 		}
 	}
 
-	private void readDataFromFile_MultiThread(String sgDir) {
+	private void readDataFromFile_MultiThread(String sgDir, String trainFileList) {
 		System.out.println("readDataFromFile_MultiThread");
 		int cnt = 0;
 		ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 		ArrayList<ReadingGraph> rgs = new ArrayList<>();
+		ArrayList<File[]> fileList = new ArrayList<>();
+		StringBuilder sbFileList = new StringBuilder();
+		ArrayList<File> currFile = new ArrayList<>();
 
 		File root = new File(sgDir);
-		int cTotal = 1;
 
+		int cTotal = 1;
 		int nTrainFunctions = 0;
-		int stc = 200000;
-		for ( File dir : root.listFiles()) {
-			nTrainFunctions += dir.listFiles().length;
-			if (nTrainFunctions > stc) {
-				System.out.println("Listed " + Integer.toString(nTrainFunctions) + " directories");
-				stc += 200000;
+
+		if (!usingCacheFileList) {
+			int stc = 200000;
+			for (File dir : root.listFiles()) {
+				fileList.add(dir.listFiles());
+
+				nTrainFunctions += fileList.get(fileList.size() - 1).length;
+
+				if (nTrainFunctions > stc) {
+					System.out.print(" >>> " + Integer.toString(nTrainFunctions));
+					stc += 200000;
+				}
+			}
+		} else {
+			String fileListStr = FileIO.readStringFromFile(trainFileList);
+			String[] filesSplit = fileListStr.split("\n");
+			int last = 1;
+			int stc = 200000;
+			for (String line : filesSplit) {
+				try {
+					String[] p = line.split(" ");
+					File f = new File(p[0]);
+					int numOfFunc = Integer.parseInt(p[1]);
+
+					if (numOfFunc != last) {
+						File[] currF = currFile.toArray(new File[currFile.size()]);
+						fileList.add(currF);
+
+						currFile = new ArrayList<>();
+						currFile.add(f);
+						last = numOfFunc;
+					} else {
+						currFile.add(f);
+					}
+
+					if (++nTrainFunctions > stc) {
+						System.out.print(" >>> " + Integer.toString(nTrainFunctions));
+						stc += 200000;
+					}
+				} catch (Exception e) {
+
+				}
+			}
+			if (currFile.size() > 0) {
+				File[] currF = currFile.toArray(new File[currFile.size()]);
+				fileList.add(currF);
 			}
 		}
-
+		System.out.println();
 		System.out.println(nTrainFunctions);
-		for ( File dir : root.listFiles())
+		System.out.println(fileList.size());
+		for (File[] dir : fileList)
 		{
 			++cTotal;
-//			if (cTotal % 10 == 0) continue;
+			for (File f : dir) {
+				try {
+					if (!usingCacheFileList)
+						sbFileList.append(f.getCanonicalPath()).append(" ").append(cTotal).append("\n");
 
- 			for (File f : dir.listFiles()) {
-			    try {
-				    ReadingGraph rg = new ReadingGraph(f);
-				    executor.execute(rg);
-				    rgs.add(rg);
+					ReadingGraph rg = new ReadingGraph(f);
+					executor.execute(rg);
+					rgs.add(rg);
 
-				    if (++cnt % 100000 == 0)
-					    System.out.println("[" + Integer.toString(cnt) + "/" + Integer.toString(nTrainFunctions) + "] >>> LOADED: " + f.getCanonicalPath());
+					if (++cnt % 100000 == 0)
+						System.out.print(" >>> [" + Integer.toString(cnt) + "/" + Integer.toString(nTrainFunctions) + "]");
 
-				    if (cnt == numOfFunction)
-					    break;
-			    } catch (IOException e) {
-				    e.printStackTrace();
-			    }
+					if (cnt == numOfFunction)
+						break;
+				}
+				catch (Exception e) {
+
+				}
 			}
 			if (cnt == numOfFunction)
 				break;
 		}
-
+		System.out.println();
+		if (!usingCacheFileList) {
+			FileIO.writeStringToFile(trainFileList, sbFileList.toString());
+			System.out.println("DONE Generated training fileList at : " + trainFileList);
+		}
 		// Wait until all threads are finish
 		executor.shutdown();
 		try {
@@ -248,6 +301,7 @@ public class SGData {
 
 		// Merge data
 		for (ReadingGraph rg : rgs) {
+			if (rg.sg == null) continue;
 			sgSet.add(rg.sg);
 			for (String key : rg.mapTrainFunctionNameLocal.keySet()) {
 				mapTrainFunctionName.put(key, mapTrainFunctionName.getOrDefault(key, 0) + 1);

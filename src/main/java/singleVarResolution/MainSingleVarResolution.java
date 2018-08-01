@@ -23,6 +23,7 @@ public class MainSingleVarResolution {
 	private static String data = "/home/nmt140230/RecoverJSName/StarGraphData"; // 7.9M
 	private static String tmpOutput = "./resources/tmp/tmp.txt";
 	private static String tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt";
+	private static String TrainingFileList = "./resources/tmp/trainingFileList.txt";
 
 	private SGData sgData;
 	private int countDone = 0;
@@ -73,7 +74,7 @@ public class MainSingleVarResolution {
 	public void loadData() {
 		System.out.println("Loading corpus...");
 		sgData = new SGData();
-		sgData.getData(data, 1000000);
+		sgData.getData(data, 1000000,TrainingFileList, false);
 		sgData.IndexingGraphByEdges();
 	}
 

@@ -3,6 +3,7 @@ package mainRecover;
 import association.AssociationCalculator;
 import association.AssociationMiner;
 import javafx.util.Pair;
+import utils.Constants;
 import utils.FileIO;
 import utils.Normalization;
 
@@ -128,8 +129,11 @@ public class BeamSearch {
 				setScoreTmp.add(p.getValue());
 
 				double pTogether = tmpPTogether.get(ii);
-				double sc = getConfidentScore(setScoreTmp, pTogether);
-//				double sc = pTogether;
+				double sc = pTogether;
+
+				if (!Constants.usingOnlyVarVarOnBS)
+					 sc = getConfidentScore(setScoreTmp, pTogether);
+
 				allPosssibleRecover.add(new Pair<>(tmpSetNameTmp.get(ii), sc));
 				++ii;
 			}
