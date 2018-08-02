@@ -199,14 +199,19 @@ public class MainRecover {
 				// Itself
 				ArrayList<Pair<String, Double>> res_itself = sf.getCandidateListForStarGraph(sg);
 
+//              Enable this code if using only Itself
+//				res.addAll(res_itself);
+
 				// Task
 				Map<String, Double> res_func = new HashMap<>();
 				for (String str : sgData.nameSet) {
-					double sc = sgData.varFuncAssociation.getAsscociationScore(str, fi.getFuncName());
+					double sc = sgData.varFuncAssociation.getAsscociationScore(str, fi.getFuncName(), Constants.usingTokenizedFunctionName);
 					if (sc > 0) {
 						res_func.put(str, sc);
 					}
 				}
+
+//				Enable this code if using only Task
 //				for (String key : res_func.keySet()) {
 //					res.add(new Pair<>(key, res_func.get(key)));
 //				}

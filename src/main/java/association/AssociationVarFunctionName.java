@@ -1,5 +1,9 @@
 package association;
 
+import utils.Constants;
+import utils.Tokenization;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,19 +45,42 @@ public class AssociationVarFunctionName {
 		}
 	}
 
-	public double getAsscociationScore(String var, String func) {
-		int code = (var + ":" + func).hashCode();
-		int codeV = var.hashCode();
-		int codeF = func.hashCode();
+	public void addInfo(String varName, String functionN, boolean usingToken) {
+		addFuncName(functionN);
+		addVarName(varName);
+		addVarFuncName(varName, functionN);
 
-		if (!varNameCount.containsKey(codeV) || !funcNameCount.containsKey(codeF) || !varFuncCount.containsKey(code)) return 0.0;
+		if (usingToken) {
+			ArrayList<String> tokens = Tokenization.split(functionN);
+			for (String str : tokens) {
+				addVarName(str);
+				addVarFuncName(varName, str);
+			}
+		}
+	}
 
-		int n_vf = varFuncCount.get(code);
-		int n_v = varNameCount.get(codeV);
-		int n_f = funcNameCount.get(codeF);
+	public double getAsscociationScore(String var, String func, boolean usingToken) {
+		if (!usingToken) {
+			int code = (var + ":" + func).hashCode();
+			int codeV = var.hashCode();
+			int codeF = func.hashCode();
 
-		double mau = n_v + n_f - n_vf;
-		if (mau == 0) return 0.0;
-		return (double) n_vf / mau;
+			if (!varNameCount.containsKey(codeV) || !funcNameCount.containsKey(codeF) || !varFuncCount.containsKey(code))
+				return 0.0;
+
+			int n_vf = varFuncCount.get(code);
+			int n_v = varNameCount.get(codeV);
+			int n_f = funcNameCount.get(codeF);
+
+			double mau = n_v + n_f - n_vf;
+			if (mau == 0) return 0.0;
+			return (double) n_vf / mau;
+		} else {
+			ArrayList<String> tokens = Tokenization.split(func);
+			double res = getAsscociationScore(var, func, false);
+			for (String str : tokens)
+				res = Math.max(res, getAsscociationScore(var, str, false));
+			return res;
+		}
 	}
 }

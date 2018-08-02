@@ -182,9 +182,7 @@ public class SGData {
 					}
 				}
 				// Add association between varname and functionname
-				varFuncAssociationLocal.addFuncName(functionN);
-				varFuncAssociationLocal.addVarName(varName);
-				varFuncAssociationLocal.addVarFuncName(varName, functionN);
+				varFuncAssociationLocal.addInfo(varName, functionN, Constants.usingTokenizedFunctionName);
 
 				sg = new StarGraph(edges, varName + "-" + hashCode);
 				br.close();
