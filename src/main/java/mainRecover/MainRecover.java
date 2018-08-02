@@ -271,9 +271,6 @@ public class MainRecover {
 				ExecutorService executor = Executors.newFixedThreadPool(numberOfThread);
 				Set<ProcessingOneFunction> running = new HashSet<>();
 				for (FunctionInfo fi : currFi) {
-					// TODO - just test
-					if (fi.getStarGraphsList().size() == 1) continue;
-
 					ProcessingOneFunction pf = new ProcessingOneFunction(fi, cnt++);
 					executor.execute(pf);
 					running.add(pf);
@@ -490,10 +487,10 @@ public class MainRecover {
 	public static void main(String[] args) {
 		MainRecover mr = new MainRecover();
 		mr.loadTrainingData();
-//		mr.loadInput();
-//		mr.analyzingTrainingVsTesting();
-//		mr.process();
-//		mr.write_RuningTime();
-//		mr.write_caching();
+		mr.loadInput();
+		mr.analyzingTrainingVsTesting();
+		mr.process();
+		mr.write_RuningTime();
+		mr.write_caching();
 	}
 }
