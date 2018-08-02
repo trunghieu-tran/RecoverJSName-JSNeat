@@ -58,7 +58,7 @@ public class MainParser {
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		demo.generateFileList("../GithubData");
+		demo.generateFileList("../CheckDupData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
 //		demo.parseForest("");
 //		demo.parseAssociation("");
@@ -489,7 +489,7 @@ public class MainParser {
 	        String sCurrentLine;
 	        while ((sCurrentLine = br.readLine()) != null)
 	        {
-	            contentBuilder.append(sCurrentLine).append("\n");
+	            contentBuilder.append(sCurrentLine);
 	        }
 	    }
 	    catch (IOException e)
