@@ -12,5 +12,6 @@ public class Constants {
 	public static final double THRESHOLD = 0.8;
 	public static final int TOPK_RESULT = 30;
 	public static final int TOPK_BEAMSEARCH = 30;
-	public static final boolean usingOnlyVarVarOnBS = false;
+	public static final boolean usingOnlyVarVarOnBS = true;
+	public static final boolean usingNormalizationAllPair = true;
 }

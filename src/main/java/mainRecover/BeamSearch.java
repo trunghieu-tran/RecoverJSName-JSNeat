@@ -30,6 +30,10 @@ public class BeamSearch {
 	// a, a1 -> score
 	private AssociationCalculator ac;
 	private HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
+
+	private HashMap<Pair<String, String>, Double> allAssociation = new HashMap<>();
+
+
 	public long totalAss = 0;
 	public long totalAssCounted = 0;
 	private String fileOutAssociation;
@@ -40,6 +44,35 @@ public class BeamSearch {
 		this.ac = ac;
 		this.fileOutAssociation = file;
 		updateMapVarNamevsScore();
+		initializeAllAssociation();
+	}
+
+	private void initializeAllAssociation() {
+		ArrayList<Double> vals = new ArrayList<>();
+		for (int i = 0; i < candidateLists.size(); ++i)
+			for (int j = i + 1; j < candidateLists.size(); ++j) {
+				for (Pair<String, Double> p : candidateLists.get(i))
+					for (Pair<String, Double> p2 : candidateLists.get(j)) {
+						String key1 = p.getKey();
+						String key2 = p2.getKey();
+
+						Pair<String, String> tmp1 = new Pair<>(key1, key2);
+						Pair<String, String> tmp2 = new Pair<>(key2, key1);
+						double as = ac.getAssocScore(key1, key2, "");
+						if (as > 0) {
+							vals.add(as);
+							allAssociation.put(tmp1, as);
+							allAssociation.put(tmp2, as);
+						}
+					}
+			}
+
+		HashMap<Double, Double> mapSc = Normalization.normalizeMap(vals);
+		for (Pair<String, String> p : allAssociation.keySet()) {
+			double oldSc = allAssociation.get(p);
+			if (mapSc.containsKey(oldSc))
+				allAssociation.put(p, mapSc.get(oldSc));
+		}
 	}
 
 	private void updateMapVarNamevsScore() {
@@ -77,7 +110,13 @@ public class BeamSearch {
 		for (int i = 0; i < len; ++i)
 			for (int j = i + 1; j < len; ++j) {
 				String rel = "" ; // TODO - find rel based on their indexers
-				double tmp = ac.getAssocScore(setName.get(i), setName.get(j), rel);
+				double tmp = 0.0;
+
+				if (Constants.usingNormalizationAllPair)
+					tmp = allAssociation.getOrDefault(new Pair<>(setName.get(i), setName.get(j)), 0.0);
+				else
+					tmp = ac.getAssocScore(setName.get(i), setName.get(j), rel);
+
 				res = Math.max(res, tmp);
 				cache_Association.put(new Pair<>(setName.get(i), setName.get(j)), tmp);
 				sum += tmp;
@@ -121,7 +160,9 @@ public class BeamSearch {
 			}
 
 			int ii = 0;
-			Normalization.normalize(tmpPTogether);
+
+			if (!Constants.usingNormalizationAllPair)
+				Normalization.normalize(tmpPTogether);
 
 			for (Pair<String, Double> p : candI) {
 
