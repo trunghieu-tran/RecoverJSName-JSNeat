@@ -90,11 +90,8 @@ public class AssociationCalculator {
 		if (n1 * n2 * n3 == 0) return 0.0;
 		int n1and2 = 0;
 		if ( flag.equals("indirect") ) {
-			if ( var2Hash.containsKey((var1+var2).hashCode())) {
-				n1and2 = var2Hash.getOrDefault((var1+var2).hashCode(), 0);
-			} else if ( var2Hash.containsKey((var2+var1).hashCode())) {
-				n1and2 = var2Hash.getOrDefault((var2+var1).hashCode(), 0);
-			}
+			n1and2 = Math.max(var2Hash.getOrDefault(var2+var1, 0), 
+					var2Hash.getOrDefault(var1+var2, 0));
 		}
 		if ( n1and2 == 0 ) { return 0; }
 		int n123 = 0;
