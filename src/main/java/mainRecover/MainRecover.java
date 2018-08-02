@@ -195,35 +195,43 @@ public class MainRecover {
 			int cc = 0;
 			for (StarGraph sg : fi.getStarGraphsList()) {
 				ArrayList<Pair<String, Double>> res = new ArrayList<>();
-
+				ArrayList<Pair<String, Double>> res_itself;
+				Map<String, Double> res_func = new HashMap<>();
 				// Itself
-				ArrayList<Pair<String, Double>> res_itself = sf.getCandidateListForStarGraph(sg);
+				if (Constants.singleVar)
+					res_itself = sf.getCandidateListForStarGraph(sg);
 
 //              Enable this code if using only Itself
-//				res.addAll(res_itself);
+				if (Constants.singleVar && !Constants.task)
+					res.addAll(res_itself);
 
 				// Task
-				Map<String, Double> res_func = new HashMap<>();
-				for (String str : sgData.nameSet) {
-					double sc = sgData.varFuncAssociation.getAsscociationScore(str, fi.getFuncName(), Constants.usingTokenizedFunctionName);
-					if (sc > 0) {
-						res_func.put(str, sc);
+				if (Constants.task) {
+					for (String str : sgData.nameSet) {
+						double sc = sgData.varFuncAssociation.getAsscociationScore(str, fi.getFuncName(), Constants.usingTokenizedFunctionName);
+						if (sc > 0) {
+							res_func.put(str, sc);
+						}
 					}
 				}
 
 //				Enable this code if using only Task
-//				for (String key : res_func.keySet()) {
-//					res.add(new Pair<>(key, res_func.get(key)));
-//				}
+				if (Constants.task && !Constants.singleVar) {
+					for (String key : res_func.keySet()) {
+						res.add(new Pair<>(key, res_func.get(key)));
+					}
+				}
 
 				// Merge itself + task
-				for (Pair<String, Double> p : res_itself) {
-					double scFunc = res_func.getOrDefault(p.getKey(), 0.0);
+				if (Constants.singleVar && Constants.task) {
+					for (Pair<String, Double> p : res_itself) {
+						double scFunc = res_func.getOrDefault(p.getKey(), 0.0);
 
-					double newScore = getCombinationScore(scFunc, p.getValue(), sg.getSizeGraph());
+						double newScore = getCombinationScore(scFunc, p.getValue(), sg.getSizeGraph());
 
-					if (newScore > 0)
-						res.add(new Pair<>(p.getKey(), newScore));
+						if (newScore > 0)
+							res.add(new Pair<>(p.getKey(), newScore));
+					}
 				}
 
 				// Sort result
@@ -231,7 +239,10 @@ public class MainRecover {
 				res.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 				ArrayList<String> res2 = new ArrayList<>();
-				for (Pair<String, Double> p : res) res2.add(p.getKey());
+				for (Pair<String, Double> p : res) {
+					res2.add(p.getKey());
+					if (res2.size() == TOPK * 3) break;
+				}
 
 				resolvedVarName_withoutBS.put(sg, res2);
 
@@ -239,7 +250,8 @@ public class MainRecover {
 				idToSG.put(cc++, sg);
 			}
 
-			beamSearchInvocation(tmp, idToSG);
+			if (Constants.multiVar)
+				beamSearchInvocation(tmp, idToSG);
 
 			isSolved = true;
 			System.out.print(">");
