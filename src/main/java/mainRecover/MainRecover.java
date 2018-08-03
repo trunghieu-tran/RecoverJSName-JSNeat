@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import association.AssociationCalculator;
+import association.TokenAssociationCalculator;
 import javafx.util.Pair;
 import singleVarResolution.SGData;
 import singleVarResolution.SimilarGraphFinder;
@@ -54,6 +55,7 @@ public class MainRecover {
 	private static String asscociationData = "/home/nmt140230/RecoverJSName/HashAssocData";
 	private static SGData sgData = new SGData();
 	private static AssociationCalculator ac;
+	private static TokenAssociationCalculator tokAc;
 	private static SimilarGraphFinder sf;
 	private static HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
 	private Set<FunctionInfo> functionList;
@@ -141,7 +143,12 @@ public class MainRecover {
 
 		startClock();
 		try {
-			ac = new AssociationCalculator("indirect", asscociationData, -1);
+			if ( Constants.usingTokenizedVarName ) {
+				tokAc = new TokenAssociationCalculator("indirect", asscociationData, -1);
+			}
+			else {
+				ac = new AssociationCalculator("indirect", asscociationData, -1);
+			}
 			System.out.println("LOADED Association score");
 		} catch (Exception e) {
 			System.out.println("ERROR Association constructor");
@@ -163,7 +170,7 @@ public class MainRecover {
 		}
 
 		private void beamSearchInvocation(ArrayList<ArrayList<Pair<String, Double>>> tmp, HashMap<Integer, StarGraph> idToSG) {
-			BeamSearch bs = new BeamSearch(tmp, ac, cacheFolder + Integer.toString(cnt) + ".txt");
+			BeamSearch bs = new BeamSearch(tmp, ac, tokAc, cacheFolder + Integer.toString(cnt) + ".txt");
 
 			ArrayList<ArrayList<String>> resolvedWithBs = bs.getTopKRecoveringResult(TOPK_BEAMSEARCH);
 
