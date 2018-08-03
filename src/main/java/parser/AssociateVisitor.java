@@ -1,6 +1,8 @@
 package parser;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.mozilla.javascript.ast.NodeVisitor;
 public class AssociateVisitor implements NodeVisitor{
 	String path;
 	String sgPath;
+	public ArrayList<File> fileList = new ArrayList<>();
 	int anonymousCount = 0; //Handle Anonymous Function
 	public AssociateVisitor(String path) {
 		this.path = path;
@@ -74,6 +77,8 @@ public class AssociateVisitor implements NodeVisitor{
 //				}
 				//fv.print();
 				fv.printAsso(dir);
+				File assoFile = new File(dir + "/assoc.txt");
+				fileList.add(assoFile);
 			} 
 			catch (IOException e) {
 				e.printStackTrace();

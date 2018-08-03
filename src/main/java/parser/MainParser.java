@@ -58,10 +58,10 @@ public class MainParser {
 
 	public static void main(String[] args) throws Exception {
 		MainParser demo = new MainParser();
-		demo.generateFileList("../CheckDupData");
+//		demo.generateFileList("../GithubData");
 		//demo.generateTestSetListJSNice("../JSNiceData");
 //		demo.parseForest("");
-//		demo.parseAssociation("");
+		demo.parseAssociation("train");
 		//demo.parseBaker();
 		//		demo.parseTestSet();
 		//		demo.parseTrainSetTM();
@@ -69,6 +69,7 @@ public class MainParser {
 	}
 
 	public void parseAssociation(String flag) throws IOException {
+		
 		String fileType = "", output = "";
 		if ( flag.equals("train")) {
 			fileType = "gitTrainFileList.txt";
@@ -80,6 +81,7 @@ public class MainParser {
 			fileType = "test.txt";
 			output = "../debugAssoc";
 		}
+		ArrayList<File> assocFiles = new ArrayList<>();
 		File fileListing = new File(fileList + "/" + fileType);
 		if ( fileListing.exists() )
 		{
@@ -88,7 +90,7 @@ public class MainParser {
 			for ( String str: lines)
 			{
 				count++;
-				//if ( count > 10 ) break;
+				if ( count > 20 ) break;
 				if ( count % 500 == 0 ) {
 					System.out.println("Processed " + count + " files");
 				}
@@ -111,20 +113,28 @@ public class MainParser {
 					}
 					path = "/" + projectName + "_" + fileName; 
 					path = output + path;
-					//					path = "../TestRun" + path;
 					AssociateVisitor ascVis = new AssociateVisitor(path);
 					AstRoot rootNode = factory.parse(strReader, null, 0);
 					rootNode.visit(ascVis);
+					assocFiles.addAll(ascVis.fileList);
 				}
 
 				catch (Exception e)
 				{
 					//System.out.println("Exception :" + e.getMessage());
-					//e.printStackTrace();
+					e.printStackTrace();
 					continue;
 				}
 			}
 		}
+		//TODO: record file list to a text file
+		File fileToWrite = new File (assocTrainDir + "/assocFileList.txt");
+		FileWriter fw = new FileWriter(fileToWrite);
+		PrintWriter pw = new PrintWriter(fw);
+		for ( File f: assocFiles ) {
+			pw.println(f.getCanonicalPath());
+		}
+		pw.close();
 	}
 
 	public void generateFileList (String filePath) throws Exception
