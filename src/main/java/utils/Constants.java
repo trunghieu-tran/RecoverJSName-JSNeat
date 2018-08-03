@@ -15,7 +15,8 @@ public class Constants {
 	public static final boolean usingOnlyVarVarOnBS = true;
 	public static final boolean usingNormalizationAllPair = true;
 	public static final boolean usingTokenizedFunctionName = false;
-
+	public static final boolean usingTokenizedVarName = true;
+	
 	public static final boolean task = false;
 	public static final boolean singleVar = true;
 	public static final boolean multiVar = true;

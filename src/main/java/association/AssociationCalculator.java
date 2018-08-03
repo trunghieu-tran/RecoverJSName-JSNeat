@@ -26,6 +26,14 @@ public class AssociationCalculator {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * 
+	 * @param flag: "indirect"
+	 * @param path
+	 * @param numOfHash: -1
+	 * @throws IOException
+	 */
 	public AssociationCalculator(String flag, String path, int numOfHash) throws IOException {
 		this.flag = flag;
 		this.path = path;

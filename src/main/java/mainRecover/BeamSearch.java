@@ -2,11 +2,13 @@ package mainRecover;
 
 import association.AssociationCalculator;
 import association.AssociationMiner;
+import association.TokenAssociationCalculator;
 import javafx.util.Pair;
 import utils.Constants;
 import utils.FileIO;
 import utils.Normalization;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -29,6 +31,7 @@ public class BeamSearch {
 	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
 	// a, a1 -> score
 	private AssociationCalculator ac;
+	private TokenAssociationCalculator tokAc;
 	private HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
 
 	private HashMap<Pair<String, String>, Double> allAssociation = new HashMap<>();
@@ -42,6 +45,14 @@ public class BeamSearch {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
 		this.ac = ac;
+		if ( Constants.usingTokenizedVarName ) {
+			try {
+				tokAc = new TokenAssociationCalculator("indirect", "../HashAssocData", -1);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		this.fileOutAssociation = file;
 		updateMapVarNamevsScore();
 		initializeAllAssociation();
@@ -58,7 +69,12 @@ public class BeamSearch {
 
 						Pair<String, String> tmp1 = new Pair<>(key1, key2);
 						Pair<String, String> tmp2 = new Pair<>(key2, key1);
-						double as = ac.getAssocScore(key1, key2, "");
+						double as = 0;
+						if ( Constants.usingTokenizedVarName) {
+							as = tokAc.getAssocScore(key1, key2, "");
+						} else {
+							as = ac.getAssocScore(key1, key2, "");
+						}
 						if (as > 0) {
 							vals.add(as);
 							allAssociation.put(tmp1, as);
@@ -114,9 +130,13 @@ public class BeamSearch {
 
 				if (Constants.usingNormalizationAllPair)
 					tmp = allAssociation.getOrDefault(new Pair<>(setName.get(i), setName.get(j)), 0.0);
-				else
-					tmp = ac.getAssocScore(setName.get(i), setName.get(j), rel);
-
+				else {
+					if ( Constants.usingTokenizedVarName) {
+						tmp = tokAc.getAssocScore(setName.get(i), setName.get(j), rel);
+					} else {
+						tmp = ac.getAssocScore(setName.get(i), setName.get(j), rel);
+					}
+				}
 				res = Math.max(res, tmp);
 				cache_Association.put(new Pair<>(setName.get(i), setName.get(j)), tmp);
 				sum += tmp;
