@@ -1,14 +1,10 @@
 package mainRecover;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
-import association.AssociationCalculator;
-import association.TokenAssociationCalculator;
 import javafx.util.Pair;
 import singleVarResolution.SGData;
 import singleVarResolution.SimilarGraphFinder;
@@ -31,7 +27,6 @@ public class MainRecover {
 	private static String TrainingData = "/home/nmt140230/RecoverJSName/StarGraphData"; // 2.1M function ~ 7.9 M sg
 
 	private static String InputData2 = "/home/nmt140230/RecoverJSName/GitTestData/"; //  15k sg ~ 5.3k function
-//	private static String InputData2 = "/home/nmt140230/RecoverJSName/TestRun/";
 	private static String TrainingData2 = "/home/nmt140230/RecoverJSName/GitTrainData"; // 2.1M sg ~ 652k function
 	private static String TrainingFileList = "./resources/tmp/trainingFileList.txt";
 	private static String cacheFolder = "./resources/cache/";
@@ -54,7 +49,6 @@ public class MainRecover {
 
 	private static String asscociationData = "/home/nmt140230/RecoverJSName/HashAssocData";
 	private static SGData sgData = new SGData();
-	private static TokenAssociationCalculator tokAc;
 	private static SimilarGraphFinder sf;
 	private static HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
 	private Set<FunctionInfo> functionList;
@@ -135,25 +129,13 @@ public class MainRecover {
 		startClock();
 		sgData.getData(TrainingData2, -1, TrainingFileList, true);
 		endClock("LoadTraining time: ");
+
 		System.out.println(sgData.varVarAssociation.showInfo());
+		System.out.println(sgData.tokenVarVarAssociation.showInfo());
 
 		startClock();
 		sgData.IndexingGraphByEdges();
 		endClock("Indexing graph time: ");
-
-//		startClock();
-//		try {
-//			if ( Constants.usingTokenizedVarName ) {
-//				tokAc = new TokenAssociationCalculator("indirect", asscociationData, -1);
-//			}
-//			else {
-//				ac = new AssociationCalculator("indirect", asscociationData, -1);
-//			}
-//			System.out.println("LOADED Association score");
-//		} catch (Exception e) {
-//			System.out.println("ERROR Association constructor");
-//		}
-//		endClock("Load association time: ");
 	}
 
 	public class ProcessingOneFunction implements Runnable {
@@ -170,7 +152,7 @@ public class MainRecover {
 		}
 
 		private void beamSearchInvocation(ArrayList<ArrayList<Pair<String, Double>>> tmp, HashMap<Integer, StarGraph> idToSG) {
-			BeamSearch bs = new BeamSearch(tmp, sgData.varVarAssociation, tokAc, cacheFolder + Integer.toString(cnt) + ".txt");
+			BeamSearch bs = new BeamSearch(tmp, sgData.varVarAssociation, sgData.tokenVarVarAssociation, cacheFolder + Integer.toString(cnt) + ".txt");
 
 			ArrayList<ArrayList<String>> resolvedWithBs = bs.getTopKRecoveringResult(TOPK_BEAMSEARCH);
 

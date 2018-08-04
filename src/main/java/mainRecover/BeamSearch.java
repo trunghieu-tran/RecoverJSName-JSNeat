@@ -1,15 +1,12 @@
 package mainRecover;
 
-import association.AssociationCalculator;
-import association.AssociationMiner;
+import association.AssociationTokenVarVar;
 import association.AssociationVarVar;
-import association.TokenAssociationCalculator;
 import javafx.util.Pair;
 import utils.Constants;
 import utils.FileIO;
 import utils.Normalization;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -32,7 +29,7 @@ public class BeamSearch {
 	private HashMap<Pair<Integer, String>, Double> mapVarNamevsScore = new HashMap<>();
 	// a, a1 -> score
 	private AssociationVarVar ac;
-	private TokenAssociationCalculator tokAc;
+	private AssociationTokenVarVar tokAc;
 	private HashMap<Pair<String, String>, Double> cache_Association = new HashMap<>();
 
 	private HashMap<Pair<String, String>, Double> allAssociation = new HashMap<>();
@@ -42,7 +39,7 @@ public class BeamSearch {
 	public long totalAssCounted = 0;
 	private String fileOutAssociation;
 
-	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationVarVar ac, TokenAssociationCalculator tokAc, String file) {
+	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationVarVar ac, AssociationTokenVarVar tokAc, String file) {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
 		this.ac = ac;

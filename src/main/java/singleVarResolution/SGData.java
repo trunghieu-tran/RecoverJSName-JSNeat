@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import association.AssociationTokenVarVar;
 import association.AssociationVarFunctionName;
 import association.AssociationVarVar;
 import mainRecover.FunctionInfo;
@@ -30,6 +31,8 @@ public class SGData {
 
 	public AssociationVarFunctionName varFuncAssociation = new AssociationVarFunctionName();
 	public AssociationVarVar varVarAssociation = new AssociationVarVar();
+	public AssociationTokenVarVar tokenVarVarAssociation = new AssociationTokenVarVar();
+
 
 	int numOfFunction = -1;
 	int numOfTestFunction = -1;
@@ -268,7 +271,10 @@ public class SGData {
 					try {
 						String[] tmp1 = dir[i].getName().split("\\.");
 						String[] tmp2 = dir[j].getName().split("\\.");
-						varVarAssociation.addInfo(tmp1[0], tmp2[0], "");
+						if (Constants.usingTokenizedVarName)
+							tokenVarVarAssociation.addInfo(tmp1[0], tmp2[0], "");
+						else
+							varVarAssociation.addInfo(tmp1[0], tmp2[0], "");
 					} catch (Exception e) {
 
 					}
