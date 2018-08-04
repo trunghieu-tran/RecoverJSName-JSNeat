@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import association.AssociationVarFunctionName;
+import association.AssociationVarVar;
 import mainRecover.FunctionInfo;
 import parser.MainParser;
 import utils.Constants;
@@ -28,6 +29,7 @@ public class SGData {
 	public Set<String> nameSet = new HashSet<>();
 
 	public AssociationVarFunctionName varFuncAssociation = new AssociationVarFunctionName();
+	public AssociationVarVar varVarAssociation = new AssociationVarVar();
 
 	int numOfFunction = -1;
 	int numOfTestFunction = -1;
@@ -259,6 +261,19 @@ public class SGData {
 		for (File[] dir : fileList)
 		{
 			++cTotal;
+
+			// for var-var association
+			for (int i = 0; i < dir.length; ++i)
+				for (int j = i + 1; j < dir.length; ++j) {
+					try {
+						String[] tmp1 = dir[i].getName().split("\\.");
+						String[] tmp2 = dir[j].getName().split("\\.");
+						varVarAssociation.addInfo(tmp1[0], tmp2[0], "");
+					} catch (Exception e) {
+
+					}
+				}
+
 			for (File f : dir) {
 				try {
 					if (!usingCacheFileList)

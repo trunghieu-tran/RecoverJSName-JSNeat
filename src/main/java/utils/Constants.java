@@ -7,7 +7,7 @@ package utils;
  * @organization UTDallas
  */
 public class Constants {
-	public static final int numberOfThread = 40;
+	public static final int numberOfThread = 160;
 	public static final boolean enableFuncNameEdge = false;
 	public static final double THRESHOLD = 0.8;
 	public static final int TOPK_RESULT = 30;
@@ -17,7 +17,7 @@ public class Constants {
 	public static final boolean usingTokenizedFunctionName = false;
 	public static final boolean usingTokenizedVarName = true;
 	
-	public static final boolean task = false;
+	public static final boolean task = true;
 	public static final boolean singleVar = true;
 	public static final boolean multiVar = true;
 }

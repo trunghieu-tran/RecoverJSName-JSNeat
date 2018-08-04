@@ -35,13 +35,13 @@ public class AssociationVarFunctionName {
 
 	public void mergeDataFrom(AssociationVarFunctionName an) {
 		for (int key : an.varNameCount.keySet()) {
-			varNameCount.put(key, varNameCount.getOrDefault(key, 0) + 1);
+			varNameCount.put(key, varNameCount.getOrDefault(key, 0) + an.varNameCount.get(key));
 		}
 		for (int key : an.funcNameCount.keySet()) {
-			funcNameCount.put(key, funcNameCount.getOrDefault(key, 0) + 1);
+			funcNameCount.put(key, funcNameCount.getOrDefault(key, 0) + an.funcNameCount.get(key));
 		}
 		for (int key : an.varFuncCount.keySet()) {
-			varFuncCount.put(key, varFuncCount.getOrDefault(key, 0) + 1);
+			varFuncCount.put(key, varFuncCount.getOrDefault(key, 0) + an.varFuncCount.get(key));
 		}
 	}
 

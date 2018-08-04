@@ -134,19 +134,21 @@ public class MainRecover {
 		startClock();
 		sgData.getData(TrainingData2, -1, TrainingFileList, true);
 		endClock("LoadTraining time: ");
+		System.out.println(sgData.varVarAssociation.showInfo());
 
 		startClock();
 		sgData.IndexingGraphByEdges();
 		endClock("Indexing graph time: ");
 
-		startClock();
-		try {
-			ac = new AssociationCalculator("indirect", asscociationData, -1);
-			System.out.println("LOADED Association score");
-		} catch (Exception e) {
-			System.out.println("ERROR Association constructor");
-		}
-		endClock("Load association time: ");
+		// Remove the old association loading
+//		startClock();
+//		try {
+//			ac = new AssociationCalculator("indirect", asscociationData, -1);
+//			System.out.println("LOADED Association score");
+//		} catch (Exception e) {
+//			System.out.println("ERROR Association constructor");
+//		}
+//		endClock("Load association time: ");
 	}
 
 	public class ProcessingOneFunction implements Runnable {
@@ -507,7 +509,7 @@ public class MainRecover {
 		mr.loadInput();
 		mr.analyzingTrainingVsTesting();
 		mr.process();
-		mr.write_RuningTime();
 		mr.write_caching();
+		mr.write_RuningTime();
 	}
 }
