@@ -41,18 +41,11 @@ public class BeamSearch {
 	public long totalAssCounted = 0;
 	private String fileOutAssociation;
 
-	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationCalculator ac, String file) {
+	public BeamSearch(ArrayList< ArrayList<Pair<String, Double>> > candidateLists, AssociationCalculator ac, TokenAssociationCalculator tokAc, String file) {
 		this.candidateLists = candidateLists;
 		this.numOfVar = candidateLists.size();
 		this.ac = ac;
-		if ( Constants.usingTokenizedVarName ) {
-			try {
-				tokAc = new TokenAssociationCalculator("indirect", "../HashAssocData", -1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		this.tokAc = tokAc;
 		this.fileOutAssociation = file;
 		updateMapVarNamevsScore();
 		initializeAllAssociation();
