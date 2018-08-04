@@ -14,7 +14,7 @@ public class Constants {
 	public static final int TOPK_BEAMSEARCH = 30;
 	public static final boolean usingOnlyVarVarOnBS = true;
 	public static final boolean usingNormalizationAllPair = true;
-	public static final boolean usingTokenizedFunctionName = false;
+	public static final boolean usingTokenizedFunctionName = true;
 	public static final boolean usingTokenizedVarName = true;
 	
 	public static final boolean task = true;
