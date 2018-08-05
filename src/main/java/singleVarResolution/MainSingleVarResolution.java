@@ -74,7 +74,7 @@ public class MainSingleVarResolution {
 	public void loadData() {
 		System.out.println("Loading corpus...");
 		sgData = new SGData();
-		sgData.getData(data, 1000000,TrainingFileList, false);
+		sgData.getTrainingData(data, 1000000,TrainingFileList, false);
 		sgData.IndexingGraphByEdges();
 	}
 

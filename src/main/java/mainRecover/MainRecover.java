@@ -127,7 +127,7 @@ public class MainRecover {
 
 	public void loadTrainingData() {
 		startClock();
-		sgData.getData(TrainingData2, -1, TrainingFileList, true);
+		sgData.getTrainingData(TrainingData2, -1, TrainingFileList, true);
 		endClock("LoadTraining time: ");
 
 		System.out.println(sgData.varVarAssociation.showInfo());

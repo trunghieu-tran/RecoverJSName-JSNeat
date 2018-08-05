@@ -28,6 +28,10 @@ public class Edge {
 		return rel;
 	}
 
+	public String getPe() {
+		return pe;
+	}
+
 	@Override
 	public String toString() {
 		return pe + " " + rel + " " + freq;
