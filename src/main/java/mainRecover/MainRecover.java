@@ -228,14 +228,17 @@ public class MainRecover {
 				res.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 				ArrayList<String> res2 = new ArrayList<>();
+				ArrayList<Pair<String, Double>> res_shorten = new ArrayList<>();
 				for (Pair<String, Double> p : res) {
 					res2.add(p.getKey());
-					if (res2.size() == TOPK * 3) break;
+					res_shorten.add(p);
+					if (res2.size() == TOPK) break;
 				}
 
 				resolvedVarName_withoutBS.put(sg, res2);
 
-				tmp.add(res);
+
+				tmp.add(res_shorten);
 				idToSG.put(cc++, sg);
 			}
 
