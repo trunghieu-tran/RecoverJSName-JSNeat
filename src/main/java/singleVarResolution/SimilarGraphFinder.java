@@ -1,6 +1,7 @@
 package singleVarResolution;
 
 import javafx.util.Pair;
+import utils.Constants;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,23 +33,37 @@ public class SimilarGraphFinder {
 		ArrayList<Pair<String, Double>> res = new ArrayList<>();
 		HashSet<Pair<StarGraph, Double>> similarGraphs = getSimilarStarGraphWith(g);
 		HashMap<String, ArrayList<Double>> mapVarNameVsScore = new HashMap<>();
+		HashMap<String, Integer> mapVarNamevsFreq = new HashMap<>();
 
 		for (Pair<StarGraph, Double> p : similarGraphs) {
 			String varName = p.getKey().getVarName();
-			if (mapVarNameVsScore.containsKey(varName)){
-				mapVarNameVsScore.get(varName).add(p.getValue());
-			} else {
-				ArrayList<Double> scList = new ArrayList<>();
-				scList.add(p.getValue());
-				mapVarNameVsScore.put(varName, scList);
+
+			if (Constants.usingFrequencyStargraph) {
+				mapVarNamevsFreq.put(varName, mapVarNamevsFreq.getOrDefault(varName, 0) + 1);
+			}
+			else {
+				if (mapVarNameVsScore.containsKey(varName)) {
+					mapVarNameVsScore.get(varName).add(p.getValue());
+				} else {
+					ArrayList<Double> scList = new ArrayList<>();
+					scList.add(p.getValue());
+					mapVarNameVsScore.put(varName, scList);
+				}
 			}
 		}
 
-		for (String varName : mapVarNameVsScore.keySet()) {
-			ArrayList<Double> scList = mapVarNameVsScore.get(varName);
-			if (scList.size() == 0) continue;
-			double finalScore = getScoreOfVarName(scList);
-			res.add(new Pair<>(varName, finalScore));
+		if (Constants.usingFrequencyStargraph) {
+			for (String varName : mapVarNamevsFreq.keySet()) {
+				res.add(new Pair<>(varName, mapVarNamevsFreq.get(varName) * 1.0));
+			}
+		}
+		else {
+			for (String varName : mapVarNameVsScore.keySet()) {
+				ArrayList<Double> scList = mapVarNameVsScore.get(varName);
+				if (scList.size() == 0) continue;
+				double finalScore = getScoreOfVarName(scList);
+				res.add(new Pair<>(varName, finalScore));
+			}
 		}
 
 		res.sort((o1, o2) -> o2.getValue().compareTo(o1.getValue()));

@@ -235,6 +235,7 @@ public class SGData {
 					lastFile = currFile;
 				}
 				if (cTotalFile % 10 == 0) continue;
+				if (cTotalFile % 10 > Constants.numberOfTrainingFolds) continue;
 
 				addInfoVarVarAssociation(dir);
 
@@ -458,12 +459,16 @@ public class SGData {
 					if (!usingCacheFileList) {
 						sbFileList.append(f.getCanonicalPath()).append(" ").append(cTotal).append("\n");
 					}
+					++cnt;
+
+					// This one is to take about 150 sg
+					if (Constants.usingOnly18kTraining && cnt % 15 != 0) continue;
 
 					ReadingGraph rg = new ReadingGraph(f);
 					executor.execute(rg);
 					rgs.add(rg);
 
-					if (++cnt % 100000 == 0)
+					if (cnt % 100000 == 0)
 						System.out.print(" >>> [" + Integer.toString(cnt) + "/" + Integer.toString(nTrainSg) + "]");
 
 					if (cnt == numOfFunction)
