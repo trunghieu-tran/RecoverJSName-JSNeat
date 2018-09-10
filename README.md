@@ -1,5 +1,8 @@
 # Recovering Variable Names for Minified Code with Usage Contexts  - JSNeat #
+
 Official website : https://mrstarrynight.github.io/JSNeat/
+
+JSNeat - an information retrieval (IR)- based approach to recover the variable names in minified JS code. JSNEAT follows a data-driven approach to recover names by searching for them in a large corpus of open-source JS code. 
 
 ## Why do we create JSNeat? ##
 In modern Web development, program understanding plays an equally important role. Web technologies and programming languages require the exposure of source code to Web browsers in the client side to be executed there. To avoid such exposure, the source code such as JavaScript (JS) files are often obfuscated in which the variable names are minified, i.e., the variable names are replaced with short, opaque, and meaningless names. The intention has two folds. First, it makes the JS files smaller and thus are quickly loaded to improve performance. Second, minification diminishes code readability for the readers, while maintaining the program semantics. Due to those reasons, there is a natural need to automatically recover the minified code with meaningful variable names. That's why JSNeat was born.
