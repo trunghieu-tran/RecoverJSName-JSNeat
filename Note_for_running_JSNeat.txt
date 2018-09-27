@@ -1,0 +1,59 @@
+Note for running JSNeat
+1. How to configure hyper-parameters in JSNeat 
+	- Goto utils.Constants
+
+numberOfThread = 160; // the number thread
+enableFuncNameEdge = true; // use function name as an edge of the stargraph
+THRESHOLD = 0.8; // threshold of stargraph matching
+TOPK_RESULT = 30; // display top K result in output
+TOPK_BEAMSEARCH = 30; // beam size
+usingNormalizationAllPair = true; // normalization association score for 
+
+usingOnlyVarVarOnBS = true; // using only var-var associaion score when beamsearch
+
+usingTokenizedFunctionName = false; // using tokenization for function name
+usingTokenizedVarName = false; // using tokenzization for variable name
+
+
+task = true; // using function name to recover
+singleVar = true; // using single usage to recover
+multiVar = true; // using multiple usage to recover
+
+usingDataFromTraining = false;  // split testing data from training data
+
+// this is for 10-folds cross-vadidation
+startIndexInTraining = 0;
+numberOfTrainingFolds = 9;
+// using small data
+usingOnly18kTraining = false;
+}
+
+2. Configure data
+	- Change the directory for training/testing in mainRecover.MainRecover
+
+	  InputData2 = "/home/nmt140230/RecoverJSName/GitTestData/"; // testing data
+	  TrainingData2 = "/home/nmt140230/RecoverJSName/GitTrainData";  // training data
+	  TrainingFileList = "./resources/tmp/trainingFileList.txt"; // list of traingin file
+	  cacheFolder = "./resources/cache/"; // save cache when running
+
+	  tmpOutput = "./resources/tmp/tmp.txt"; // output of recovered names
+	  tmpOutputAccuracy = "./resources/tmp/tmpAccuracy.txt"; // accuracy report
+	  tmpOutputNoBS = "./resources/tmp/tmp_noBS.txt"; // accuracy report without Beamsearch
+	  tmpOutputAccuracyNoBS = "./resources/tmp/tmpAccuracy_noBS.txt"; // accuracy report without beamsearch
+	  tmpCache_Association = "./resources/tmp/tmpCacheAssociation.txt"; // cache of association
+	  tmpAnalysis_VarNumTesting = "./resources/tmp/tmpVarNumberTesting.txt"; // analysis
+	  tmpRuningTime = "./resources/tmp/tmpRunningTime.txt"; // report running time
+	  tmpAnalysisTrainingInfo = "./resources/tmp/tmpTrainingInfo.txt"; // training data analysis
+	  tmpAnalysisTestingInfo = "./resources/tmp/tmpTestingInfo.txt"; // testing data analysis
+	  tmpCurrentResolving = "./resources/tmp/tmpCurrentResolving.txt"; // record current status of resolving
+	  tmp1EdgeSG = "./resources/tmp/tmp1EdgeSG.txt"; // record stargraph having 1 edge
+	  tmp1Edge1VarFuncVsName = "./resources/tmp/tmp1Edge1VarFuncVsName.txt"; // record function which has 1 variable those stargraph has 1 edge
+	  tmpPerfectResolved = "./resources/tmp/tmpPerfectResolved.txt";  // recored functions recovered perfectly variables
+	  tmpTrainFunctioName = "./resources/tmp/tmpTrainFunctionName.txt"; // record training function name
+	  tmpTestFunctioName = "./resources/tmp/tmpTestFunctionName.txt"; // record testing function name
+
+3. How to run?
+	- Run function main() in mainRecover.MainRecover
+
+4. Output:
+	- Output directory in set in mainRecover.MainRecover	
