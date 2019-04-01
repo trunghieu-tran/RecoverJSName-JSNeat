@@ -33,6 +33,10 @@ All experiments were run on a Linux computer server with twenty Intel Xeon 2.2GH
 We collected a corpus of 12,000 open-source JavaScript projects from GitHub with highest ratings.
 Download links: [Corpus](https://raw.githubusercontent.com/mrstarrynight/JSNeat/master/JS-stars-5-ranked-by-stars.csv)
 
+## Publication
+This project is published on The International Conference on Software Engineering (ICSE 2019). 
+https://2019.icse-conferences.org/track/icse-2019-Technical-Papers#event-overview
+The link of paper will be updated later.
 
 ## Contributors ##
 * Hieu Tran (trantrunghieu7492@gmail.com)
