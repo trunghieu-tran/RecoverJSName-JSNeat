@@ -34,9 +34,7 @@ We collected a corpus of 12,000 open-source JavaScript projects from GitHub with
 Download links: [Corpus](https://raw.githubusercontent.com/mrstarrynight/JSNeat/master/JS-stars-5-ranked-by-stars.csv)
 
 ## Publication
-This project is published on The International Conference on Software Engineering 2019 [(ICSE 2019)](https://2019.icse-conferences.org/track/icse-2019-Technical-Papers#event-overview)
-
-The link of paper will be updated later.
+This project is published on The International Conference on Software Engineering 2019 [(ICSE 2019)](https://dl.acm.org/citation.cfm?id=3339651)
 
 ## Contributors ##
 * Hieu Tran (trantrunghieu7492@gmail.com)
