@@ -36,6 +36,9 @@ Download links: [Corpus](https://raw.githubusercontent.com/mrstarrynight/JSNeat/
 ## Publication
 This project is published on The International Conference on Software Engineering 2019 [(ICSE 2019)](https://dl.acm.org/citation.cfm?id=3339651)
 
+## Slide
+The presentation of the project in ICSE'2019 could be download [(here)](https://github.com/saodem74/RecoverJSName-JSNeat/raw/master/JSNeat_ICSE'19.pptx)
+
 ## Contributors ##
 * Hieu Tran (trantrunghieu7492@gmail.com)
 * Ngoc Mike Tran (ngocmike238@gmail.com)
